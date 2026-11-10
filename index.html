@@ -29,15 +29,24 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .disco{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column}
 .disco:focus{outline:none}
 .disco:focus-visible .capa{outline:2px solid var(--accent);outline-offset:3px}
-.capa{width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .15s;color:var(--ink);font-weight:700;font-size:.78rem;padding:.5rem;overflow-wrap:anywhere}
+.capa{position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .2s;color:var(--ink);font-weight:700;font-size:.78rem;padding:.5rem;overflow-wrap:anywhere;background:transparent}
+.capa::before{content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);opacity:0;transition:opacity .2s;pointer-events:none;z-index:1}
+.disco:hover .capa::before{opacity:.5}
 .disco:hover .capa{transform:translateY(-4px)}
-.capa img{width:100%;height:100%;object-fit:cover;display:block}
+.capa img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:0}
 .disco b,.disco span{display:block;width:100%}
 .disco b{margin-top:.55rem;font-size:.82rem;line-height:1.2;height:2.4em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
 .disco span{margin-top:.15rem;font-size:.74rem;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Efeitos especiais por cor */
+.capa.picture-disc:hover{border-radius:50%}
+.capa.zoetrope:hover{animation:girar 2s linear infinite}
+@keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.capa.splatter:hover{border-radius:50% 20% 80% 30% / 30% 60% 40% 70%;transition:border-radius .3s}
+
 #grid-artistas{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1.8rem 1.1rem;align-items:start}
 .artista{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center}
-.artista .foto{width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:var(--ink);font-weight:800;font-size:1.6rem;transition:transform .15s;text-transform:uppercase}
+.artista .foto{width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:var(--ink);font-weight:800;font-size:1.6rem;transition:transform .15s;text-transform:uppercase;background:transparent}
 .artista:hover .foto{transform:translateY(-4px)}
 .artista:focus-visible .foto{outline:2px solid var(--accent);outline-offset:3px}
 .artista .foto img{width:100%;height:100%;object-fit:cover;display:block}
@@ -129,6 +138,20 @@ const LASTFM_KEY = "76a09b3a6c3d66772961d2789ab87e8c";
 const API_URL = "discos.json";
 const DADOS = [];
 
+// Mapeamento de nomes de cor (em português) para hex aproximado
+const CORES_HEX = {
+  "preto": "#000000", "branco": "#FFFFFF", "vermelho": "#FF0000",
+  "rosa": "#FFC0CB", "azul": "#0000FF", "amarelo": "#FFFF00",
+  "verde": "#008000", "verde-claro": "#90EE90", "azul-claro": "#ADD8E6",
+  "roxo": "#800080", "roxo translúcido": "#80008080", "laranja": "#FFA500",
+  "laranja translúcido": "#FFA50080", "cinza": "#808080",
+  "dourado": "#FFD700", "marrom": "#8B4513",
+  "rosa translúcido": "#FFC0CB80", "amarelo translúcido": "#FFFF0080",
+  "preto translúcido": "#00000080", "azul translúcido": "#0000FF80",
+  "verde translúcido": "#00800080", "clear": "#E0E0E0",
+  "picture disc": "#C0C0C0", "splatter": "#FF69B4", "zoetrope": "#9370DB"
+};
+
 const $ = id => document.getElementById(id);
 const norm = d => ({
   nome: d.nome ?? d.name ?? "", artista: d.artista ?? d.artist ?? "",
@@ -187,7 +210,12 @@ async function fotoArtista(nome){
     const u = `https://ws.audioscrobbler.com/2.0/?method=artist.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(nome)}&autocorrect=1&format=json`;
     const data = await (await fetch(u)).json();
     const imgs = (data.artist?.image||[]).map(i => i["#text"]).filter(x => x && !x.includes("2a96cbd8b46e442fc41c2b86b821562f"));
-    const foto = imgs[imgs.length-1] || "";
+    let foto = imgs[imgs.length-1] || "";
+    // Fallback: se não houver imagem do artista, tenta a capa do primeiro álbum
+    if(!foto){
+      const primeiro = discos.find(d => d.artista === nome);
+      if(primeiro){ const r = await infoAlbum(primeiro); foto = r.capa || ""; }
+    }
     cache.set(chaveArtista(nome), foto);
     return foto;
   }catch{ return ""; }
@@ -246,6 +274,16 @@ function desenhaDiscos(){
   l.forEach(d => {
     const b = document.createElement("button"); b.className = "disco";
     const c = document.createElement("div"); c.className = "capa"; c.textContent = d.nome; c._disco = d;
+
+    // Define a cor de fundo do overlay e a classe de efeito especial
+    const corNome = (d.cor[0] || "").toLowerCase();
+    const hex = CORES_HEX[corNome] || "#888888";
+    c.style.setProperty("--cor-disco", hex);
+
+    if(corNome.includes("picture disc")) c.classList.add("picture-disc");
+    if(corNome.includes("zoetrope")) c.classList.add("zoetrope");
+    if(corNome.includes("splatter")) c.classList.add("splatter");
+
     const t = document.createElement("b"); t.textContent = d.nome; t.title = d.nome;
     const s = document.createElement("span"); s.textContent = `${d.artista} · ${d.ano||"—"}`;
     b.append(c,t,s); b.onclick = () => abreDisco(d); g.append(b); obs.observe(c);
