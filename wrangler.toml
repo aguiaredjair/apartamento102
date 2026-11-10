@@ -1,2 +1,9 @@
 name = "apartamento102-v2"
 pages_build_output_dir = "."
+
+[[unsafe.bindings]]
+name = "KARAOKE_ROOM"
+type = "durable_object_namespace"
+class_name = "KaraokeRoom"
+script_name = "karaoke-do"
+namespace_id = "c2d6bccf480b47668bce53ea8cb8099e"
