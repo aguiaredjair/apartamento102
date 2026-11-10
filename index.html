@@ -37,18 +37,12 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .disco:hover .capa{transform:translateY(-4px);border-radius:50%}
 .disco:hover .capa::before{opacity:.5}
 
-/* Efeitos especiais */
 .capa.zoetrope:hover{animation:girar 2s linear infinite}
-.capa.splatter:hover{animation:flipXY 3s linear infinite}
+.capa.splatter::before{display:none !important}
+.capa.splatter:hover{animation:flipX 2s linear infinite}
 
 @keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes flipXY{
-  0%  {transform:rotateX(0deg)   rotateY(0deg);}
-  25% {transform:rotateX(180deg) rotateY(0deg);}
-  50% {transform:rotateX(180deg) rotateY(180deg);}
-  75% {transform:rotateX(360deg) rotateY(180deg);}
-  100%{transform:rotateX(360deg) rotateY(360deg);}
-}
+@keyframes flipX{from{transform:rotateX(0deg)}to{transform:rotateX(360deg)}}
 
 .disco b,.disco span{display:block;width:100%}
 .disco b{margin-top:.55rem;font-size:.82rem;line-height:1.2;height:2.4em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
@@ -144,9 +138,16 @@ li small{color:var(--mute);float:right}
 </div></dialog>
 
 <script>
+// ---- CONFIGURAÇÃO ----
 const LASTFM_KEY = "76a09b3a6c3d66772961d2789ab87e8c";
 const API_URL = "discos.json";
 const DADOS = [];
+
+const SPOTIFY_CLIENT_ID = "8268268d83b74d6cb9ee2aa9b7c22fee";
+const SPOTIFY_CLIENT_SECRET = "e8c5f920b5c240b8a6513fae587eda60";
+
+let spotifyToken = null;
+let spotifyTokenExpiry = 0;
 
 const CORES_HEX = {
   "preto": "#000000", "branco": "#FFFFFF", "vermelho": "#FF0000",
@@ -198,7 +199,6 @@ const cache = {
   set(k,v){ try{ localStorage.setItem("dc:"+k, JSON.stringify(v)); }catch{} }
 };
 const chaveAlbum = d => "lf:"+(d.artista+"|"+d.nome).toLowerCase();
-const chaveArtista = nome => "af:"+nome.toLowerCase();
 
 async function infoAlbum(d){
   const c = cache.get(chaveAlbum(d)); if(c) return c;
@@ -212,23 +212,75 @@ async function infoAlbum(d){
   return r;
 }
 
-async function fotoArtista(nome){
-  const c = cache.get(chaveArtista(nome));
-  if(c !== null && c !== undefined) return c;
-  try{
-    const u = `https://ws.audioscrobbler.com/2.0/?method=artist.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(nome)}&autocorrect=1&format=json`;
-    const data = await (await fetch(u)).json();
-    const imgs = (data.artist?.image||[]).map(i => i["#text"]).filter(x => x && !x.includes("2a96cbd8b46e442fc41c2b86b821562f"));
-    let foto = imgs[imgs.length-1] || "";
-    if(!foto){
-      const primeiro = discos.find(d => d.artista === nome);
-      if(primeiro){ const r = await infoAlbum(primeiro); foto = r.capa || ""; }
-    }
-    cache.set(chaveArtista(nome), foto);
-    return foto;
-  }catch{ return ""; }
+// ---------- SPOTIFY ----------
+async function getSpotifyToken(){
+  if (spotifyToken && Date.now() < spotifyTokenExpiry) return spotifyToken;
+
+  const credenciais = btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`);
+  const resposta = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${credenciais}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "grant_type=client_credentials"
+  });
+
+  if (!resposta.ok) throw new Error(`Falha ao obter token do Spotify: ${resposta.status}`);
+
+  const dados = await resposta.json();
+  spotifyToken = dados.access_token;
+  spotifyTokenExpiry = Date.now() + (dados.expires_in - 60) * 1000;
+  return spotifyToken;
 }
 
+async function fotoArtistaSpotify(nome){
+  const cacheKey = "sp:" + nome.toLowerCase();
+  const emCache = cache.get(cacheKey);
+  if (emCache !== null && emCache !== undefined) return emCache;
+
+  try {
+    const token = await getSpotifyToken();
+    const urlBusca = `https://api.spotify.com/v1/search?q=${encodeURIComponent(nome)}&type=artist&limit=5`;
+    const respBusca = await fetch(urlBusca, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!respBusca.ok) throw new Error(`Busca falhou: ${respBusca.status}`);
+
+    const dadosBusca = await respBusca.json();
+    const candidatos = dadosBusca.artists?.items || [];
+    const alvo = nome.toLowerCase().trim();
+    const exato = candidatos.find(a => a.name.toLowerCase().trim() === alvo);
+    const artista = exato || candidatos[0];
+
+    if (!artista || !artista.images || artista.images.length === 0) {
+      cache.set(cacheKey, "");
+      return "";
+    }
+
+    const urlImagem = artista.images[0].url;
+    cache.set(cacheKey, urlImagem);
+    return urlImagem;
+
+  } catch (e) {
+    console.warn(`Não foi possível buscar a foto de "${nome}" no Spotify:`, e);
+    cache.set(cacheKey, "");
+    return "";
+  }
+}
+
+async function fotoArtista(nome){
+  let foto = await fotoArtistaSpotify(nome);
+  if (foto) return foto;
+  try{
+    const primeiro = discos.find(d => d.artista === nome);
+    if(primeiro){ const r = await infoAlbum(primeiro); if(r.capa) return r.capa; }
+  }catch{}
+  return "";
+}
+
+// ---------- CAPAS DOS DISCOS ----------
 const obs = new IntersectionObserver(es => es.forEach(e => {
   if(e.isIntersecting){ obs.unobserve(e.target); carregaCapa(e.target); }
 }), {rootMargin:"300px"});
@@ -241,6 +293,7 @@ async function carregaCapa(el){
   try{ const r = await infoAlbum(d); if(r.capa) poe(r.capa); }catch{}
 }
 
+// ---------- MODAL ----------
 const modalEl = $("modal");
 window.fecharModal = () => { modalEl.classList.remove("grande"); modalEl.close(); };
 modalEl.addEventListener("click", e => { if (e.target === modalEl) fecharModal(); });
@@ -339,6 +392,7 @@ function abreArtista(nome){
   modalEl.showModal();
 }
 
+// ---------- KARAOKE (localStorage) ----------
 const KARAOKE_KEY = "karaoke:eventos";
 const loadEventos = () => { try { return JSON.parse(localStorage.getItem(KARAOKE_KEY)) || []; } catch { return []; } };
 const saveEventos = ev => { try { localStorage.setItem(KARAOKE_KEY, JSON.stringify(ev)); } catch {} };
@@ -426,6 +480,7 @@ function abrirEvento(id){
 
 $("novo-evento").onclick = novoEvento;
 
+// ---------- INIT ----------
 async function init(){
   try{
     let dados = DADOS;
