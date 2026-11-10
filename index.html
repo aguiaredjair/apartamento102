@@ -3,15 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Apartamento 102</title>
+<title>sento em dois</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap">
 <style>
-:root{--bg:#dedbd4;--ink:#22201d;--mute:#6b665e;--accent:#8c2f2b;--card:#efede8;
-font-family:"Bricolage Grotesque",system-ui,sans-serif}
+:root{
+  --bg: #e8f4f8;        /* azul pastel bem claro */
+  --ink: #2c3e50;       /* azul escuro suave */
+  --mute: #7f8c8d;
+  --accent: #e74c3c;    /* coral vibrante */
+  --card: #fef9e7;      /* amarelo pastel */
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink)}
+body{
+  margin:0;
+  background: linear-gradient(135deg, #e8f4f8 0%, #fdebd0 50%, #f9e7e7 100%);
+  background-attachment: fixed;
+  color:var(--ink);
+}
 header{position:relative;padding:2.2rem 1.25rem 1rem;max-width:1200px;margin:auto}
-h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;letter-spacing:-.03em;text-align:center}
+h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;letter-spacing:-.03em;text-align:center;
+   background: linear-gradient(90deg, #e74c3c, #f39c12, #27ae60, #2980b9, #8e44ad);
+   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;}
 .menu-btn{position:absolute;top:1rem;left:1.25rem;width:44px;height:44px;border:0;border-radius:6px;background:none;color:var(--ink);cursor:pointer;display:grid;place-content:center;gap:5px}
 .menu-btn span{display:block;width:24px;height:2.5px;background:var(--ink);border-radius:2px}
 .menu-btn:focus-visible{outline:2px solid var(--accent)}
@@ -21,7 +34,7 @@ select,button.limpar{font:inherit;padding:.5rem .7rem;border:1.5px solid var(--i
 button.limpar{cursor:pointer}
 .tabs{display:flex;justify-content:center;gap:.5rem;padding:0 1.25rem 1rem;max-width:1200px;margin:auto}
 .tab{font:inherit;font-weight:700;padding:.55rem 1.1rem;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:6px;cursor:pointer;letter-spacing:.05em;font-size:.85rem}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tab[aria-selected="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .view{display:none}
 .view.ativa{display:block}
 main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
@@ -34,6 +47,7 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .capa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;border-radius:inherit}
 .disco:hover .capa{transform:translateY(-4px);border-radius:50%}
 .disco:hover .capa::before{opacity:.5}
+.capa.zoetrope::before{display:none !important}
 .capa.zoetrope:hover{animation:girar 2s linear infinite}
 .capa.splatter::before{display:none !important}
 .capa.splatter:hover{animation:flipX 2s linear infinite}
@@ -59,7 +73,6 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .evento-item:hover{outline:2px solid var(--accent);outline-offset:-2px}
 .evento-item b{display:block;font-size:1rem;text-transform:capitalize}
 .evento-item small{color:var(--mute);font-size:.8rem}
-.aviso-karaoke{background:#d9e8f5;color:#1c3a5c;padding:.8rem 1rem;border-radius:6px;font-size:.82rem;margin-bottom:1rem;line-height:1.45}
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
@@ -77,6 +90,7 @@ li small{color:var(--mute);float:right}
 .fila-lista .num{font-weight:800;color:var(--accent);min-width:1.8rem;font-size:1rem}
 .fila-lista .nome{font-weight:700;font-size:.95rem}
 .fila-lista .musica{color:var(--mute);font-size:.82rem;display:block;margin-top:.1rem}
+.fila-lista input[type="checkbox"]{width:1.2rem;height:1.2rem;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
 .form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid #0002}
 .form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px}
 .form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--ink);color:var(--bg);border-radius:6px;cursor:pointer}
@@ -90,7 +104,7 @@ li small{color:var(--mute);float:right}
 <body>
 <header>
   <button class="menu-btn" id="menu-btn" aria-label="Filtros" aria-expanded="false" aria-controls="painel"><span></span><span></span><span></span></button>
-  <h1>apartamento 102</h1>
+  <h1>sento em dois</h1>
   <div class="painel" id="painel" hidden>
     <select id="f-artista" aria-label="Artista"></select>
     <select id="f-genero" aria-label="Gênero"></select>
@@ -102,7 +116,7 @@ li small{color:var(--mute);float:right}
 <nav class="tabs" role="tablist">
   <button class="tab" role="tab" id="tab-discos" aria-controls="view-discos" aria-selected="true">DISCOS</button>
   <button class="tab" role="tab" id="tab-artistas" aria-controls="view-artistas" aria-selected="false">ARTISTAS</button>
-  <button class="tab" role="tab" id="tab-karaoke" aria-controls="view-karaoke" aria-selected="false">KARAOKE</button>
+  <button class="tab" role="tab" id="tab-karaoke" aria-controls="view-karaoke" aria-selected="false">KARAOKÊ</button>
 </nav>
 
 <main>
@@ -116,7 +130,6 @@ li small{color:var(--mute);float:right}
   </section>
   <section class="view" id="view-karaoke" role="tabpanel" aria-labelledby="tab-karaoke">
     <div class="karaoke-wrap">
-      <div class="aviso-karaoke">🎤 <b>Em tempo real:</b> a fila sincroniza entre todos os celulares conectados. Peça para cada amigo abrir o mesmo evento no próprio aparelho.</div>
       <div class="karaoke-top">
         <p class="legenda" id="contagem-eventos"></p>
         <button class="btn-primary" id="novo-evento">+ Novo evento</button>
@@ -201,7 +214,7 @@ async function infoAlbum(d){
   return r;
 }
 
-// ---------- DEEZER (fotos de artistas via Pages Function) ----------
+// ---------- BUSCA DE FOTOS DE ARTISTAS (Deezer + fallback iTunes) ----------
 async function fotoArtistaDeezer(nome){
   const cacheKey = "dz:" + nome.toLowerCase();
   const emCache = cache.get(cacheKey);
@@ -211,7 +224,7 @@ async function fotoArtistaDeezer(nome){
     const alvo = encodeURIComponent(`artist:"${nome}"`);
     const urlDeezer = `https://api.deezer.com/search?q=${alvo}&limit=5`;
     const resp = await fetch(`/api/deezer?url=${encodeURIComponent(urlDeezer)}`);
-    if (!resp.ok) throw new Error(`Proxy respondeu ${resp.status}`);
+    if (!resp.ok) throw new Error(`Proxy Deezer ${resp.status}`);
 
     const dados = await resp.json();
     const itens = dados.data || [];
@@ -231,9 +244,36 @@ async function fotoArtistaDeezer(nome){
   }
 }
 
+async function fotoArtistaItunes(nome){
+  const cacheKey = "it:" + nome.toLowerCase();
+  const emCache = cache.get(cacheKey);
+  if (emCache !== null && emCache !== undefined) return emCache;
+
+  try {
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(nome)}&entity=musicArtist&limit=1`;
+    const resp = await fetch(`/api/itunes?url=${encodeURIComponent(url)}`);
+    if (!resp.ok) throw new Error(`Proxy iTunes ${resp.status}`);
+
+    const dados = await resp.json();
+    const artista = dados.results?.[0];
+    const urlImagem = artista?.artworkUrl100 || "";
+    // Sobe a resolução para 600x600
+    const urlFinal = urlImagem.replace("100x100", "600x600");
+    cache.set(cacheKey, urlFinal);
+    return urlFinal;
+  } catch (e) {
+    console.warn(`iTunes falhou para "${nome}":`, e);
+    cache.set(cacheKey, "");
+    return "";
+  }
+}
+
 async function fotoArtista(nome){
   let foto = await fotoArtistaDeezer(nome);
   if (foto) return foto;
+  foto = await fotoArtistaItunes(nome);
+  if (foto) return foto;
+  // Fallback final: capa do primeiro álbum
   try{
     const primeiro = discos.find(d => d.artista === nome);
     if(primeiro){ const r = await infoAlbum(primeiro); if(r.capa) return r.capa; }
@@ -358,12 +398,13 @@ function abreArtista(nome){
   modalEl.showModal();
 }
 
-// ---------- KARAOKE COM WEBSOCKET ----------
+// ---------- KARAOKÊ COM WEBSOCKET ----------
 const KARAOKE_KEY = "karaoke:eventos";
 const loadEventos = () => { try { return JSON.parse(localStorage.getItem(KARAOKE_KEY)) || []; } catch { return []; } };
 const saveEventos = ev => { try { localStorage.setItem(KARAOKE_KEY, JSON.stringify(ev)); } catch {} };
 
 let wsKaraoke = null;
+let filaAtual = [];
 
 function fmtDataLonga(iso){
   const [y,m,d] = iso.split("-").map(Number);
@@ -416,7 +457,8 @@ function conectarKaraoke(data){
     try {
       const msg = JSON.parse(event.data);
       if (msg.tipo === "estado_inicial" || msg.tipo === "fila_atualizada") {
-        renderizarFila(msg.fila || []);
+        filaAtual = msg.fila || [];
+        renderizarFila(filaAtual);
       }
     } catch (e) { console.warn("Mensagem inválida:", e); }
   };
@@ -442,7 +484,21 @@ function renderizarFila(fila){
   }
   fila.forEach((item, i) => {
     const li = document.createElement("li");
-    li.innerHTML = `<span class="num">${i+1}.</span><div><span class="nome">${esc(item.nome)}</span><span class="musica">${esc(item.musica)}</span></div>`;
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = !!item.cantou;
+    checkbox.onchange = () => {
+      if (wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN) {
+        wsKaraoke.send(JSON.stringify({ tipo: "marcar_cantou", index: i, cantou: checkbox.checked }));
+      }
+    };
+    const num = document.createElement("span");
+    num.className = "num";
+    num.textContent = `${i+1}.`;
+    const div = document.createElement("div");
+    div.innerHTML = `<span class="nome">${esc(item.nome)}</span><span class="musica">${esc(item.musica)}</span>`;
+    li.append(checkbox, num, div);
+    if (item.cantou) li.style.opacity = "0.5";
     ol.append(li);
   });
 }
