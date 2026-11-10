@@ -1,0 +1,7 @@
+name = "apartamento102"
+pages_build_output_dir = "."
+
+[[durable_objects.bindings]]
+name = "KARAOKE_ROOM"
+class_name = "KaraokeRoom"
+script_name = "karaoke-do"
