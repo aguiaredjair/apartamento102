@@ -212,64 +212,66 @@ async function infoAlbum(d){
   return r;
 }
 
-// ---------- SPOTIFY ----------
-async function getSpotifyToken(){
-  if (spotifyToken && Date.now() < spotifyTokenExpiry) return spotifyToken;
+// Remove as constantes do Spotify (não são mais necessárias)
+// const SPOTIFY_CLIENT_ID = ...
+// const SPOTIFY_CLIENT_SECRET = ...
+// let spotifyToken = ...
+// let spotifyTokenExpiry = ...
+// async function getSpotifyToken() { ... }
 
-  const credenciais = btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`);
-  const resposta = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${credenciais}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: "grant_type=client_credentials"
-  });
-
-  if (!resposta.ok) throw new Error(`Falha ao obter token do Spotify: ${resposta.status}`);
-
-  const dados = await resposta.json();
-  spotifyToken = dados.access_token;
-  spotifyTokenExpiry = Date.now() + (dados.expires_in - 60) * 1000;
-  return spotifyToken;
-}
-
-async function fotoArtistaSpotify(nome){
-  const cacheKey = "sp:" + nome.toLowerCase();
+// ---------- DEEZER (fotos de artistas) ----------
+async function fotoArtistaDeezer(nome) {
+  const cacheKey = "dz:" + nome.toLowerCase();
   const emCache = cache.get(cacheKey);
   if (emCache !== null && emCache !== undefined) return emCache;
 
-  async function tentarBusca() {
-    const token = await getSpotifyToken();
-    const urlBusca = `https://api.spotify.com/v1/search?q=${encodeURIComponent(nome)}&type=artist&limit=5`;
-    const resp = await fetch(urlBusca, { headers: { "Authorization": `Bearer ${token}` } });
-    if (!resp.ok) throw new Error(`Busca falhou: ${resp.status}`);
-    return resp.json();
-  }
-
   try {
-    // 1ª tentativa
-    let dados = await tentarBusca();
-    let artista = (dados.artists?.items || []).find(a => a.name.toLowerCase().trim() === nome.toLowerCase().trim())
-                 || dados.artists?.items?.[0];
+    const alvo = encodeURIComponent(`artist:"${nome}"`);
+    const urlDeezer = `https://api.deezer.com/search?q=${alvo}&limit=5`;
 
-    // Se não veio imagem, espera 250ms e tenta de novo (força o carregamento)
-    if (!artista?.images?.length) {
-      await new Promise(r => setTimeout(r, 250));
-      dados = await tentarBusca();
-      artista = (dados.artists?.items || []).find(a => a.name.toLowerCase().trim() === nome.toLowerCase().trim())
-               || dados.artists?.items?.[0];
+    // Chama o proxy do Cloudflare, não o Deezer diretamente
+    const resp = await fetch(`/api/deezer?url=${encodeURIComponent(urlDeezer)}`);
+    if (!resp.ok) throw new Error(`Proxy respondeu ${resp.status}`);
+
+    const dados = await resp.json();
+    const itens = dados.data || [];
+
+    if (itens.length === 0) {
+      cache.set(cacheKey, "");
+      return "";
     }
 
-    const url = artista?.images?.[0]?.url || "";
+    // Prioriza o resultado cujo nome do artista bate exatamente
+    const alvoLower = nome.toLowerCase().trim();
+    const exato = itens.find(item => 
+      item.artist?.name?.toLowerCase().trim() === alvoLower
+    );
+    const escolhido = exato || itens[0];
+
+    // O campo picture_xl é a foto em alta resolução
+    const url = escolhido.artist?.picture_xl || escolhido.artist?.picture_big || "";
     cache.set(cacheKey, url);
     return url;
 
   } catch (e) {
-    console.warn(`Spotify falhou para "${nome}":`, e);
+    console.warn(`Deezer falhou para "${nome}":`, e);
     cache.set(cacheKey, "");
     return "";
   }
+}
+
+// Mantém o fallback para a capa do álbum
+async function fotoArtista(nome) {
+  let foto = await fotoArtistaDeezer(nome);
+  if (foto) return foto;
+  try {
+    const primeiro = discos.find(d => d.artista === nome);
+    if (primeiro) {
+      const r = await infoAlbum(primeiro);
+      if (r.capa) return r.capa;
+    }
+  } catch {}
+  return "";
 }
 
 async function fotoArtista(nome){
