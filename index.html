@@ -29,20 +29,30 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .disco{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column}
 .disco:focus{outline:none}
 .disco:focus-visible .capa{outline:2px solid var(--accent);outline-offset:3px}
-.capa{position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .2s;color:var(--ink);font-weight:700;font-size:.78rem;padding:.5rem;overflow-wrap:anywhere;background:transparent}
-.capa::before{content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);opacity:0;transition:opacity .2s;pointer-events:none;z-index:1}
+
+.capa{position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .25s;color:var(--ink);font-weight:700;font-size:.78rem;padding:.5rem;overflow-wrap:anywhere;background:transparent}
+.capa::before{content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);opacity:0;transition:opacity .2s;pointer-events:none;z-index:1;border-radius:inherit}
+.capa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;border-radius:inherit}
+
+.disco:hover .capa{transform:translateY(-4px);border-radius:50%}
 .disco:hover .capa::before{opacity:.5}
-.disco:hover .capa{transform:translateY(-4px)}
-.capa img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:0}
+
+/* Efeitos especiais */
+.capa.zoetrope:hover{animation:girar 2s linear infinite}
+.capa.splatter:hover{animation:flipXY 3s linear infinite}
+
+@keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes flipXY{
+  0%  {transform:rotateX(0deg)   rotateY(0deg);}
+  25% {transform:rotateX(180deg) rotateY(0deg);}
+  50% {transform:rotateX(180deg) rotateY(180deg);}
+  75% {transform:rotateX(360deg) rotateY(180deg);}
+  100%{transform:rotateX(360deg) rotateY(360deg);}
+}
+
 .disco b,.disco span{display:block;width:100%}
 .disco b{margin-top:.55rem;font-size:.82rem;line-height:1.2;height:2.4em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
 .disco span{margin-top:.15rem;font-size:.74rem;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* Efeitos especiais por cor */
-.capa.picture-disc:hover{border-radius:50%}
-.capa.zoetrope:hover{animation:girar 2s linear infinite}
-@keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.capa.splatter:hover{border-radius:50% 20% 80% 30% / 30% 60% 40% 70%;transition:border-radius .3s}
 
 #grid-artistas{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1.8rem 1.1rem;align-items:start}
 .artista{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center}
@@ -118,7 +128,7 @@ li small{color:var(--mute);float:right}
   </section>
   <section class="view" id="view-karaoke" role="tabpanel" aria-labelledby="tab-karaoke">
     <div class="karaoke-wrap">
-      <div class="aviso-karaoke">⚠️ <b>Modo local:</b> os eventos de karaokê ficam salvos apenas neste dispositivo/navegador. Para sincronizar entre celulares de todos, será preciso configurar um backend gratuito (Firebase ou Supabase). Posso te ajudar com isso depois.</div>
+      <div class="aviso-karaoke">⚠️ <b>Modo local:</b> os eventos de karaokê ficam salvos apenas neste dispositivo/navegador. Para sincronizar entre celulares de todos, será preciso configurar um backend gratuito (Cloudflare Durable Objects).</div>
       <div class="karaoke-top">
         <p class="legenda" id="contagem-eventos"></p>
         <button class="btn-primary" id="novo-evento">+ Novo evento</button>
@@ -138,11 +148,10 @@ const LASTFM_KEY = "76a09b3a6c3d66772961d2789ab87e8c";
 const API_URL = "discos.json";
 const DADOS = [];
 
-// Mapeamento de nomes de cor (em português) para hex aproximado
 const CORES_HEX = {
   "preto": "#000000", "branco": "#FFFFFF", "vermelho": "#FF0000",
   "rosa": "#FFC0CB", "azul": "#0000FF", "amarelo": "#FFFF00",
-  "verde": "#008000", "verde-claro": "#90EE90", "azul-claro": "#ADD8E6",
+  "verde": "#008000", "verde-claro": "#90EE90", "verde neon": "#39FF14", "azul-claro": "#ADD8E6",
   "roxo": "#800080", "roxo translúcido": "#80008080", "laranja": "#FFA500",
   "laranja translúcido": "#FFA50080", "cinza": "#808080",
   "dourado": "#FFD700", "marrom": "#8B4513",
@@ -211,7 +220,6 @@ async function fotoArtista(nome){
     const data = await (await fetch(u)).json();
     const imgs = (data.artist?.image||[]).map(i => i["#text"]).filter(x => x && !x.includes("2a96cbd8b46e442fc41c2b86b821562f"));
     let foto = imgs[imgs.length-1] || "";
-    // Fallback: se não houver imagem do artista, tenta a capa do primeiro álbum
     if(!foto){
       const primeiro = discos.find(d => d.artista === nome);
       if(primeiro){ const r = await infoAlbum(primeiro); foto = r.capa || ""; }
@@ -275,12 +283,8 @@ function desenhaDiscos(){
     const b = document.createElement("button"); b.className = "disco";
     const c = document.createElement("div"); c.className = "capa"; c.textContent = d.nome; c._disco = d;
 
-    // Define a cor de fundo do overlay e a classe de efeito especial
     const corNome = (d.cor[0] || "").toLowerCase();
-    const hex = CORES_HEX[corNome] || "#888888";
-    c.style.setProperty("--cor-disco", hex);
-
-    if(corNome.includes("picture disc")) c.classList.add("picture-disc");
+    c.style.setProperty("--cor-disco", CORES_HEX[corNome] || "#888888");
     if(corNome.includes("zoetrope")) c.classList.add("zoetrope");
     if(corNome.includes("splatter")) c.classList.add("splatter");
 
