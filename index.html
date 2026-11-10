@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>apartamento 102</title>
+<title>Apartamento 102</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap">
 <style>
 :root{--bg:#dedbd4;--ink:#22201d;--mute:#6b665e;--accent:#8c2f2b;--card:#efede8;
@@ -29,25 +29,19 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .disco{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column}
 .disco:focus{outline:none}
 .disco:focus-visible .capa{outline:2px solid var(--accent);outline-offset:3px}
-
 .capa{position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .25s;color:var(--ink);font-weight:700;font-size:.78rem;padding:.5rem;overflow-wrap:anywhere;background:transparent}
 .capa::before{content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);opacity:0;transition:opacity .2s;pointer-events:none;z-index:1;border-radius:inherit}
 .capa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;border-radius:inherit}
-
 .disco:hover .capa{transform:translateY(-4px);border-radius:50%}
 .disco:hover .capa::before{opacity:.5}
-
 .capa.zoetrope:hover{animation:girar 2s linear infinite}
 .capa.splatter::before{display:none !important}
 .capa.splatter:hover{animation:flipX 2s linear infinite}
-
 @keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes flipX{from{transform:rotateX(0deg)}to{transform:rotateX(360deg)}}
-
 .disco b,.disco span{display:block;width:100%}
 .disco b{margin-top:.55rem;font-size:.82rem;line-height:1.2;height:2.4em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
 .disco span{margin-top:.15rem;font-size:.74rem;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
 #grid-artistas{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1.8rem 1.1rem;align-items:start}
 .artista{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center}
 .artista .foto{width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:var(--ink);font-weight:800;font-size:1.6rem;transition:transform .15s;text-transform:uppercase;background:transparent}
@@ -65,7 +59,7 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .evento-item:hover{outline:2px solid var(--accent);outline-offset:-2px}
 .evento-item b{display:block;font-size:1rem;text-transform:capitalize}
 .evento-item small{color:var(--mute);font-size:.8rem}
-.aviso-karaoke{background:#f5d9d6;color:#5c1f1c;padding:.8rem 1rem;border-radius:6px;font-size:.82rem;margin-bottom:1rem;line-height:1.45}
+.aviso-karaoke{background:#d9e8f5;color:#1c3a5c;padding:.8rem 1rem;border-radius:6px;font-size:.82rem;margin-bottom:1rem;line-height:1.45}
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
@@ -122,7 +116,7 @@ li small{color:var(--mute);float:right}
   </section>
   <section class="view" id="view-karaoke" role="tabpanel" aria-labelledby="tab-karaoke">
     <div class="karaoke-wrap">
-      <div class="aviso-karaoke">⚠️ <b>Modo local:</b> os eventos de karaokê ficam salvos apenas neste dispositivo/navegador. Para sincronizar entre celulares de todos, será preciso configurar um backend gratuito (Cloudflare Durable Objects).</div>
+      <div class="aviso-karaoke">🎤 <b>Em tempo real:</b> a fila sincroniza entre todos os celulares conectados. Peça para cada amigo abrir o mesmo evento no próprio aparelho.</div>
       <div class="karaoke-top">
         <p class="legenda" id="contagem-eventos"></p>
         <button class="btn-primary" id="novo-evento">+ Novo evento</button>
@@ -142,12 +136,6 @@ li small{color:var(--mute);float:right}
 const LASTFM_KEY = "76a09b3a6c3d66772961d2789ab87e8c";
 const API_URL = "discos.json";
 const DADOS = [];
-
-const SPOTIFY_CLIENT_ID = "8268268d83b74d6cb9ee2aa9b7c22fee";
-const SPOTIFY_CLIENT_SECRET = "e8c5f920b5c240b8a6513fae587eda60";
-
-let spotifyToken = null;
-let spotifyTokenExpiry = 0;
 
 const CORES_HEX = {
   "preto": "#000000", "branco": "#FFFFFF", "vermelho": "#FF0000",
@@ -200,6 +188,7 @@ const cache = {
 };
 const chaveAlbum = d => "lf:"+(d.artista+"|"+d.nome).toLowerCase();
 
+// ---------- LAST.FM (capas de álbum) ----------
 async function infoAlbum(d){
   const c = cache.get(chaveAlbum(d)); if(c) return c;
   const u = `https://ws.audioscrobbler.com/2.0/?method=album.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(d.artista)}&album=${encodeURIComponent(d.nome)}&autocorrect=1&format=json`;
@@ -212,15 +201,8 @@ async function infoAlbum(d){
   return r;
 }
 
-// Remove as constantes do Spotify (não são mais necessárias)
-// const SPOTIFY_CLIENT_ID = ...
-// const SPOTIFY_CLIENT_SECRET = ...
-// let spotifyToken = ...
-// let spotifyTokenExpiry = ...
-// async function getSpotifyToken() { ... }
-
-// ---------- DEEZER (fotos de artistas) ----------
-async function fotoArtistaDeezer(nome) {
+// ---------- DEEZER (fotos de artistas via Pages Function) ----------
+async function fotoArtistaDeezer(nome){
   const cacheKey = "dz:" + nome.toLowerCase();
   const emCache = cache.get(cacheKey);
   if (emCache !== null && emCache !== undefined) return emCache;
@@ -228,31 +210,20 @@ async function fotoArtistaDeezer(nome) {
   try {
     const alvo = encodeURIComponent(`artist:"${nome}"`);
     const urlDeezer = `https://api.deezer.com/search?q=${alvo}&limit=5`;
-
-    // Chama o proxy do Cloudflare, não o Deezer diretamente
     const resp = await fetch(`/api/deezer?url=${encodeURIComponent(urlDeezer)}`);
     if (!resp.ok) throw new Error(`Proxy respondeu ${resp.status}`);
 
     const dados = await resp.json();
     const itens = dados.data || [];
+    if (itens.length === 0) { cache.set(cacheKey, ""); return ""; }
 
-    if (itens.length === 0) {
-      cache.set(cacheKey, "");
-      return "";
-    }
-
-    // Prioriza o resultado cujo nome do artista bate exatamente
     const alvoLower = nome.toLowerCase().trim();
-    const exato = itens.find(item => 
-      item.artist?.name?.toLowerCase().trim() === alvoLower
-    );
+    const exato = itens.find(item => item.artist?.name?.toLowerCase().trim() === alvoLower);
     const escolhido = exato || itens[0];
 
-    // O campo picture_xl é a foto em alta resolução
     const url = escolhido.artist?.picture_xl || escolhido.artist?.picture_big || "";
     cache.set(cacheKey, url);
     return url;
-
   } catch (e) {
     console.warn(`Deezer falhou para "${nome}":`, e);
     cache.set(cacheKey, "");
@@ -260,22 +231,8 @@ async function fotoArtistaDeezer(nome) {
   }
 }
 
-// Mantém o fallback para a capa do álbum
-async function fotoArtista(nome) {
-  let foto = await fotoArtistaDeezer(nome);
-  if (foto) return foto;
-  try {
-    const primeiro = discos.find(d => d.artista === nome);
-    if (primeiro) {
-      const r = await infoAlbum(primeiro);
-      if (r.capa) return r.capa;
-    }
-  } catch {}
-  return "";
-}
-
 async function fotoArtista(nome){
-  let foto = await fotoArtistaSpotify(nome);
+  let foto = await fotoArtistaDeezer(nome);
   if (foto) return foto;
   try{
     const primeiro = discos.find(d => d.artista === nome);
@@ -299,7 +256,14 @@ async function carregaCapa(el){
 
 // ---------- MODAL ----------
 const modalEl = $("modal");
-window.fecharModal = () => { modalEl.classList.remove("grande"); modalEl.close(); };
+window.fecharModal = () => {
+  if (wsKaraoke) {
+    try { wsKaraoke.close(); } catch {}
+    wsKaraoke = null;
+  }
+  modalEl.classList.remove("grande");
+  modalEl.close();
+};
 modalEl.addEventListener("click", e => { if (e.target === modalEl) fecharModal(); });
 
 const fmt = s => s ? Math.floor(s/60)+":"+String(s%60).padStart(2,"0") : "";
@@ -307,7 +271,7 @@ async function abreDisco(d){
   $("m-nome").textContent = d.nome;
   $("m-info").textContent = `${d.artista} · ${d.ano || "ano não informado"} · ${d.genero} · ${d.cor.join(", ")}`;
   const cont = $("m-conteudo");
-  cont.textContent = LASTFM_KEY ? "Buscando tracklist…" : "Falta a chave do Last.fm (LASTFM_KEY) para buscar a tracklist.";
+  cont.textContent = LASTFM_KEY ? "Buscando tracklist…" : "Falta a chave do Last.fm.";
   modalEl.classList.remove("grande");
   modalEl.showModal();
   if(!LASTFM_KEY) return;
@@ -339,12 +303,10 @@ function desenhaDiscos(){
   l.forEach(d => {
     const b = document.createElement("button"); b.className = "disco";
     const c = document.createElement("div"); c.className = "capa"; c.textContent = d.nome; c._disco = d;
-
     const corNome = (d.cor[0] || "").toLowerCase();
     c.style.setProperty("--cor-disco", CORES_HEX[corNome] || "#888888");
     if(corNome.includes("zoetrope")) c.classList.add("zoetrope");
     if(corNome.includes("splatter")) c.classList.add("splatter");
-
     const t = document.createElement("b"); t.textContent = d.nome; t.title = d.nome;
     const s = document.createElement("span"); s.textContent = `${d.artista} · ${d.ano||"—"}`;
     b.append(c,t,s); b.onclick = () => abreDisco(d); g.append(b); obs.observe(c);
@@ -396,10 +358,12 @@ function abreArtista(nome){
   modalEl.showModal();
 }
 
-// ---------- KARAOKE (localStorage) ----------
+// ---------- KARAOKE COM WEBSOCKET ----------
 const KARAOKE_KEY = "karaoke:eventos";
 const loadEventos = () => { try { return JSON.parse(localStorage.getItem(KARAOKE_KEY)) || []; } catch { return []; } };
 const saveEventos = ev => { try { localStorage.setItem(KARAOKE_KEY, JSON.stringify(ev)); } catch {} };
+
+let wsKaraoke = null;
 
 function fmtDataLonga(iso){
   const [y,m,d] = iso.split("-").map(Number);
@@ -416,8 +380,7 @@ function desenhaKaraoke(){
   }
   eventos.forEach(ev => {
     const b = document.createElement("button"); b.className = "evento-item";
-    const n = ev.fila.length;
-    b.innerHTML = `<div><b>${esc(fmtDataLonga(ev.data))}</b><small>${n} ${n===1?"pessoa na fila":"pessoas na fila"}</small></div><span>→</span>`;
+    b.innerHTML = `<div><b>${esc(fmtDataLonga(ev.data))}</b><small>abrir fila →</small></div><span>→</span>`;
     b.onclick = () => abrirEvento(ev.id);
     lista.append(b);
   });
@@ -430,56 +393,95 @@ function novoEvento(){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(data)){ alert("Data inválida. Use AAAA-MM-DD."); return; }
   const eventos = loadEventos();
   if(eventos.find(e => e.data === data)){ alert("Já existe um evento nessa data."); return; }
-  eventos.push({ id: String(Date.now()), data, fila: [] });
+  eventos.push({ id: data, data });
   saveEventos(eventos);
   desenhaKaraoke();
 }
 
-function abrirEvento(id){
-  const eventos = loadEventos();
-  const ev = eventos.find(e => e.id === id);
-  if(!ev) return;
-  $("m-nome").textContent = fmtDataLonga(ev.data);
-  const n = ev.fila.length;
-  $("m-info").textContent = `${n} ${n===1?"pessoa":"pessoas"} na fila`;
-  const cont = $("m-conteudo"); cont.textContent = "";
+function conectarKaraoke(data){
+  if (wsKaraoke) {
+    try { wsKaraoke.close(); } catch {}
+    wsKaraoke = null;
+  }
 
-  const ol = document.createElement("ol"); ol.className = "fila-lista";
-  if(!ev.fila.length){
-    const li = document.createElement("li"); li.style.borderBottom="0"; li.style.color="var(--mute)";
+  const protocolo = location.protocol === "https:" ? "wss:" : "ws:";
+  const url = `${protocolo}//${location.host}/api/karaoke/${encodeURIComponent(data)}`;
+  wsKaraoke = new WebSocket(url);
+
+  wsKaraoke.onopen = () => {
+    $("m-info").textContent = "Conectado. Adicione seu nome à fila.";
+  };
+
+  wsKaraoke.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.tipo === "estado_inicial" || msg.tipo === "fila_atualizada") {
+        renderizarFila(msg.fila || []);
+      }
+    } catch (e) { console.warn("Mensagem inválida:", e); }
+  };
+
+  wsKaraoke.onerror = () => {
+    $("m-info").textContent = "Erro de conexão. Recarregue a página.";
+  };
+
+  wsKaraoke.onclose = () => { /* silencioso */ };
+}
+
+function renderizarFila(fila){
+  const ol = document.querySelector("#m-conteudo .fila-lista");
+  if (!ol) return;
+  ol.innerHTML = "";
+  if (!fila.length) {
+    const li = document.createElement("li");
+    li.style.borderBottom = "0";
+    li.style.color = "var(--mute)";
     li.textContent = "Ninguém na fila ainda. Seja o primeiro!";
     ol.append(li);
-  } else {
-    ev.fila.forEach((item, i) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<span class="num">${i+1}.</span><div><span class="nome">${esc(item.nome)}</span><span class="musica">${esc(item.musica)}</span></div>`;
-      ol.append(li);
-    });
+    return;
   }
+  fila.forEach((item, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="num">${i+1}.</span><div><span class="nome">${esc(item.nome)}</span><span class="musica">${esc(item.musica)}</span></div>`;
+    ol.append(li);
+  });
+}
+
+function abrirEvento(id){
+  const ev = loadEventos().find(e => e.id === id);
+  if(!ev) return;
+
+  $("m-nome").textContent = fmtDataLonga(ev.data);
+  $("m-info").textContent = "Conectando à fila…";
+  const cont = $("m-conteudo"); cont.textContent = "";
+
+  const ol = document.createElement("ol");
+  ol.className = "fila-lista";
   cont.append(ol);
 
-  const form = document.createElement("form"); form.className = "form-add";
+  const form = document.createElement("form");
+  form.className = "form-add";
   form.innerHTML = `
     <input type="text" placeholder="Seu nome" required maxlength="40">
     <input type="text" placeholder="Música que vai cantar" required maxlength="100">
     <button type="submit">Entrar na fila</button>
   `;
-  form.onsubmit = e => {
+  form.onsubmit = (e) => {
     e.preventDefault();
     const inputs = form.querySelectorAll("input");
     const nome = inputs[0].value.trim();
     const musica = inputs[1].value.trim();
     if(!nome || !musica) return;
-    const evs = loadEventos();
-    const alvo = evs.find(x => x.id === id);
-    if(alvo){ alvo.fila.push({ nome, musica, ts: Date.now() }); saveEventos(evs); }
-    abrirEvento(id);
-    desenhaKaraoke();
+    if(wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN){
+      wsKaraoke.send(JSON.stringify({ tipo: "entrar_na_fila", nome, musica }));
+    }
+    form.reset();
   };
   cont.append(form);
 
   modalEl.classList.remove("grande");
   modalEl.showModal();
+  conectarKaraoke(ev.data);
 }
 
 $("novo-evento").onclick = novoEvento;
