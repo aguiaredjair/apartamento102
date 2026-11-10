@@ -239,32 +239,34 @@ async function fotoArtistaSpotify(nome){
   const emCache = cache.get(cacheKey);
   if (emCache !== null && emCache !== undefined) return emCache;
 
-  try {
+  async function tentarBusca() {
     const token = await getSpotifyToken();
     const urlBusca = `https://api.spotify.com/v1/search?q=${encodeURIComponent(nome)}&type=artist&limit=5`;
-    const respBusca = await fetch(urlBusca, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
+    const resp = await fetch(urlBusca, { headers: { "Authorization": `Bearer ${token}` } });
+    if (!resp.ok) throw new Error(`Busca falhou: ${resp.status}`);
+    return resp.json();
+  }
 
-    if (!respBusca.ok) throw new Error(`Busca falhou: ${respBusca.status}`);
+  try {
+    // 1ª tentativa
+    let dados = await tentarBusca();
+    let artista = (dados.artists?.items || []).find(a => a.name.toLowerCase().trim() === nome.toLowerCase().trim())
+                 || dados.artists?.items?.[0];
 
-    const dadosBusca = await respBusca.json();
-    const candidatos = dadosBusca.artists?.items || [];
-    const alvo = nome.toLowerCase().trim();
-    const exato = candidatos.find(a => a.name.toLowerCase().trim() === alvo);
-    const artista = exato || candidatos[0];
-
-    if (!artista || !artista.images || artista.images.length === 0) {
-      cache.set(cacheKey, "");
-      return "";
+    // Se não veio imagem, espera 250ms e tenta de novo (força o carregamento)
+    if (!artista?.images?.length) {
+      await new Promise(r => setTimeout(r, 250));
+      dados = await tentarBusca();
+      artista = (dados.artists?.items || []).find(a => a.name.toLowerCase().trim() === nome.toLowerCase().trim())
+               || dados.artists?.items?.[0];
     }
 
-    const urlImagem = artista.images[0].url;
-    cache.set(cacheKey, urlImagem);
-    return urlImagem;
+    const url = artista?.images?.[0]?.url || "";
+    cache.set(cacheKey, url);
+    return url;
 
   } catch (e) {
-    console.warn(`Não foi possível buscar a foto de "${nome}" no Spotify:`, e);
+    console.warn(`Spotify falhou para "${nome}":`, e);
     cache.set(cacheKey, "");
     return "";
   }
