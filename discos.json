@@ -1,5 +1,19 @@
 [
-  {"nome": "Super Trouper: The Singles Boxset", "artista": "ABBA", "ano": 2020, "genero": "Pop", "cor": ["Amarelo", "Rosa", "Azul"]},
+  {
+    "nome": "Super Trouper: The Singles Boxset",
+    "artista": "ABBA",
+    "ano": 2020,
+    "genero": "Pop",
+    "cor": ["Amarelo", "Rosa", "Azul"],
+    "faixas": [
+      "The Winner Takes It All",
+      "Elaine",
+      "Super Trouper",
+      "The Piper",
+      "Lay All Your Love On Me",
+      "On And On And On"
+    ]
+  },
   {"nome": "Ring Ring", "artista": "ABBA", "ano": 1973, "genero": "Pop", "cor": ["Preto"]},
   {"nome": "Waterloo", "artista": "ABBA", "ano": 1974, "genero": "Pop", "cor": ["Picture disc"]},
   {"nome": "ABBA", "artista": "ABBA", "ano": 1975, "genero": "Pop", "cor": ["Preto"]},
@@ -34,6 +48,20 @@
   {"nome": "How I'm Feeling Now", "artista": "Charli xcx", "ano": 2020, "genero": "Pop", "cor": ["Laranja translúcido"]},
   {"nome": "Brat", "artista": "Charli xcx", "ano": 2024, "genero": "Pop", "cor": ["Preto translúcido"]},
   {"nome": "Charm", "artista": "Clairo", "ano": 2024, "genero": "Indie", "cor": ["Rosa"]},
+  {
+    "nome": "La Mer",
+    "artista": "Claude Debussy",
+    "ano": 1905,
+    "genero": "Clássico",
+    "cor": ["Preto"]
+  },
+  {
+    "nome": "Heaven or Las Vegas",
+    "artista": "Cocteau Twins",
+    "ano": 1990,
+    "genero": "Dream pop",
+    "cor": ["Preto"]
+  },
   {"nome": "Everybody Else Is Doing It, So Why Can't We?", "artista": "The Cranberries", "ano": 1993, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "Everyday Robots", "artista": "Damon Albarn", "ano": 2014, "genero": "Eletrônica", "cor": ["Preto"]},
   {"nome": "Hunky Dory", "artista": "David Bowie", "ano": 1971, "genero": "Rock", "cor": ["Preto"]},
@@ -47,14 +75,98 @@
   {"nome": "Fleetwood Mac", "artista": "Fleetwood Mac", "ano": 1975, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "Rumours", "artista": "Fleetwood Mac", "ano": 1977, "genero": "Rock", "cor": ["Dourado"]},
   {"nome": "Tango in the Night", "artista": "Fleetwood Mac", "ano": 1987, "genero": "Rock", "cor": ["Preto"]},
-  {"nome": "Star Collection I", "artista": "Frank Sinatra", "ano": 1977, "genero": "Jazz", "cor": ["Preto"]},
-  {"nome": "Star Collection II", "artista": "Frank Sinatra", "ano": 1978, "genero": "Jazz", "cor": ["Preto"]},
+  {
+    "nome": "Blond",
+    "artista": "Frank Ocean",
+    "ano": 2016,
+    "genero": "R&B",
+    "cor": ["Laranja", "Amarelo"]
+  },
+  {
+    "nome": "Star Collection",
+    "artista": "Frank Sinatra",
+    "ano": 1977,
+    "genero": "Jazz",
+    "cor": ["Preto"],
+    "faixas": [
+      "Strangers In The Night",
+      "Stardust",
+      "Swinging On A Star",
+      "Summer Wind",
+      "A Fine Romance"
+    ]
+  },
+  {
+    "nome": "Star Collection II",
+    "artista": "Frank Sinatra",
+    "ano": 1978,
+    "genero": "Jazz",
+    "cor": ["Preto"],
+    "faixas": [
+      "The World We Knew",
+      "Young At Heart",
+      "Easy To Love",
+      "Witchcraft",
+      "I'm Gonna Sit Right Down And Write Myself A Letter",
+      "I Get A Kick Out Of You"
+    ]
+  },
+  {
+    "nome": "Great Men Of Music",
+    "artista": "Franz Schubert",
+    "ano": null,
+    "genero": "Clássico",
+    "cor": ["Preto"],
+    "faixas": [
+      "Seligkein, D. 433",
+      "Gretchen am Spinnrade, D. 118",
+      "Du liebst mich nicht, D. 756",
+      "Heimliches Lieben, D. 922",
+      "Im Frühling, D. 882"
+    ]
+  },
+  {
+    "nome": "Mestres da Música",
+    "artista": "Franz Schubert",
+    "ano": 1983,
+    "genero": "Clássico",
+    "cor": ["Preto"],
+    "faixas": [
+      "Improviso em Sol Bemol Maior Opus 90 N 3",
+      "Improviso em L Bemol Maior Opus 90 N 4",
+      "Doze Valsas para Piano Solo Opus 77 Valsas Nobres",
+      "Momento Musical em F Menor Opus 94 N 5",
+      "Marcha Militar em R Maior para Piano a Quatro Mãos Opus 51 N 1",
+      "Grande Marcha em Mi Maior para Piano a Quatro Mãos Opus 40 N 6",
+      "Marcha Característica em D Maior para Piano a Quatro Mãos Opus Post 121 N 1"
+    ]
+  },
+  {
+    "nome": "Quinteto em Dó Maior, D. 956",
+    "artista": "Franz Schubert",
+    "ano": 1828,
+    "genero": "Clássico",
+    "cor": ["Preto"],
+    "faixas": [
+      "Allegro Ma Non Troppo",
+      "Adagio",
+      "Scherzo",
+      "Alegretto"
+    ]
+  },
   {"nome": "Gorillaz", "artista": "Gorillaz", "ano": 2001, "genero": "Alternativo", "cor": ["Preto"]},
   {"nome": "Plastic Beach", "artista": "Gorillaz", "ano": 2010, "genero": "Alternativo", "cor": ["Preto"]},
   {"nome": "The Now Now", "artista": "Gorillaz", "ano": 2018, "genero": "Alternativo", "cor": ["Preto"]},
   {"nome": "Live Through This", "artista": "Hole", "ano": 1994, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "Soft Sounds from Another Planet", "artista": "Japanese Breakfast", "ano": 2017, "genero": "Indie", "cor": ["Preto"]},
   {"nome": "Jubilee", "artista": "Japanese Breakfast", "ano": 2021, "genero": "Indie", "cor": ["Preto"]},
+  {
+    "nome": "Unknown Pleasures",
+    "artista": "Joy Division",
+    "ano": 1979,
+    "genero": "Pós-punk",
+    "cor": ["Preto"]
+  },
   {"nome": "Lionheart", "artista": "Kate Bush", "ano": 1978, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "Bubba", "artista": "Kaytranada", "ano": 2019, "genero": "Eletrônica", "cor": ["Preto"]},
   {"nome": "good kid, m.A.A.d city", "artista": "Kendrick Lamar", "ano": 2012, "genero": "Hip hop", "cor": ["Preto"]},
@@ -94,6 +206,23 @@
   {"nome": "Sour", "artista": "Olivia Rodrigo", "ano": 2021, "genero": "Pop", "cor": ["Clear"]},
   {"nome": "Guts (Spilled)", "artista": "Olivia Rodrigo", "ano": 2024, "genero": "Pop", "cor": ["Splatter"]},
   {"nome": "You Seem Pretty Sad for a Girl So in Love", "artista": "Olivia Rodrigo", "ano": 2025, "genero": "Pop", "cor": ["Preto"]},
+  {
+    "nome": "Fabulosa Era da Ópera",
+    "artista": "Orquestra Sinfônica Românticos de Cuba",
+    "ano": null,
+    "genero": "Clássico",
+    "cor": ["Preto"],
+    "faixas": [
+      "Il Guarany",
+      "La Boheme",
+      "Tosca",
+      "Samson Et Dalila",
+      "Traviata",
+      "Madame Butterfly",
+      "Rigoletto",
+      "Cavalleria Rusticana"
+    ]
+  },
   {"nome": "Death of a Bachelor", "artista": "Panic! At the Disco", "ano": 2016, "genero": "Pop", "cor": ["Cinza"]},
   {"nome": "Paramore", "artista": "Paramore", "ano": 2013, "genero": "Rock", "cor": ["Laranja"]},
   {"nome": "Introspective", "artista": "Pet Shop Boys", "ano": 1988, "genero": "Pop", "cor": ["Preto"]},
@@ -104,7 +233,28 @@
   {"nome": "In Rainbows", "artista": "Radiohead", "ano": 2007, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "Diamond Life", "artista": "Sade", "ano": 1984, "genero": "Pop", "cor": ["Preto"]},
   {"nome": "Love Deluxe", "artista": "Sade", "ano": 1992, "genero": "Pop", "cor": ["Preto"]},
-  {"nome": "Shrek (Music from the Original Motion Picture)", "artista": "Vários Artistas", "ano": 2001, "genero": "Trilha sonora", "cor": ["Preto"]},
+  {
+    "nome": "Shrek (Music from the Original Motion Picture)",
+    "artista": "Vários Artistas",
+    "ano": 2001,
+    "genero": "Trilha sonora",
+    "cor": ["Preto"],
+    "faixas": [
+      "Stay Home",
+      "I'm A Believer",
+      "Like Wow!",
+      "It Is You (I Have Loved)",
+      "Best Years Of Our Lives",
+      "Bad Reputation",
+      "My Beloved Monster",
+      "You Belong To Me",
+      "All Star",
+      "Hallelujah",
+      "I'm On My Way",
+      "I'm A Believer (Reprise)",
+      "True Love's First Kiss"
+    ]
+  },
   {"nome": "Nymph", "artista": "Shygirl", "ano": 2022, "genero": "Eletrônica", "cor": ["Azul translúcido"]},
   {"nome": "Siamese Dream", "artista": "The Smashing Pumpkins", "ano": 1993, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "Mellon Collie and the Infinite Sadness", "artista": "The Smashing Pumpkins", "ano": 1995, "genero": "Rock", "cor": ["Preto"]},
@@ -124,7 +274,26 @@
   {"nome": "Flower Boy", "artista": "Tyler, the Creator", "ano": 2017, "genero": "Hip hop", "cor": ["Preto"]},
   {"nome": "IGOR", "artista": "Tyler, the Creator", "ano": 2019, "genero": "Hip hop", "cor": ["Preto"]},
   {"nome": "Call Me If You Get Lost", "artista": "Tyler, the Creator", "ano": 2021, "genero": "Hip hop", "cor": ["Preto"]},
-  {"nome": "Wicked: The Soundtrack", "artista": "Vários Artistas", "ano": 2024, "genero": "Trilha sonora", "cor": ["Splatter"]},
+  {
+    "nome": "Wicked: The Soundtrack",
+    "artista": "Vários Artistas",
+    "ano": 2024,
+    "genero": "Trilha sonora",
+    "cor": ["Splatter"],
+    "faixas": [
+      "No One Mourns the Wicked",
+      "Dear Old Shiz",
+      "The Wizard And I",
+      "What Is This Feeling?",
+      "Something Bad",
+      "Dancing Through Life",
+      "Popular",
+      "I'm Not That Girl",
+      "One Short Day",
+      "A Sentimental Man",
+      "Defying Gravity"
+    ]
+  },
   {"nome": "Tim Burton's The Nightmare Before Christmas (Original Motion Picture Soundtrack)", "artista": "Danny Elfman", "ano": 1993, "genero": "Trilha sonora", "cor": ["Zoetrope"]},
   {"nome": "Rock of the Westies", "artista": "Elton John", "ano": 1975, "genero": "Pop", "cor": ["Preto"]},
   {"nome": "Evita", "artista": "Andrew Lloyd Webber", "ano": 1976, "genero": "Trilha sonora", "cor": ["Preto"]},
@@ -139,6 +308,25 @@
   {"nome": "Lonely", "artista": "Gretchen", "ano": null, "genero": "Pop", "cor": ["Preto"]},
   {"nome": "Simple Dreams", "artista": "Linda Ronstadt", "ano": 1977, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "A Retrospective", "artista": "Linda Ronstadt", "ano": 1977, "genero": "Rock", "cor": ["Preto"]},
+  {
+    "nome": "Lucky Lady: Original Soundtrack Recording",
+    "artista": "Vários Artistas",
+    "ano": 1975,
+    "genero": "Trilha sonora",
+    "cor": ["Preto"],
+    "faixas": [
+      "Too Much Mustard",
+      "While The Getting Is Good",
+      "Christy McTeague",
+      "Young Woman Blues",
+      "The Guymas Connection & Dizzy Fingers",
+      "Lucky Lady Montage",
+      "Medley: If I Had A Talking Picture Of You / All I Do Is Dream Of You / Ain't Misbehavin'",
+      "Hot Time In The Ole Town Tonight",
+      "Portabello Waltzs",
+      "Saints Go Marching In"
+    ]
+  },
   {"nome": "14 grandes sucessos", "artista": "Milton Nascimento", "ano": 1989, "genero": "MPB", "cor": ["Preto"]},
   {"nome": "Sentinela", "artista": "Milton Nascimento", "ano": 1980, "genero": "MPB", "cor": ["Preto"]},
   {"nome": "Encontros e Despedidas", "artista": "Milton Nascimento", "ano": 1985, "genero": "MPB", "cor": ["Preto"]},
@@ -157,14 +345,24 @@
   {"nome": "Paris", "artista": "Supertramp", "ano": 1980, "genero": "Rock", "cor": ["Preto"]},
   {"nome": "Songs from the Big Chair", "artista": "Tears for Fears", "ano": 1985, "genero": "Pop", "cor": ["Preto"]},
   {"nome": "Break Every Rule", "artista": "Tina Turner", "ano": 1986, "genero": "Pop", "cor": ["Preto"]},
-  {"nome": "Trio", "artista": "Vários Artistas", "ano": 1987, "genero": "Country", "cor": ["Preto"]},
-  {"nome": "Unknown Pleasures", "artista": "Joy Division", "ano": 1979, "genero": "Pós-punk", "cor": ["Preto"]},
-  {"nome": "Heaven or Las Vegas", "artista": "Cocteau Twins", "ano": 1990, "genero": "Dream pop", "cor": ["Preto"]},
-  {"nome": "Blond", "artista": "Frank Ocean", "ano": 2016, "genero": "R&B", "cor": ["Laranja", "Amarelo"]},
-  {"nome": "La Mer", "artista": "Claude Debussy", "ano": 1905, "genero": "Clássico", "cor": ["Preto"]},
-  {"nome": "Fabulosa Era da Ópera", "artista": "Orquestra Sinfônica Românticos de Cuba", "ano": null, "genero": "Clássico", "cor": ["Preto"]},
-  {"nome": "Quinteto em Dó Maior, D. 956", "artista": "Franz Schubert", "ano": 1828, "genero": "Clássico", "cor": ["Preto"]},
-  {"nome": "Mestres da Música", "artista": "Franz Schubert", "ano": null, "genero": "Clássico", "cor": ["Preto"]},
-  {"nome": "Great Men of Music", "artista": "Franz Schubert", "ano": null, "genero": "Clássico", "cor": ["Preto"]},
-  {"nome": "Lucky Lady: Original Soundtrack Recording", "artista": "Vários Artistas", "ano": 1975, "genero": "Trilha sonora", "cor": ["Preto"]}
+  {
+    "nome": "Trio",
+    "artista": "Vários Artistas",
+    "ano": 1987,
+    "genero": "Country",
+    "cor": ["Preto"],
+    "faixas": [
+      "The Pain of Loving You",
+      "Making Plans",
+      "To Know Him Is To Love Him",
+      "Hobo's Meditation",
+      "Wildflowers",
+      "Telling Me Lies",
+      "My Dear Companion",
+      "Those Memories of You",
+      "I've Had Enough",
+      "Rosewood Casket",
+      "Farther Along"
+    ]
+  }
 ]
