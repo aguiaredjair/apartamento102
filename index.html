@@ -162,7 +162,7 @@ dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88v
 /* CORREÇÃO DO MODAL DE PERFIL */
 dialog#modal-perfil { 
   width: min(680px, 94vw); 
-  min-height: min(520px, 80vh); /* Altura do modal reduzida */
+  min-height: min(520px, 80vh); 
   padding: 0; 
   background: transparent; 
   border: none;
@@ -297,7 +297,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 .flip-card-container {
   perspective: 1200px;
   width: 100%;
-  height: min(500px, 80vh); /* Reduzido para evitar rolagem na frente */
+  height: min(500px, 80vh); 
   cursor: pointer;
   position: relative;
 }
@@ -342,7 +342,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 /* --- CONTEÚDO DO PERFIL --- */
 .perfil-capa {
   width: 100%;
-  padding: 1.5rem 1.4rem 1rem 1.4rem; /* Reduzido */
+  padding: 1.5rem 1.4rem 1rem 1.4rem; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -365,7 +365,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   z-index: 2;
 }
 .perfil-avatar {
-  width: 90px; /* Reduzido */
+  width: 90px; 
   height: 90px;
   border-radius: 50%;
   object-fit: cover;
@@ -375,7 +375,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 .perfil-capa h3 {
-  font-size: 1.4rem; /* Reduzido */
+  font-size: 1.4rem; 
   font-weight: 800;
   margin: 0 0 0.2rem 0;
   color: var(--ink);
@@ -383,7 +383,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 }
 .perfil-capa p {
   color: var(--mute);
-  font-size: 0.85rem; /* Reduzido */
+  font-size: 0.85rem; 
   margin: 0;
 }
 .perfil-capa.com-imagem h3, .perfil-capa.com-imagem p {
@@ -392,7 +392,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 }
 
 .perfil-corpo {
-  padding: 1rem 1.4rem; /* Reduzido */
+  padding: 1rem 1.4rem; 
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -407,7 +407,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-align: left;
 }
 .faixas-recentes-titulo {
-  font-size: 1.1rem; /* Reduzido */
+  font-size: 1.1rem; 
   font-weight: 800;
   margin-bottom: 0.5rem;
   color: var(--ink);
@@ -416,11 +416,11 @@ dialog.modal-evento-encerrado .fila-lista li {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  padding: 0.5rem 0; /* Reduzido */
+  padding: 0.5rem 0; 
   border-bottom: 1px solid rgba(34,32,29,.12);
 }
 .faixa-cover {
-  width: 36px; /* Reduzido */
+  width: 36px; 
   height: 36px;
   border-radius: 4px;
   object-fit: cover;
@@ -430,7 +430,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 .faixa-track {
   flex: 1;
   min-width: 0;
-  font-size: 0.85rem; /* Reduzido */
+  font-size: 0.85rem; 
   font-weight: 700;
   color: var(--ink);
   white-space: nowrap;
@@ -440,7 +440,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 .faixa-artist {
   flex: 0.6;
   min-width: 0;
-  font-size: 0.8rem; /* Reduzido */
+  font-size: 0.8rem; 
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
@@ -455,53 +455,82 @@ dialog.modal-evento-encerrado .fila-lista li {
   gap: 0.5rem;
   background-color: var(--bg);
   color: var(--ink);
-  border: none; /* Borda removida */
+  border: none;
   text-decoration: none;
-  padding: 0.8rem 1.5rem;
+  padding: 0.5rem 1rem; 
   border-radius: 6px;
   font-weight: 800;
-  font-size: 0.95rem;
-  margin-top: auto;
-  margin-bottom: 1rem;
+  font-size: 0.85rem; 
+  margin-top: 1.5rem;
+  margin-bottom: 0;
   transition: background-color 0.15s;
-  align-self: center;
+  align-self: flex-start; 
 }
 .link-lastfm:hover { background-color: #e8e5dc; }
+.link-lastfm span {
+  font-size: 1rem;
+  line-height: 1;
+}
 
 .dica-flip {
   text-align: center;
   font-size: 0.8rem;
   color: var(--mute);
-  margin-top: 1rem;
-  padding-bottom: 0.5rem;
   font-style: italic;
+  margin-top: auto; /* Empurra para o centro do espaço restante */
+  margin-bottom: auto;
+  padding: 1rem 0;
 }
 
-/* --- VERSO DA CARTA (TOP CHARTS) --- */
+/* --- CARROSSEL DO VERSO --- */
 .top-charts-wrapper {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--card); /* Fundo sólido para evitar vazamento */
+  background: var(--card); 
 }
 .top-charts-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 .top-charts-header h3 {
   margin: 0;
   font-size: 1.4rem;
   font-weight: 800;
 }
-.top-charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+.carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
   flex: 1;
+  overflow: hidden;
+}
+.carousel-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+  height: 100%;
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+.carousel-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.top-charts-col {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .top-charts-col h4 {
-  margin: 0 0 1rem;
+  margin: 0 0 0.5rem;
   font-size: 1.1rem;
   font-weight: 800;
   text-align: center;
@@ -514,7 +543,8 @@ dialog.modal-evento-encerrado .fila-lista li {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  flex: 1;
+  gap: 0;
 }
 .top-charts-list li {
   display: flex;
@@ -522,7 +552,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   gap: 0.6rem;
   font-size: 0.85rem;
   border-bottom: 1px solid rgba(34,32,29,.05);
-  padding-bottom: 0.6rem;
+  flex: 1; 
 }
 .top-charts-list li:last-child { border-bottom: none; }
 
@@ -532,8 +562,8 @@ dialog.modal-evento-encerrado .fila-lista li {
   min-width: 1.2rem;
 }
 .chart-cover {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 4px;
   object-fit: cover;
   background: #eee;
@@ -558,6 +588,59 @@ dialog.modal-evento-encerrado .fila-lista li {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Botões do Carrossel */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--card);
+  border: 1px solid rgba(34,32,29,0.1);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  color: var(--ink);
+  font-size: 1.2rem;
+  transition: background 0.15s;
+}
+.carousel-btn:hover { background: var(--bg); }
+.carousel-btn.prev { left: 0; }
+.carousel-btn.next { right: 0; }
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 0.5rem;
+}
+.carousel-dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(34,32,29,.2);
+  transition: background 0.2s;
+}
+.carousel-dots span.active {
+  background: var(--ink);
+}
+
+/* Desktop: Mostra todos lado a lado e esconde controles */
+@media (min-width: 768px) {
+  .carousel-track { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr; 
+    gap: 1rem; 
+    overflow: visible; 
+    padding: 0;
+  }
+  .carousel-slide { 
+    flex: auto; 
+    padding: 0; 
+  }
+  .carousel-btn, .carousel-dots { display: none; }
 }
 
 /* ---------- MODAL DE PESSOAS ---------- */
@@ -613,8 +696,6 @@ dialog.modal-evento-encerrado .fila-lista li {
   .faixa-cover { width: 32px; height: 32px; }
   .faixa-track { font-size: 0.8rem; flex: 1.5; }
   .faixa-artist { font-size: 0.75rem; flex: 1; }
-  
-  .top-charts-grid { grid-template-columns: 1fr; gap: 2rem; }
 }
 
 @media(max-width:480px){
@@ -1115,22 +1196,52 @@ async function abrirPerfil(username) {
         <div class="top-charts-wrapper">
           <div class="top-charts-header">
             <h3>Mais ouvidos da semana</h3>
-            <!-- Removido o subtítulo "(últimos 7 dias)" -->
           </div>
-          <div class="top-charts-grid">
-            <div class="top-charts-col">
-              <h4>Músicas</h4>
-              <ol class="top-charts-list" id="top-tracks-list">
-                <li style="justify-content:center; color:var(--mute); border:none;">Carregando...</li>
-              </ol>
+          
+          <div class="carousel-container">
+            <button class="carousel-btn prev" onclick="moveCarousel(-1, event)">‹</button>
+            <div class="carousel-track" id="stats-carousel">
+              
+              <!-- Músicas -->
+              <div class="carousel-slide">
+                <div class="top-charts-col">
+                  <h4>Músicas</h4>
+                  <ol class="top-charts-list" id="top-tracks-list">
+                    <li style="justify-content:center; color:var(--mute); border:none;">Carregando...</li>
+                  </ol>
+                </div>
+              </div>
+
+              <!-- Álbuns -->
+              <div class="carousel-slide">
+                <div class="top-charts-col">
+                  <h4>Álbuns</h4>
+                  <ol class="top-charts-list" id="top-albums-list">
+                    <li style="justify-content:center; color:var(--mute); border:none;">Carregando...</li>
+                  </ol>
+                </div>
+              </div>
+
+              <!-- Artistas -->
+              <div class="carousel-slide">
+                <div class="top-charts-col">
+                  <h4>Artistas</h4>
+                  <ol class="top-charts-list" id="top-artists-list">
+                    <li style="justify-content:center; color:var(--mute); border:none;">Carregando...</li>
+                  </ol>
+                </div>
+              </div>
+
             </div>
-            <div class="top-charts-col">
-              <h4>Álbuns</h4>
-              <ol class="top-charts-list" id="top-albums-list">
-                <li style="justify-content:center; color:var(--mute); border:none;">Carregando...</li>
-              </ol>
-            </div>
+            <button class="carousel-btn next" onclick="moveCarousel(1, event)">›</button>
           </div>
+          
+          <div class="carousel-dots" id="carousel-dots">
+            <span class="active"></span>
+            <span></span>
+            <span></span>
+          </div>
+
           <a href="https://www.last.fm/user/${encodeURIComponent(profile.lastfm_username)}" target="_blank" class="link-lastfm" onclick="event.stopPropagation()">Ir para perfil no Last.fm <span>→</span></a>
         </div>
       </div>
@@ -1165,8 +1276,18 @@ async function abrirPerfil(username) {
     const flipCard = $("flip-card");
     if (flipCard) {
       flipCard.addEventListener('click', (e) => {
-        if(e.target.closest('.link-lastfm')) return;
+        if(e.target.closest('.link-lastfm') || e.target.closest('.carousel-btn')) return;
         flipCard.classList.toggle('flipped');
+      });
+    }
+
+    // Adiciona evento de scroll para atualizar os pontinhos
+    const track = $("stats-carousel");
+    const dots = document.querySelectorAll('.carousel-dots span');
+    if (track && dots.length) {
+      track.addEventListener('scroll', () => {
+        const index = Math.round(track.scrollLeft / track.clientWidth);
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
       });
     }
   }
@@ -1203,7 +1324,7 @@ async function abrirPerfil(username) {
       })
       .catch(() => { blocoMusica.innerHTML = `<div class="musica-bloco vazio">Erro ao carregar o Last.fm</div>`; });
 
-    // 2. Top Músicas (Card Verso) - Sem capas
+    // 2. Top Músicas
     fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getTopTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=5&period=7day`)
       .then(res => res.json())
       .then(data => {
@@ -1221,7 +1342,7 @@ async function abrirPerfil(username) {
         } else { ol.innerHTML = "<li style='justify-content:center; border:none; color:var(--mute);'>Nenhuma música</li>"; }
       }).catch(() => { $("top-tracks-list").innerHTML = "<li style='justify-content:center; border:none;'>Erro ao carregar</li>"; });
 
-    // 3. Top Álbuns (Card Verso) - Com capas
+    // 3. Top Álbuns
     fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getTopAlbums&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=5&period=7day`)
       .then(res => res.json())
       .then(data => {
@@ -1247,8 +1368,43 @@ async function abrirPerfil(username) {
           }).join("");
         } else { ol.innerHTML = "<li style='justify-content:center; border:none; color:var(--mute);'>Nenhum álbum</li>"; }
       }).catch(() => { $("top-albums-list").innerHTML = "<li style='justify-content:center; border:none;'>Erro ao carregar</li>"; });
+
+    // 4. Top Artistas
+    fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getTopArtists&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=5&period=7day`)
+      .then(res => res.json())
+      .then(data => {
+        const artists = data.topartists?.artist || [];
+        const ol = $("top-artists-list");
+        if (artists.length > 0) {
+          ol.innerHTML = artists.map((a, i) => {
+            let cover = "";
+            if (a.image && a.image.length > 0) {
+              for (let j = a.image.length - 1; j >= 0; j--) {
+                if (a.image[j]["#text"]) { cover = a.image[j]["#text"]; break; }
+              }
+            }
+            return `
+              <li>
+                <span class="chart-num">${i+1}.</span>
+                ${cover ? `<img src="${cover}" class="chart-cover" style="border-radius:50%;" alt="Artista">` : `<div class="chart-cover" style="border-radius:50%;"></div>`}
+                <div class="chart-info">
+                  <span class="chart-name" title="${esc(a.name)}">${esc(a.name)}</span>
+                </div>
+              </li>`;
+          }).join("");
+        } else { ol.innerHTML = "<li style='justify-content:center; border:none; color:var(--mute);'>Nenhum artista</li>"; }
+      }).catch(() => { $("top-artists-list").innerHTML = "<li style='justify-content:center; border:none;'>Erro ao carregar</li>"; });
   }
 }
+
+// Função global do Carrossel
+window.moveCarousel = function(direction, event) {
+  if (event) event.stopPropagation();
+  const track = document.getElementById('stats-carousel');
+  if (!track) return;
+  const slideWidth = track.clientWidth;
+  track.scrollBy({ left: direction * slideWidth, behavior: 'smooth' });
+};
 
 // ---- CONFIGURAÇÕES E PRIMEIRO ACESSO ----
 function abrirConfiguracoes(primeiroAcesso = false) {
