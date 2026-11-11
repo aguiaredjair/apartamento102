@@ -29,12 +29,77 @@ h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;lette
 .view.ativa{display:block}
 main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 
+/* ---------- BARRA DE PESQUISA ---------- */
+.barra-pesquisa-container {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto 1.5rem;
+}
+.input-pesquisa {
+  width: 100%;
+  font: inherit;
+  font-size: .9rem;
+  padding: .7rem 1rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+}
+.input-pesquisa:focus { border-color: var(--accent); }
+.resultados-pesquisa {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0; right: 0;
+  background: var(--card);
+  border: 1px solid rgba(34,32,29,.15);
+  border-radius: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 0 8px 24px -12px rgba(0,0,0,.3);
+  display: none; /* Controlado via JS */
+}
+.resultados-pesquisa.ativo { display: block; }
+.res-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .6rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(34,32,29,.05);
+  transition: background .15s;
+}
+.res-item:last-child { border-bottom: none; }
+.res-item:hover { background: rgba(213,171,9,.1); }
+.res-item img {
+  width: 40px; height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.res-item .res-placeholder {
+  width: 40px; height: 40px;
+  border-radius: 4px; background: var(--bg);
+  display: grid; place-items: center;
+  font-size: 1rem; font-weight: 800; color: var(--mute);
+  flex-shrink: 0;
+}
+.res-info { display: flex; flex-direction: column; text-align: left; }
+.res-info strong { font-size: .9rem; color: var(--ink); }
+.res-info span { font-size: .75rem; color: var(--mute); }
+.res-vazio { padding: 1rem; text-align: center; color: var(--mute); font-size: .85rem; }
+
 /* ---------- FILTROS EMBUTIDOS ---------- */
 .filtros-embutidos{
   display:flex;
   flex-direction:column;
   align-items:center;
   margin:0 auto 1rem;
+  width: 100%;
   max-width:760px;
 }
 .btn-filtros{
@@ -102,12 +167,18 @@ button.limpar{
 }
 
 /* ---------- FILTROS ALFABÉTICOS ---------- */
-
-/* 1. Aba de artistas (com contorno circular) */
-.filtro-artistas {
+.container-letras {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 .5rem;
+  box-sizing: border-box;
+}
+.filtro-artistas, .filtro-discos {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   gap: .4rem;
+  width: 100%;
   max-width: 460px;
   margin: 0 auto 2rem;
 }
@@ -132,14 +203,6 @@ button.limpar{
 .filtro-artistas .letra-btn:hover { background:rgba(213,171,9,.2); border-color:var(--accent); transform:translateY(-1px); }
 .filtro-artistas .letra-btn.ativo { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 3px 8px -3px rgba(213,171,9,.7); }
 
-/* 2. Aba de discos (sem contorno circular, só o texto) */
-.filtro-discos {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap: .4rem;
-  max-width: 460px;
-  margin: 0 auto 1rem;
-}
 .filtro-discos .letra-btn {
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
   font-size: .95rem;
@@ -194,8 +257,6 @@ button.limpar{
 
 /* ---------- SPLATTER (Efeito Vinil Refinado) ---------- */
 .capa.splatter::before { display: none !important; }
-
-/* Máscara do buraco (70% do tamanho, raio de 35%) */
 .capa.splatter img.capa-base {
     -webkit-mask-image: radial-gradient(circle, transparent 0%, black 0%);
     mask-image: radial-gradient(circle, transparent 0%, black 0%);
@@ -205,8 +266,6 @@ button.limpar{
     -webkit-mask-image: radial-gradient(circle, transparent 34%, black 35%);
     mask-image: radial-gradient(circle, transparent 34%, black 35%);
 }
-
-/* Círculo central (20% do tamanho) */
 .splatter-center {
     position: absolute;top: 50%; left: 50%;transform: translate(-50%, -50%) scale(0);
     width: 20%; height: 20%;border-radius: 50%;background-size: cover;background-position: center;
@@ -309,17 +368,17 @@ li small{color:var(--mute);float:right}
 .form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px}
 .form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--ink);color:var(--bg);border-radius:6px;cursor:pointer}
 .aviso{grid-column:1/-1;color:var(--mute);text-align:center;padding:1rem}
+
 @media(max-width:480px){
   .tabs{gap:.3rem}
   .tab{padding:.5rem .8rem;font-size:.78rem}
   .artista-item{padding:.6rem .3rem}
   .artista-nome{font-size:.95rem}
   #grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem .8rem}
-  .filtro-artistas{gap:.25rem}
+  .filtro-artistas, .filtro-discos { gap: .25rem; padding: 0 .2rem; }
   .filtro-artistas .letra-btn{font-size:.72rem;border-width:1.2px}
-  .filtro-discos{gap:.25rem}
   .filtro-discos .letra-btn{font-size:.8rem}
-  .painel-filtros{padding:.9rem}
+  .painel-filtros{padding:.9rem .5rem}
 }
 </style>
 </head>
@@ -335,8 +394,14 @@ li small{color:var(--mute);float:right}
 </nav>
 
 <main>
+  <!-- ABA DISCOS -->
   <section class="view ativa" id="view-discos" role="tabpanel" aria-labelledby="tab-discos">
     <p class="legenda" id="contagem-discos"></p>
+
+    <div class="barra-pesquisa-container">
+      <input type="text" id="input-pesquisa-discos" class="input-pesquisa" placeholder="Pesquisar disco ou artista..." autocomplete="off">
+      <div class="resultados-pesquisa" id="resultados-discos"></div>
+    </div>
 
     <div class="filtros-embutidos">
       <button class="btn-filtros" id="toggle-filtros" aria-label="Filtros" aria-expanded="false" aria-controls="painel-filtros">
@@ -344,7 +409,9 @@ li small{color:var(--mute);float:right}
       </button>
       <div class="painel-filtros" id="painel-filtros" hidden>
         <div class="filtro-titulo">Por letra do artista</div>
-        <div id="filtro-letras-discos" class="filtro-discos" role="group" aria-label="Filtrar por letra do artista"></div>
+        <div class="container-letras">
+          <div id="filtro-letras-discos" class="filtro-discos" role="group" aria-label="Filtrar por letra do artista"></div>
+        </div>
         <div class="selects-filtros">
           <select id="f-artista" aria-label="Artista"></select>
           <select id="f-genero" aria-label="Gênero"></select>
@@ -357,12 +424,22 @@ li small{color:var(--mute);float:right}
     <div id="grid"><p class="aviso">Carregando discos…</p></div>
   </section>
 
+  <!-- ABA ARTISTAS -->
   <section class="view" id="view-artistas" role="tabpanel" aria-labelledby="tab-artistas">
     <p class="legenda" id="contagem-artistas"></p>
-    <div id="filtro-letras" class="filtro-artistas" role="group" aria-label="Filtrar por letra inicial"></div>
+
+    <div class="barra-pesquisa-container">
+      <input type="text" id="input-pesquisa-artistas" class="input-pesquisa" placeholder="Pesquisar artista..." autocomplete="off">
+      <div class="resultados-pesquisa" id="resultados-artistas"></div>
+    </div>
+
+    <div class="container-letras">
+      <div id="filtro-letras" class="filtro-artistas" role="group" aria-label="Filtrar por letra inicial"></div>
+    </div>
     <div id="grid-artistas"></div>
   </section>
 
+  <!-- ABA KARAOKÊ -->
   <section class="view" id="view-karaoke" role="tabpanel" aria-labelledby="tab-karaoke">
     <div class="karaoke-wrap">
       <div class="karaoke-top">
@@ -416,6 +493,7 @@ const semArtigo = s => s
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .replace(/^(the|an?|os?|as)\s+(?=\S)/i, "");
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const normBusca = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 let discos = [];
 let letraFiltroArtista = null;
@@ -447,48 +525,40 @@ btnToggleFiltros.onclick = () => {
   btnToggleFiltros.setAttribute("aria-expanded", aberto ? "true" : "false");
 };
 
-// ---- CACHE ----
+// ---- CACHE E DADOS ----
 const cache = {
   get(k){ try{ return JSON.parse(localStorage.getItem("dc:"+k)); }catch{ return null; } },
   set(k,v){ try{ localStorage.setItem("dc:"+k, JSON.stringify(v)); }catch{} }
 };
-// Mudei para 'lf2:' para ignorar o cache antigo que estava quebrado
-const chaveAlbum = d => "lf2:"+(d.artista+"|"+d.nome).toLowerCase();
+const chaveAlbum = d => "lf3:"+(d.artista+"|"+d.nome).toLowerCase();
 
-// ---- LAST.FM ----
 async function infoAlbum(d){
-  // Se já tem tudo no JSON, usa direto
-  if (d.capa && d.faixas && d.faixas.length){
-    return {capa: d.capa, faixas: normalizaFaixas(d.faixas)};
+  const c = cache.get(chaveAlbum(d)) || {capa: "", faixas: []};
+  let capa = d.capa || c.capa;
+  let faixas = (d.faixas && d.faixas.length) ? normalizaFaixas(d.faixas) : c.faixas;
+
+  if (capa && faixas.length > 0) {
+    cache.set(chaveAlbum(d), {capa, faixas});
+    return {capa, faixas};
   }
 
-  // Tenta pegar do cache novo
-  const c = cache.get(chaveAlbum(d)); 
-  if(c) return c;
-
-  let capa = "", faixas = [];
+  let lfCapa = "", lfFaixas = [];
   try {
     const u = `https://ws.audioscrobbler.com/2.0/?method=album.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(d.artista)}&album=${encodeURIComponent(d.nome)}&autocorrect=1&format=json`;
     const data = await (await fetch(u)).json();
     const a = data.album;
     if (a){
       const imgs = (a.image||[]).map(i => i["#text"]).filter(x => x && !x.includes("2a96cbd8b46e442fc41c2b86b821562f"));
-      capa = imgs[imgs.length-1]||"";
-      faixas = [].concat(a.tracks?.track||[]).map(t => ({n:t.name, s:Number(t.duration)||0}));
+      lfCapa = imgs[imgs.length-1]||"";
+      lfFaixas = [].concat(a.tracks?.track||[]).map(t => ({n:t.name, s:Number(t.duration)||0}));
     }
   } catch {}
 
-  // Aplica os dados manuais por cima (eles têm prioridade)
-  if (d.capa) capa = d.capa;
-  if (d.faixas && d.faixas.length) faixas = normalizaFaixas(d.faixas);
-
-  const r = {capa, faixas};
+  const finalCapa = d.capa || capa || lfCapa;
+  const finalFaixas = (d.faixas && d.faixas.length) ? normalizaFaixas(d.faixas) : (faixas.length > 0 ? faixas : lfFaixas);
+  const r = {capa: finalCapa, faixas: finalFaixas};
   
-  // Só salva no cache se achou algo (para não guardar vazio se a net cair)
-  if(capa || faixas.length) {
-    cache.set(chaveAlbum(d), r);
-  }
-  
+  if (finalCapa || finalFaixas.length) cache.set(chaveAlbum(d), r);
   return r;
 }
 
@@ -496,7 +566,7 @@ function normalizaFaixas(arr){
   return arr.map(f => typeof f === "string" ? {n: f, s: 0} : {n: f.n || "", s: Number(f.s) || 0});
 }
 
-// ---- CAPAS ----
+// ---- CAPAS NO GRID ----
 const obs = new IntersectionObserver(es => es.forEach(e => {
   if(e.isIntersecting){ obs.unobserve(e.target); carregaCapa(e.target); }
 }), {rootMargin:"300px"});
@@ -510,7 +580,6 @@ async function carregaCapa(el){
     i.onload = () => { 
       el.textContent=""; 
       el.append(i); 
-      
       if (el.classList.contains("splatter")) {
          const center = document.createElement("div");
          center.className = "splatter-center";
@@ -523,6 +592,108 @@ async function carregaCapa(el){
   if(d.capa) return poe(d.capa);
   try{ const r = await infoAlbum(d); if(r.capa) poe(r.capa); }catch{}
 }
+
+// ---- SISTEMA DE PESQUISA ----
+const inputPesquisaDiscos = $("input-pesquisa-discos");
+const resultadosDiscos = $("resultados-discos");
+
+const inputPesquisaArtistas = $("input-pesquisa-artistas");
+const resultadosArtistas = $("resultados-artistas");
+
+// Fecha as pesquisas ao clicar fora
+document.addEventListener("click", (e) => {
+  if (!inputPesquisaDiscos.contains(e.target) && !resultadosDiscos.contains(e.target)) {
+    resultadosDiscos.classList.remove("ativo");
+  }
+  if (!inputPesquisaArtistas.contains(e.target) && !resultadosArtistas.contains(e.target)) {
+    resultadosArtistas.classList.remove("ativo");
+  }
+});
+
+// Pesquisa de Discos
+inputPesquisaDiscos.addEventListener("input", (e) => {
+  const termo = normBusca(e.target.value.trim());
+  if (!termo) {
+    resultadosDiscos.classList.remove("ativo");
+    return;
+  }
+
+  const matches = discos.filter(d => 
+    normBusca(d.nome).includes(termo) || 
+    normBusca(d.artista).includes(termo)
+  ).slice(0, 20); // Limita a 20 resultados para não pesar
+
+  resultadosDiscos.innerHTML = "";
+  if (matches.length === 0) {
+    resultadosDiscos.innerHTML = '<div class="res-vazio">Nenhum disco encontrado.</div>';
+  } else {
+    matches.forEach(d => {
+      const div = document.createElement("div");
+      div.className = "res-item";
+      
+      // Miniatura
+      if (d.capa) {
+        const img = document.createElement("img");
+        img.src = d.capa;
+        div.append(img);
+      } else {
+        const ph = document.createElement("div");
+        ph.className = "res-placeholder";
+        ph.textContent = d.nome.charAt(0);
+        div.append(ph);
+        // Tenta puxar a capa do Last.fm em background para a próxima vez
+        infoAlbum(d).then(r => { if(r.capa && img) { img.src = r.capa; ph.replaceWith(img); } });
+      }
+
+      // Info
+      const info = document.createElement("div");
+      info.className = "res-info";
+      info.innerHTML = `<strong>${esc(d.nome)}</strong><span>${esc(d.artista)} · ${d.ano || "—"}</span>`;
+      div.append(info);
+
+      div.onclick = () => {
+        abreDisco(d);
+        resultadosDiscos.classList.remove("ativo");
+        inputPesquisaDiscos.value = "";
+      };
+      resultadosDiscos.append(div);
+    });
+  }
+  resultadosDiscos.classList.add("ativo");
+});
+
+// Pesquisa de Artistas
+inputPesquisaArtistas.addEventListener("input", (e) => {
+  const termo = normBusca(e.target.value.trim());
+  if (!termo) {
+    resultadosArtistas.classList.remove("ativo");
+    return;
+  }
+
+  const todosArtistas = [...new Set(discos.map(d => d.artista))];
+  const matches = todosArtistas.filter(a => normBusca(a).includes(termo)).slice(0, 20);
+
+  resultadosArtistas.innerHTML = "";
+  if (matches.length === 0) {
+    resultadosArtistas.innerHTML = '<div class="res-vazio">Nenhum artista encontrado.</div>';
+  } else {
+    matches.forEach(a => {
+      const div = document.createElement("div");
+      div.className = "res-item";
+      const info = document.createElement("div");
+      info.className = "res-info";
+      info.innerHTML = `<strong>${esc(a)}</strong>`;
+      div.append(info);
+      div.onclick = () => {
+        abreArtista(a);
+        resultadosArtistas.classList.remove("ativo");
+        inputPesquisaArtistas.value = "";
+      };
+      resultadosArtistas.append(div);
+    });
+  }
+  resultadosArtistas.classList.add("ativo");
+});
 
 // ---- TOOLTIP ----
 const tooltip = $("tooltip");
@@ -582,7 +753,6 @@ async function abreDisco(d){
     const {capa, faixas} = await infoAlbum(d);
     cont.textContent = "";
 
-    // Se tem capa, mostra a capa
     if(capa){
       const img = document.createElement("img");
       img.src = capa;
@@ -591,7 +761,6 @@ async function abreDisco(d){
       cont.append(img);
     }
 
-    // Sempre mostra as informações de texto
     const info = document.createElement("div");
     info.className = "info-modal";
     const h3 = document.createElement("h3");
@@ -605,7 +774,6 @@ async function abreDisco(d){
     info.append(h3, pArt, pDet);
     cont.append(info);
 
-    // Se tem tracklist, mostra a tracklist
     if(faixas && faixas.length > 0){
       const ol = document.createElement("ol");
       faixas.forEach(f => {
@@ -616,7 +784,6 @@ async function abreDisco(d){
       });
       cont.append(ol);
     } else {
-      // Se não tem tracklist, exibe o aviso
       const p = document.createElement("p");
       p.textContent = "Tracklist não encontrada.";
       p.style.textAlign = "center";
@@ -638,11 +805,9 @@ const ordena = l => {
     const artB = semArtigo(b.artista);
     const cmpArt = collator.compare(artA, artB);
     if (cmpArt !== 0) return cmpArt;
-    
     const anoA = a.ano || 0;
     const anoB = b.ano || 0;
     if (anoA !== anoB) return anoA - anoB;
-    
     return collator.compare(a.nome, b.nome);
   });
 };
