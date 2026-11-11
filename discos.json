@@ -8,7 +8,6 @@
  {"nome":"Arrival","artista":"ABBA","ano":1976,"genero":"Pop","cor":["Preto"]},
  {"nome":"Voulez-Vous","artista":"ABBA","ano":1979,"genero":"Pop","cor":["Preto"]},
  {"nome":"Super Trouper","artista":"ABBA","ano":1980,"genero":"Pop","cor":["Preto"]},
- {"nome":"Super Trouper","artista":"ABBA","ano":1980,"genero":"Pop","cor":["Preto"]},
  {"nome":"Voyage","artista":"ABBA","ano":2021,"genero":"Pop","cor":["Branco"]},
  {"nome":"Yours Truly","artista":"Ariana Grande","ano":2013,"genero":"Pop","cor":["Preto"]},
  {"nome":"My Everything","artista":"Ariana Grande","ano":2014,"genero":"Pop","cor":["Preto"]},
@@ -103,7 +102,6 @@
  {"nome":"Acabou Chorare","artista":"Novos Baianos","ano":1972,"genero":"MPB","cor":["Preto"]},
 
  {"nome":"Sour","artista":"Olivia Rodrigo","ano":2021,"genero":"Pop","cor":["Clear"]},
- {"nome":"Sour","artista":"Olivia Rodrigo","ano":2021,"genero":"Pop","cor":["Preto"]},
  {"nome":"Guts (Spilled)","artista":"Olivia Rodrigo","ano":2024,"genero":"Pop","cor":["Splatter"]},
  {"nome":"You Seem Pretty Sad for a Girl So in Love","artista":"Olivia Rodrigo","ano":2025,"genero":"Pop","cor":["Preto"]},
 
