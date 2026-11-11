@@ -463,8 +463,9 @@ dialog.modal-evento-encerrado .fila-lista li {
   font-size: 0.85rem; 
   margin-top: 1.5rem;
   margin-bottom: 0;
+  margin-left: auto;
+  margin-right: auto;
   transition: background-color 0.15s;
-  align-self: flex-start; 
 }
 .link-lastfm:hover { background-color: #e8e5dc; }
 .link-lastfm span {
@@ -477,7 +478,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   font-size: 0.8rem;
   color: var(--mute);
   font-style: italic;
-  margin-top: auto; /* Empurra para o centro do espaço restante */
+  margin-top: auto;
   margin-bottom: auto;
   padding: 1rem 0;
 }
@@ -1369,29 +1370,20 @@ async function abrirPerfil(username) {
         } else { ol.innerHTML = "<li style='justify-content:center; border:none; color:var(--mute);'>Nenhum álbum</li>"; }
       }).catch(() => { $("top-albums-list").innerHTML = "<li style='justify-content:center; border:none;'>Erro ao carregar</li>"; });
 
-    // 4. Top Artistas
+    // 4. Top Artistas (Agora sem foto, apenas número e nome)
     fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getTopArtists&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=5&period=7day`)
       .then(res => res.json())
       .then(data => {
         const artists = data.topartists?.artist || [];
         const ol = $("top-artists-list");
         if (artists.length > 0) {
-          ol.innerHTML = artists.map((a, i) => {
-            let cover = "";
-            if (a.image && a.image.length > 0) {
-              for (let j = a.image.length - 1; j >= 0; j--) {
-                if (a.image[j]["#text"]) { cover = a.image[j]["#text"]; break; }
-              }
-            }
-            return `
-              <li>
-                <span class="chart-num">${i+1}.</span>
-                ${cover ? `<img src="${cover}" class="chart-cover" style="border-radius:50%;" alt="Artista">` : `<div class="chart-cover" style="border-radius:50%;"></div>`}
-                <div class="chart-info">
-                  <span class="chart-name" title="${esc(a.name)}">${esc(a.name)}</span>
-                </div>
-              </li>`;
-          }).join("");
+          ol.innerHTML = artists.map((a, i) => `
+            <li>
+              <span class="chart-num">${i+1}.</span>
+              <div class="chart-info" style="padding-left: 0.5rem;">
+                <span class="chart-name" title="${esc(a.name)}">${esc(a.name)}</span>
+              </div>
+            </li>`).join("");
         } else { ol.innerHTML = "<li style='justify-content:center; border:none; color:var(--mute);'>Nenhum artista</li>"; }
       }).catch(() => { $("top-artists-list").innerHTML = "<li style='justify-content:center; border:none;'>Erro ao carregar</li>"; });
   }
