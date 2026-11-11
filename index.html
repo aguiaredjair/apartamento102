@@ -160,6 +160,7 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 /* ---------- DIALOG ---------- */
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
 dialog#modal-perfil { width: min(680px, 94vw); }
+dialog#modal-pessoas { width: min(380px, 94vw); } /* MODAL DE PESSOAS MAIS ESTREITO */
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
 .modal{position:relative;padding:1.4rem}
@@ -420,7 +421,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
-  background-color: #ffffff;
+  background-color: var(--card); /* MUDOU PARA A COR DO MODAL */
   color: var(--ink);
   border: 1px solid rgba(34,32,29,0.2);
   text-decoration: none;
@@ -432,7 +433,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   transition: background-color 0.15s;
 }
 .link-lastfm:hover {
-  background-color: var(--bg);
+  background-color: #e8e5dc; /* Levemente mais escuro no hover */
 }
 .link-lastfm span {
   font-size: 1.2rem;
@@ -451,8 +452,10 @@ dialog.modal-evento-encerrado .fila-lista li {
 /* ---------- MODAL DE PESSOAS ---------- */
 .pessoa-item {
   justify-content: flex-start !important;
+  align-items: center !important; /* Alinha a foto e o texto verticalmente */
   padding: 0.6rem !important;
   border-radius: 6px;
+  gap: 0.8rem !important; /* Junta a foto do texto */
 }
 .pessoa-item:hover {
   padding-left: 0.6rem !important;
@@ -888,6 +891,7 @@ async function abrirPessoas() {
     infoDiv.style.display = "flex";
     infoDiv.style.flexDirection = "column";
     infoDiv.style.textAlign = "left";
+    infoDiv.style.justifyContent = "center"; /* Centraliza verticalmente */
 
     const span = document.createElement("span");
     span.textContent = p.username;
