@@ -20,8 +20,6 @@
   --mute: #6b665e;
   --accent: #d5ab09;
   --card: #f3f1ec;
-  --neutral: #6b7280;
-  --neutral-dark: #4b5563;
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
 }
 *{box-sizing:border-box; cursor:url('assets/cursor/cursor.cur'), auto;}
@@ -422,8 +420,9 @@ dialog.modal-evento-encerrado .fila-lista li {
   justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--neutral);
-  color: #fff;
+  background-color: #ffffff;
+  color: var(--ink);
+  border: 1px solid rgba(34,32,29,0.2);
   text-decoration: none;
   padding: 0.8rem 1.2rem;
   border-radius: 6px;
@@ -433,7 +432,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   transition: background-color 0.15s;
 }
 .link-lastfm:hover {
-  background-color: var(--neutral-dark);
+  background-color: var(--bg);
 }
 .link-lastfm span {
   font-size: 1.2rem;
@@ -452,12 +451,22 @@ dialog.modal-evento-encerrado .fila-lista li {
 /* ---------- MODAL DE PESSOAS ---------- */
 .pessoa-item {
   justify-content: flex-start !important;
-  gap: 0.7rem !important;
-  padding: 0.5rem !important;
+  padding: 0.6rem !important;
   border-radius: 6px;
 }
 .pessoa-item:hover {
-  padding-left: 0.5rem !important;
+  padding-left: 0.6rem !important;
+  background: rgba(213,171,9,.1);
+}
+.pessoa-musica {
+  font-size: 0.75rem;
+  color: var(--mute);
+  font-weight: 600;
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 @media(max-width:500px) {
@@ -610,21 +619,23 @@ dialog.modal-evento-encerrado .fila-lista li {
       <img src="assets/profiles/pfp/ringo-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/ringo-pfp.jpg" onclick="selecionarAvatar(this)">
     </div>
 
-    <!-- FOTO DE PERFIL (UPLOAD) -->
+    <div style="border-top: 1px solid rgba(34,32,29,.15); margin: 0.5rem 0 1rem;"></div>
+
     <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Ou envie sua própria foto de perfil:</label>
     <input type="file" id="config-file-avatar" accept="image/*" style="margin-bottom: 1rem; font-size: 0.9rem;">
 
-    <!-- DIVISOR VISUAL -->
     <div style="border-top: 1px solid rgba(34,32,29,.15); margin: 0.5rem 0 1rem;"></div>
 
-    <!-- FOTO DE CAPA (UPLOAD SEPARADO, SEM "OPCIONAL") -->
-    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Foto de capa (padrão é cinza):</label>
-    <input type="file" id="config-file-cover" accept="image/*" style="margin-bottom: 1.5rem; font-size: 0.9rem;">
+    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Foto de capa:</label>
+    <input type="file" id="config-file-cover" accept="image/*" style="margin-bottom: 1rem; font-size: 0.9rem;">
+
+    <div style="border-top: 1px solid rgba(34,32,29,.15); margin: 0.5rem 0 1rem;"></div>
 
     <label style="font-weight: bold; margin-bottom: 5px;">Username do Last.fm (opcional):</label>
     <input type="text" id="config-lastfm" placeholder="Ex: demonio_digital" style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem;">
 
-    <!-- SENHA: OCULTA POR PADRÃO (SÓ APARECE AO CLICAR NO BOTÃO) -->
+    <div style="border-top: 1px solid rgba(34,32,29,.15); margin: 0.5rem 0 1rem;"></div>
+
     <button type="button" id="toggle-senha" class="btn-toggle-senha">Desejo mudar minha senha</button>
 
     <div id="campos-senha" class="campos-senha" hidden>
@@ -640,7 +651,9 @@ dialog.modal-evento-encerrado .fila-lista li {
 <!-- MODAL DE PERFIL PÚBLICO -->
 <dialog id="modal-perfil"><div class="modal">
   <button class="fechar" aria-label="Fechar" onclick="document.getElementById('modal-perfil').close()">×</button>
-  <div class="perfil-publico" id="perfil-publico-conteudo"></div>
+  <div class="perfil-publico" id="perfil-publico-conteudo">
+    <!-- Conteúdo injetado via JS -->
+  </div>
 </div></dialog>
 
 <!-- MODAL DE PESSOAS -->
@@ -858,29 +871,54 @@ async function abrirPessoas() {
   }
 
   lista.innerHTML = "";
+  
   profiles.forEach(p => {
     const btn = document.createElement("button");
     btn.className = "artista-item pessoa-item";
 
     const img = document.createElement("img");
     img.src = p.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
-    img.style.width = "32px";
-    img.style.height = "32px";
+    img.style.width = "40px";
+    img.style.height = "40px";
     img.style.borderRadius = "50%";
     img.style.objectFit = "cover";
     img.style.flexShrink = "0";
+
+    const infoDiv = document.createElement("div");
+    infoDiv.style.display = "flex";
+    infoDiv.style.flexDirection = "column";
+    infoDiv.style.textAlign = "left";
 
     const span = document.createElement("span");
     span.textContent = p.username;
     span.className = "artista-nome";
     span.style.fontSize = "1rem";
+    span.style.lineHeight = "1.2";
 
-    btn.append(img, span);
+    const subSpan = document.createElement("span");
+    subSpan.className = "pessoa-musica";
+    subSpan.textContent = "";
+
+    infoDiv.append(span, subSpan);
+    btn.append(img, infoDiv);
+    
     btn.onclick = () => {
       modal.close();
       abrirPerfil(p.username);
     };
     lista.append(btn);
+
+    if (p.lastfm_username) {
+      fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(p.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=1`)
+        .then(res => res.json())
+        .then(data => {
+          const track = data.recenttracks?.track?.[0];
+          if (track) {
+            subSpan.textContent = `♫ ${track.name} — ${track.artist['#text']}`;
+          }
+        })
+        .catch(() => {});
+    }
   });
 }
 
@@ -938,7 +976,6 @@ async function abrirPerfil(username) {
     `;
 
     try {
-      // Apenas 3 faixas recentes
       const url = `https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=3`;
       const res = await fetch(url);
       const data = await res.json();
@@ -1004,7 +1041,6 @@ function abrirConfiguracoes(primeiroAcesso = false) {
   const senhaInput = $("config-senha");
 
   if (primeiroAcesso) {
-    // Primeiro acesso: senha é obrigatória
     $("config-titulo").style.display = "flex";
     $("welcome-text").style.display = "inline-block";
     $("config-sub").style.display = "block";
@@ -1015,7 +1051,6 @@ function abrirConfiguracoes(primeiroAcesso = false) {
     senhaInput.required = true;
     senhaInput.value = "";
   } else {
-    // Acesso normal: senha escondida atrás de um botão
     pararAnimacaoBoasVindas();
     $("config-titulo").style.display = "flex";
     $("welcome-text").textContent = "Configurações";
