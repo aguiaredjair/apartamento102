@@ -289,42 +289,69 @@ dialog.modal-evento-encerrado .fila-lista li {
   margin: 0.2rem 0;
 }
 
-/* --- NOVO ESTILO DE MÚSICA (LIMPO - 3 BLOCOS) --- */
-.musica-bloco {
+/* --- NOVO LAYOUT: FAIXAS RECENTES --- */
+.faixas-recentes-container {
   margin-top: 2rem;
   width: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 1rem;
-  text-decoration: none;
-  color: var(--ink);
-  transition: opacity 0.2s, transform 0.2s;
-  padding: 0;
-  border: none;
-}
-.musica-bloco:hover {
-    opacity: 0.8;
-    transform: scale(1.02);
-}
-.musica-bloco .album-cover {
-  width: 56px;
-  height: 56px;
-  border-radius: 4px;
-  object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.musica-bloco .track-name {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--ink);
-  line-height: 1.2;
   text-align: left;
 }
-.musica-bloco .track-artist {
+.faixas-recentes-titulo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: var(--ink);
+}
+.faixa-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(34,32,29,.12);
+}
+.faixa-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #eee;
+  flex-shrink: 0;
+}
+.faixa-track {
+  flex: 2;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.faixa-artist {
+  flex: 1.5;
+  font-size: 0.9rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.faixa-time {
+  flex-shrink: 0;
   font-size: 0.85rem;
-  color: var(--mute);
+  color: #a0a0a0;
   text-align: right;
+  white-space: nowrap;
+}
+.link-lastfm {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.link-lastfm:hover {
+  color: var(--accent);
 }
 .musica-bloco.vazio {
   display: block;
@@ -333,6 +360,14 @@ dialog.modal-evento-encerrado .fila-lista li {
   font-style: italic;
   margin-top: 1.5rem;
   text-align: center;
+}
+
+@media(max-width:500px) {
+  .faixa-item { gap: 0.6rem; padding: 0.7rem 0; }
+  .faixa-cover { width: 40px; height: 40px; }
+  .faixa-track { font-size: 0.85rem; flex: 1.5; }
+  .faixa-artist { font-size: 0.8rem; flex: 1; }
+  .faixa-time { display: none; } /* Esconde o tempo no celular para não quebrar */
 }
 
 @media(max-width:480px){
@@ -712,7 +747,7 @@ async function abrirPerfil(username) {
 
   if (profile.lastfm_username) {
     const linkPerfil = `https://www.last.fm/user/${encodeURIComponent(profile.lastfm_username)}`;
-    musicaHtml = `<a href="${linkPerfil}" target="_blank" class="musica-bloco" id="bloco-musica">Carregando...</a>`;
+    musicaHtml = `<div id="bloco-musica">Carregando faixas...</div>`;
     
     cont.innerHTML = `
       <img src="${avatar}" alt="Foto de ${profile.username}">
@@ -722,38 +757,50 @@ async function abrirPerfil(username) {
     `;
 
     try {
-      const url = `https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=1`;
+      const url = `https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=5`;
       const res = await fetch(url);
       const data = await res.json();
-      const track = data.recenttracks?.track?.[0];
+      const tracks = data.recenttracks?.track || [];
       
       const bloco = $("bloco-musica");
-      if (track) {
-        let coverUrl = "";
-        if (track.image && track.image.length > 0) {
-            for (let i = track.image.length - 1; i >= 0; i--) {
-                if (track.image[i]["#text"]) {
-                    coverUrl = track.image[i]["#text"];
-                    break;
+      if (tracks.length > 0) {
+        let listaHtml = `<div class="faixas-recentes-container">
+            <div class="faixas-recentes-titulo">Faixas recentes</div>`;
+            
+        tracks.forEach(track => {
+            let coverUrl = "";
+            if (track.image && track.image.length > 0) {
+                for (let i = track.image.length - 1; i >= 0; i--) {
+                    if (track.image[i]["#text"]) {
+                        coverUrl = track.image[i]["#text"];
+                        break;
+                    }
                 }
             }
-        }
+            const timeAgo = track.date ? track.date["#text"] : "Agora";
+            
+            listaHtml += `
+              <div class="faixa-item">
+                ${coverUrl ? `<img src="${coverUrl}" class="faixa-cover" alt="Capa">` : `<div class="faixa-cover"></div>`}
+                <div class="faixa-track">${esc(track.name)}</div>
+                <div class="faixa-artist">${esc(track.artist['#text'])}</div>
+                <div class="faixa-time">${esc(timeAgo)}</div>
+              </div>
+            `;
+        });
         
-        bloco.innerHTML = `
-          ${coverUrl ? `<img src="${coverUrl}" class="album-cover" alt="Capa">` : ''}
-          <span class="track-name">${esc(track.name)}</span>
-          <span class="track-artist">${esc(track.artist['#text'])}</span>
+        listaHtml += `</div>
+          <a href="${linkPerfil}" target="_blank" class="link-lastfm">Ir para perfil no Last.fm</a>
         `;
+        
+        bloco.innerHTML = listaHtml;
       } else {
-        bloco.innerHTML = `<span class="vazio" style="grid-column: 1 / -1; text-align: center;">Nenhuma música recente encontrada</span>`;
-        bloco.classList.add("vazio");
-        bloco.removeAttribute("href");
+        bloco.innerHTML = `<div class="musica-bloco vazio">Nenhuma faixa recente encontrada</div>`;
       }
     } catch(e) {
       const bloco = $("bloco-musica");
       if(bloco) {
-          bloco.innerHTML = `<span class="vazio" style="grid-column: 1 / -1; text-align: center;">Erro ao carregar o Last.fm</span>`;
-          bloco.removeAttribute("href");
+          bloco.innerHTML = `<div class="musica-bloco vazio">Erro ao carregar o Last.fm</div>`;
       }
     }
   } else {
