@@ -5,6 +5,7 @@
     "ano": 2020,
     "genero": "Pop",
     "cor": ["Amarelo", "Rosa", "Azul"],
+    "capa": "assets/covers/abba/super-trouper-the%20singles-boxset.jpg",
     "faixas": [
       "The Winner Takes It All",
       "Elaine",
@@ -53,7 +54,8 @@
     "artista": "Claude Debussy",
     "ano": 1905,
     "genero": "Clássico",
-    "cor": ["Preto"]
+    "cor": ["Preto"],
+    "capa": "assets/covers/claude-debussy/la-mer.png"
   },
   {
     "nome": "Heaven or Las Vegas",
@@ -88,6 +90,7 @@
     "ano": 1977,
     "genero": "Jazz",
     "cor": ["Preto"],
+    "capa": "assets/covers/frank-sinatra/star-collection.webp",
     "faixas": [
       "Strangers In The Night",
       "Stardust",
@@ -102,6 +105,7 @@
     "ano": 1978,
     "genero": "Jazz",
     "cor": ["Preto"],
+    "capa": "assets/covers/frank-sinatra/star-collection-ii.jpg",
     "faixas": [
       "The World We Knew",
       "Young At Heart",
@@ -117,6 +121,7 @@
     "ano": null,
     "genero": "Clássico",
     "cor": ["Preto"],
+    "capa": "assets/covers/franz-schubert/great-men-of-music.webp",
     "faixas": [
       "Seligkein, D. 433",
       "Gretchen am Spinnrade, D. 118",
@@ -131,6 +136,7 @@
     "ano": 1983,
     "genero": "Clássico",
     "cor": ["Preto"],
+    "capa": "assets/covers/franz-schubert/mestres-da-musica.png",
     "faixas": [
       "Improviso em Sol Bemol Maior Opus 90 N 3",
       "Improviso em L Bemol Maior Opus 90 N 4",
@@ -147,6 +153,7 @@
     "ano": 1828,
     "genero": "Clássico",
     "cor": ["Preto"],
+    "capa": "assets/covers/franz-schubert/quinteto-em-dor-maior-d-956.png",
     "faixas": [
       "Allegro Ma Non Troppo",
       "Adagio",
@@ -212,6 +219,7 @@
     "ano": null,
     "genero": "Clássico",
     "cor": ["Preto"],
+    "capa": "assets/covers/orquestra-sinfonica-romanticos-de-cuba/fabulosa-era-da-opera.jpeg",
     "faixas": [
       "Il Guarany",
       "La Boheme",
@@ -239,6 +247,7 @@
     "ano": 2001,
     "genero": "Trilha sonora",
     "cor": ["Preto"],
+    "capa": "assets/covers/varios-artistas/shrek-music-from-the-original-motion-picture.webp",
     "faixas": [
       "Stay Home",
       "I'm A Believer",
@@ -280,6 +289,7 @@
     "ano": 2024,
     "genero": "Trilha sonora",
     "cor": ["Splatter"],
+    "capa": "assets/covers/varios-artistas/wicked-the-soundtrack.jpeg",
     "faixas": [
       "No One Mourns the Wicked",
       "Dear Old Shiz",
@@ -296,7 +306,14 @@
   },
   {"nome": "Tim Burton's The Nightmare Before Christmas (Original Motion Picture Soundtrack)", "artista": "Danny Elfman", "ano": 1993, "genero": "Trilha sonora", "cor": ["Zoetrope"]},
   {"nome": "Rock of the Westies", "artista": "Elton John", "ano": 1975, "genero": "Pop", "cor": ["Preto"]},
-  {"nome": "Evita", "artista": "Andrew Lloyd Webber", "ano": 1976, "genero": "Trilha sonora", "cor": ["Preto"]},
+  {
+    "nome": "Evita",
+    "artista": "Andrew Lloyd Webber",
+    "ano": 1976,
+    "genero": "Trilha sonora",
+    "cor": ["Preto"],
+    "capa": "assets/covers/andrew-lloyd-webber/evita.jpg"
+  },
   {"nome": "Love Songs", "artista": "Barbra Streisand", "ano": 1981, "genero": "Pop", "cor": ["Preto"]},
   {"nome": "As Grandes Interpretações de Barbra Streisand", "artista": "Barbra Streisand", "ano": null, "genero": "Pop", "cor": ["Preto"]},
   {"nome": "Greatest", "artista": "Bee Gees", "ano": 1979, "genero": "Pop", "cor": ["Preto"]},
@@ -314,6 +331,7 @@
     "ano": 1975,
     "genero": "Trilha sonora",
     "cor": ["Preto"],
+    "capa": "assets/covers/varios-artistas/lucky-lady-original-soundtrack-recording.png",
     "faixas": [
       "Too Much Mustard",
       "While The Getting Is Good",
@@ -351,6 +369,7 @@
     "ano": 1987,
     "genero": "Country",
     "cor": ["Preto"],
+    "capa": "assets/covers/varios-artistas/trio.jpg",
     "faixas": [
       "The Pain of Loving You",
       "Making Plans",
