@@ -35,17 +35,17 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 }
 .btn-filtros{
   width:48px;height:48px;
-  border:1.5px solid var(--ink);
+  border:none;
   background:transparent;
   border-radius:8px;
   cursor:pointer;
   display:grid;
   place-content:center;
   gap:5px;
-  transition:background .15s, border-color .15s;
+  transition:background .15s;
 }
-.btn-filtros:hover{background:rgba(213,171,9,.12);border-color:var(--accent)}
-.btn-filtros[aria-expanded="true"]{background:rgba(213,171,9,.15);border-color:var(--accent)}
+.btn-filtros:hover{background:rgba(213,171,9,.15)}
+.btn-filtros[aria-expanded="true"]{background:rgba(213,171,9,.2)}
 .btn-filtros span{
   display:block;
   width:24px;height:2.5px;
@@ -55,17 +55,17 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .painel-filtros{
   width:100%;
   margin-top:1rem;
-  padding:1.2rem;
+  padding:1.5rem 1.2rem;
   background:var(--card);
   border-radius:10px;
   display:flex;
   flex-direction:column;
-  gap:1rem;
+  gap:1.2rem;
   box-shadow:0 8px 24px -12px rgba(0,0,0,.15);
 }
 .painel-filtros[hidden]{display:none}
 .filtro-titulo{
-  font-size:.8rem;
+  font-size:.85rem;
   font-weight:700;
   color:var(--mute);
   text-transform:uppercase;
@@ -101,13 +101,13 @@ button.limpar{
 .filtro-letras{
   display:grid;
   grid-template-columns:repeat(9, 1fr);
-  gap:.35rem;
-  max-width:460px;
+  gap:.4rem;
+  max-width:100%;
   margin:0 auto;
 }
 .letra-btn{
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
-  font-size:.85rem;
+  font-size:1rem;
   font-weight:700;
   width:100%;
   aspect-ratio:1;
@@ -129,62 +129,84 @@ button.limpar{
 
 /* ---------- GRID DISCOS ---------- */
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.2rem 1rem;align-items:start}
-.disco{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;display:block}
+.disco{
+  min-width:0;
+  background:none;
+  border:0;
+  padding:0;
+  text-align:center;
+  font:inherit;
+  color:inherit;
+  -webkit-tap-highlight-color:transparent;
+  display:block;
+  position:relative;
+  z-index:1;
+}
+.disco:hover{ z-index:10; }
 .disco:focus{outline:none}
 .disco:focus-visible .capa{outline:2px solid var(--accent);outline-offset:3px}
-.capa{position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .25s;color:var(--mute);font-weight:700;font-size:.7rem;padding:.5rem;overflow-wrap:anywhere;background:transparent;border-radius:10px}
-.capa::before{content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);opacity:0;transition:opacity .2s;pointer-events:none;z-index:1;border-radius:inherit}
-.capa img.capa-base{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;border-radius:inherit}
-.disco:hover .capa{transform:translateY(-4px);border-radius:50%}
-.disco:hover .capa::before{opacity:.5}
+
+.capa{
+  position:relative;
+  width:100%;
+  min-width:0;
+  aspect-ratio:1;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  transition:transform .2s, border-radius .25s;
+  color:var(--mute);
+  font-weight:700;
+  font-size:.7rem;
+  padding:.5rem;
+  overflow-wrap:anywhere;
+  background:transparent;
+  border-radius:10px;
+}
+.capa::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:var(--cor-disco, transparent);
+  opacity:0;
+  transition:opacity .2s;
+  pointer-events:none;
+  z-index:1;
+  border-radius:inherit;
+}
+.capa img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  z-index:0;
+  border-radius:inherit;
+}
+.disco:hover .capa{
+  transform:translateY(-4px);
+  border-radius:50%;
+}
+.disco:hover .capa::before{
+  opacity:.5;
+}
+
 .capa.zoetrope::before{display:none !important}
 .capa.zoetrope:hover{animation:girar 2s linear infinite}
 @keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
-/* ---------- SPLATTER (ELÉTRONS ORBITANDO) ---------- */
-.capa.splatter { overflow: visible; }
+/* ---------- SPLATTER (Efeito Vinil / Buraco Central) ---------- */
 .capa.splatter::before { display: none !important; }
-.capa.splatter .capa-base { transition: opacity .3s; }
-.capa.splatter:hover .capa-base { opacity: 0; }
-.capa.splatter .slice {
-   position: absolute;
-   width: 36%;
-   aspect-ratio: 1;
-   border-radius: 50%;
-   overflow: hidden;
-   opacity: 0;
-   transition: opacity .3s;
-   pointer-events: none;
-   top: 50%; left: 50%;
-   box-shadow: 0 0 8px rgba(0,0,0,0.3);
-   background: var(--card);
+.capa.splatter img {
+    -webkit-mask-image: radial-gradient(circle, transparent 0%, black 0%);
+    mask-image: radial-gradient(circle, transparent 0%, black 0%);
+    transition: -webkit-mask-image .3s, mask-image .3s;
 }
-.capa.splatter:hover .slice { opacity: 1; }
-.slice img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-/* As 5 órbitas com velocidades e eixos diferentes */
-.s1 { --x: 0; --y: -32%; animation: orbit 4s linear infinite; }
-.s1 img { animation: counter-orbit 4s linear infinite; }
-
-.s2 { --x: 0; --y: 32%; animation: orbit 5s linear infinite reverse; }
-.s2 img { animation: counter-orbit 5s linear infinite reverse; }
-
-.s3 { --x: 32%; --y: 0; animation: orbit 6s linear infinite; }
-.s3 img { animation: counter-orbit 6s linear infinite; }
-
-.s4 { --x: -32%; --y: 0; animation: orbit 3.5s linear infinite reverse; }
-.s4 img { animation: counter-orbit 3.5s linear infinite reverse; }
-
-.s5 { --x: 22%; --y: -22%; animation: orbit 4.5s linear infinite; }
-.s5 img { animation: counter-orbit 4.5s linear infinite; }
-
-@keyframes orbit {
-   0% { transform: translate(-50%, -50%) translate(var(--x, 0), var(--y, 0)) rotate(0deg); }
-   100% { transform: translate(-50%, -50%) translate(var(--x, 0), var(--y, 0)) rotate(360deg); }
-}
-@keyframes counter-orbit {
-   0% { transform: rotate(0deg); }
-   100% { transform: rotate(-360deg); }
+.capa.splatter:hover img {
+    -webkit-mask-image: radial-gradient(circle, transparent 7%, black 8%);
+    mask-image: radial-gradient(circle, transparent 7%, black 8%);
 }
 
 /* ---------- TOOLTIP ---------- */
@@ -266,13 +288,6 @@ dialog::backdrop{background:#000a}
 .info-modal h3{margin:0 0 .2rem;font-size:1.3rem;font-weight:800;line-height:1.15;letter-spacing:-.02em}
 .info-modal .artista-modal{margin:0 0 .3rem;font-size:.95rem;color:var(--ink);font-weight:600}
 .info-modal .detalhes-modal{margin:0;font-size:.82rem;color:var(--mute)}
-.bio-artista{
-  font-size:.9rem;color:var(--ink);line-height:1.55;
-  margin:0 0 1.2rem;padding:.8rem 1rem;
-  border-left:3px solid var(--accent);
-  background:rgba(213,171,9,.06);
-  border-radius:0 6px 6px 0;
-}
 
 ol{padding-left:1.8rem;margin:.4rem 0}
 li{padding:.25rem 0;border-bottom:1px solid #0002}
@@ -295,8 +310,8 @@ li small{color:var(--mute);float:right}
   .artista-item{padding:.6rem .3rem}
   .artista-nome{font-size:.95rem}
   #grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem .8rem}
-  .filtro-letras{gap:.25rem;padding:0 .3rem}
-  .letra-btn{font-size:.72rem;border-width:1.2px}
+  .filtro-letras{gap:.25rem}
+  .letra-btn{font-size:.8rem;border-width:1.2px}
   .painel-filtros{padding:.9rem}
 }
 </style>
@@ -321,8 +336,8 @@ li small{color:var(--mute);float:right}
         <span></span><span></span><span></span>
       </button>
       <div class="painel-filtros" id="painel-filtros" hidden>
-        <div class="filtro-titulo">Por letra do álbum</div>
-        <div id="filtro-letras-discos" class="filtro-letras" role="group" aria-label="Filtrar por letra do álbum"></div>
+        <div class="filtro-titulo">Por letra do artista</div>
+        <div id="filtro-letras-discos" class="filtro-letras" role="group" aria-label="Filtrar por letra do artista"></div>
         <div class="selects-filtros">
           <select id="f-artista" aria-label="Artista"></select>
           <select id="f-genero" aria-label="Gênero"></select>
@@ -397,7 +412,6 @@ const cmp = (a,b) => a.localeCompare(b,"pt-BR",{sensitivity:"base"});
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 let discos = [];
-let artistasOverride = {};
 let letraFiltroArtista = null;
 let letraFiltroDisco = null;
 
@@ -433,7 +447,6 @@ const cache = {
   set(k,v){ try{ localStorage.setItem("dc:"+k, JSON.stringify(v)); }catch{} }
 };
 const chaveAlbum = d => "lf:"+(d.artista+"|"+d.nome).toLowerCase();
-const chaveBio = nome => "bio:"+nome.toLowerCase();
 
 // ---- LAST.FM ----
 async function infoAlbum(d){
@@ -470,20 +483,6 @@ function normalizaFaixas(arr){
   return arr.map(f => typeof f === "string" ? {n: f, s: 0} : {n: f.n || "", s: Number(f.s) || 0});
 }
 
-async function bioArtista(nome){
-  if (artistasOverride[nome] && artistasOverride[nome].bio) return artistasOverride[nome].bio;
-  const c = cache.get(chaveBio(nome)); if(c) return c;
-
-  try {
-    const u = `https://ws.audioscrobbler.com/2.0/?method=artist.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(nome)}&autocorrect=1&format=json`;
-    const data = await (await fetch(u)).json();
-    const raw = data.artist?.bio?.content || data.artist?.bio?.summary || "";
-    const limpa = raw.replace(/<a[^>]*>.*?<\/a>/gi, "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
-    cache.set(chaveBio(nome), limpa);
-    return limpa;
-  } catch { return ""; }
-}
-
 // ---- CAPAS ----
 const obs = new IntersectionObserver(es => es.forEach(e => {
   if(e.isIntersecting){ obs.unobserve(e.target); carregaCapa(e.target); }
@@ -498,19 +497,6 @@ async function carregaCapa(el){
     i.onload = () => { 
       el.textContent=""; 
       el.append(i); 
-      
-      // Se for splatter, injeta as fatias orbitais
-      if (el.classList.contains("splatter")) {
-         const classes = ["s1", "s2", "s3", "s4", "s5"];
-         classes.forEach(cls => {
-            const slice = document.createElement("div");
-            slice.className = "slice " + cls;
-            const img = new Image();
-            img.src = src;
-            slice.append(img);
-            el.append(slice);
-         });
-      }
     }; 
     i.src = src; 
   };
@@ -665,7 +651,8 @@ function desenhaDiscos(){
   let l = base;
   if (letraFiltroDisco) {
     l = base.filter(d => {
-      const primeira = semArtigo(d.nome).charAt(0).toLowerCase();
+      // Alteração: filtro por letra do ARTISTA agora
+      const primeira = semArtigo(d.artista).charAt(0).toLowerCase();
       const chave = /[a-z]/.test(primeira) ? primeira : "#";
       return chave === letraFiltroDisco;
     });
@@ -809,15 +796,7 @@ async function abreArtista(nome){
   $("m-info").textContent = `${discs.length} ${discs.length===1?"disco":"discos"} na coleção`;
   const cont = $("m-conteudo"); cont.textContent = "";
 
-  const bio = document.createElement("p");
-  bio.className = "bio-artista";
-  bio.textContent = "Carregando biografia…";
-  cont.append(bio);
-
-  bioArtista(nome).then(texto => {
-    if (texto) bio.textContent = texto;
-    else bio.remove();
-  });
+  // Removida a parte de carregamento da biografia
 
   const grid = document.createElement("div"); grid.className = "grid-capas";
   discs.forEach(d => {
@@ -1035,10 +1014,8 @@ async function init(){
 
     if (Array.isArray(dados)) {
       discos = dados.map(norm);
-      artistasOverride = {};
     } else {
       discos = (dados.discos || []).map(norm);
-      artistasOverride = dados.artistas || {};
     }
 
     opcoes($("f-artista"),"Todos os artistas","artista");
