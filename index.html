@@ -394,7 +394,6 @@ li small{color:var(--mute);float:right}
 </nav>
 
 <main>
-  <!-- ABA DISCOS -->
   <section class="view ativa" id="view-discos" role="tabpanel" aria-labelledby="tab-discos">
     <p class="legenda" id="contagem-discos"></p>
 
@@ -424,7 +423,6 @@ li small{color:var(--mute);float:right}
     <div id="grid"><p class="aviso">Carregando discos…</p></div>
   </section>
 
-  <!-- ABA ARTISTAS -->
   <section class="view" id="view-artistas" role="tabpanel" aria-labelledby="tab-artistas">
     <p class="legenda" id="contagem-artistas"></p>
 
@@ -439,7 +437,6 @@ li small{color:var(--mute);float:right}
     <div id="grid-artistas"></div>
   </section>
 
-  <!-- ABA KARAOKÊ -->
   <section class="view" id="view-karaoke" role="tabpanel" aria-labelledby="tab-karaoke">
     <div class="karaoke-wrap">
       <div class="karaoke-top">
@@ -610,6 +607,31 @@ document.addEventListener("click", (e) => {
   }
 });
 
+// Função auxiliar para criar a miniatura (evita código duplicado)
+function criarMiniatura(d) {
+  const ph = document.createElement("div");
+  ph.className = "res-placeholder";
+  ph.textContent = d.nome.charAt(0);
+
+  const poeCapa = (src) => {
+    if (!src) return;
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = d.nome;
+    img.onload = () => {
+      if (ph.parentNode) ph.replaceWith(img);
+    };
+  };
+
+  if (d.capa) {
+    poeCapa(d.capa);
+  } else {
+    // Tenta puxar do cache/Last.fm (não bloqueia a renderização)
+    infoAlbum(d).then(r => { if (r.capa) poeCapa(r.capa); });
+  }
+  return ph;
+}
+
 // Pesquisa de Discos
 inputPesquisaDiscos.addEventListener("input", (e) => {
   const termo = normBusca(e.target.value.trim());
@@ -621,7 +643,7 @@ inputPesquisaDiscos.addEventListener("input", (e) => {
   const matches = discos.filter(d => 
     normBusca(d.nome).includes(termo) || 
     normBusca(d.artista).includes(termo)
-  ).slice(0, 20); // Limita a 20 resultados para não pesar
+  ).slice(0, 20);
 
   resultadosDiscos.innerHTML = "";
   if (matches.length === 0) {
@@ -631,21 +653,8 @@ inputPesquisaDiscos.addEventListener("input", (e) => {
       const div = document.createElement("div");
       div.className = "res-item";
       
-      // Miniatura
-      if (d.capa) {
-        const img = document.createElement("img");
-        img.src = d.capa;
-        div.append(img);
-      } else {
-        const ph = document.createElement("div");
-        ph.className = "res-placeholder";
-        ph.textContent = d.nome.charAt(0);
-        div.append(ph);
-        // Tenta puxar a capa do Last.fm em background para a próxima vez
-        infoAlbum(d).then(r => { if(r.capa && img) { img.src = r.capa; ph.replaceWith(img); } });
-      }
+      div.append(criarMiniatura(d));
 
-      // Info
       const info = document.createElement("div");
       info.className = "res-info";
       info.innerHTML = `<strong>${esc(d.nome)}</strong><span>${esc(d.artista)} · ${d.ano || "—"}</span>`;
