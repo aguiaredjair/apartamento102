@@ -275,18 +275,17 @@ dialog.modal-evento-encerrado .fila-lista li {
 }
 .perfil-capa {
   width: 100%;
-  padding: 2rem 1.4rem 1.5rem 1.4rem; /* Espaçamento interno para afastar da borda */
+  padding: 2rem 1.4rem 1.5rem 1.4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background-color: var(--accent); /* Amarelo padrão */
+  background-color: #e0e0e0; /* Cinza claro em vez de amarelo */
   background-size: cover;
   background-position: center;
   position: relative;
   border-radius: 8px 8px 0 0;
 }
-/* Overlay escuro para garantir leitura do texto caso tenha imagem */
 .perfil-capa.com-imagem::before {
   content: "";
   position: absolute;
@@ -312,7 +311,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   font-size: 1.6rem;
   font-weight: 800;
   margin: 0 0 0.2rem 0;
-  color: var(--ink); /* Texto escuro para o fundo amarelo */
+  color: var(--ink); /* Texto escuro para o fundo cinza */
   text-shadow: none;
 }
 .perfil-capa p {
@@ -320,7 +319,6 @@ dialog.modal-evento-encerrado .fila-lista li {
   font-size: 0.95rem;
   margin: 0;
 }
-/* Quando tem imagem, o texto fica branco */
 .perfil-capa.com-imagem h3, .perfil-capa.com-imagem p {
   color: #fff;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
@@ -348,7 +346,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   color: var(--ink);
 }
 
-/* --- FAIXAS RECENTES --- */
+/* --- FAIXAS RECENTES E LINK LASTFM --- */
 .faixas-recentes-container {
   margin-top: 1rem;
   width: 100%;
@@ -395,19 +393,30 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-overflow: ellipsis;
   text-align: right;
 }
+
 .link-lastfm {
-  display: block;
-  text-align: center;
-  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end; /* Justifica à direita */
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--accent); /* Fundo amarelo */
+  color: #fff; /* Fonte branca */
+  text-decoration: none;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
   font-weight: 800;
   font-size: 0.95rem;
-  color: var(--ink);
-  text-decoration: none;
-  transition: color 0.15s;
+  margin-top: 1.5rem;
+  transition: opacity 0.15s;
 }
 .link-lastfm:hover {
-  color: var(--accent);
+  opacity: 0.9;
 }
+.link-lastfm span {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
 .musica-bloco.vazio {
   display: block;
   font-size: 0.9rem;
@@ -463,7 +472,7 @@ dialog.modal-evento-encerrado .fila-lista li {
       <a class="drawer-item" onclick="abrirPerfil(userProfile.username)">Meu Perfil</a>
       <a class="drawer-item" onclick="abrirPessoas()">Pessoas</a>
       <a class="drawer-item" onclick="abrirConfiguracoes()">Configurações</a>
-      <a class="drawer-item" id="btn-logout" style="color: #c0392b;">Sair</a>
+      <a class="drawer-item" id="btn-logout" style="color: var(--accent); font-weight: 800;">Sair</a>
     </div>
   </div>
 
@@ -575,7 +584,7 @@ dialog.modal-evento-encerrado .fila-lista li {
     <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Ou envie sua própria foto de perfil:</label>
     <input type="file" id="config-file-avatar" accept="image/*" style="margin-bottom: 15px; font-size: 0.9rem;">
 
-    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Foto de capa (opcional, padrão é amarelo):</label>
+    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Foto de capa (opcional, padrão é cinza):</label>
     <input type="file" id="config-file-cover" accept="image/*" style="margin-bottom: 15px; font-size: 0.9rem;">
 
     <label style="font-weight: bold; margin-bottom: 5px;">Username do Last.fm (opcional):</label>
@@ -700,6 +709,13 @@ function fecharConfiguracoes() {
   $("modal-config").close();
 }
 
+// ---- FECHAR MODAIS AO CLICAR FORA ----
+$("modal").addEventListener("click", e => { if (e.target === $("modal")) fecharModal(); });
+$("modal-config").addEventListener("click", e => { if (e.target === $("modal-config")) fecharConfiguracoes(); });
+$("modal-perfil").addEventListener("click", e => { if (e.target === $("modal-perfil")) $("modal-perfil").close(); });
+$("modal-pessoas").addEventListener("click", e => { if (e.target === $("modal-pessoas")) $("modal-pessoas").close(); });
+
+
 async function checarUsuario() {
   if (!window.supabase) return;
   
@@ -808,7 +824,7 @@ async function abrirPessoas() {
   lista.innerHTML = "";
   profiles.forEach(p => {
     const btn = document.createElement("button");
-    btn.className = "artista-item"; // Reusing artist style for clean list
+    btn.className = "artista-item";
     btn.style.padding = "0.5rem";
     btn.style.borderRadius = "6px";
     
@@ -859,7 +875,6 @@ async function abrirPerfil(username) {
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const avatar = profile.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
   
-  // Configura a capa
   let capaStyle = "";
   let capaClass = "perfil-capa";
   if (profile.cover_url) {
@@ -920,7 +935,7 @@ async function abrirPerfil(username) {
         });
         
         listaHtml += `</div>
-          <a href="${linkPerfil}" target="_blank" class="link-lastfm">Ir para perfil no Last.fm</a>
+          <a href="${linkPerfil}" target="_blank" class="link-lastfm">Ir para perfil no Last.fm <span>→</span></a>
         `;
         
         bloco.innerHTML = listaHtml;
@@ -1004,11 +1019,9 @@ $("form-config").onsubmit = async (e) => {
   let finalAvatarUrl = avatarSelecionado;
   let finalCoverUrl = null;
 
-  // Verifica se já tem uma capa salva para não sobrescrever com null
   const { data: currProfile } = await window.supabase.from('profiles').select('cover_url').eq('id', currentUser.id).single();
   if (currProfile && currProfile.cover_url) finalCoverUrl = currProfile.cover_url;
 
-  // 1. Upload do Avatar
   if (fileAvatar.files.length > 0) {
     const file = fileAvatar.files[0];
     const fileExt = file.name.split('.').pop();
@@ -1028,7 +1041,6 @@ $("form-config").onsubmit = async (e) => {
     finalAvatarUrl = urlData.publicUrl;
   }
 
-  // 2. Upload da Capa
   if (fileCover.files.length > 0) {
     const file = fileCover.files[0];
     const fileExt = file.name.split('.').pop();
@@ -1048,7 +1060,6 @@ $("form-config").onsubmit = async (e) => {
     finalCoverUrl = urlData.publicUrl;
   }
 
-  // 3. Troca de senha (se preenchida)
   if (novaSenha.length > 0) {
     if (novaSenha.length < 6) {
       msg.textContent = "A senha precisa ter pelo menos 6 caracteres.";
@@ -1063,7 +1074,6 @@ $("form-config").onsubmit = async (e) => {
     }
   }
 
-  // 4. Atualiza o perfil no banco
   if (currentUser) {
     const { error: dbError } = await window.supabase
       .from('profiles')
