@@ -452,18 +452,19 @@ const cache = {
   get(k){ try{ return JSON.parse(localStorage.getItem("dc:"+k)); }catch{ return null; } },
   set(k,v){ try{ localStorage.setItem("dc:"+k, JSON.stringify(v)); }catch{} }
 };
-const chaveAlbum = d => "lf:"+(d.artista+"|"+d.nome).toLowerCase();
+// Mudei para 'lf2:' para ignorar o cache antigo que estava quebrado
+const chaveAlbum = d => "lf2:"+(d.artista+"|"+d.nome).toLowerCase();
 
 // ---- LAST.FM ----
 async function infoAlbum(d){
-  const c = cache.get(chaveAlbum(d)); if(c) return c;
-
+  // Se já tem tudo no JSON, usa direto
   if (d.capa && d.faixas && d.faixas.length){
-    const faixas = normalizaFaixas(d.faixas);
-    const r = {capa: d.capa, faixas};
-    cache.set(chaveAlbum(d), r);
-    return r;
+    return {capa: d.capa, faixas: normalizaFaixas(d.faixas)};
   }
+
+  // Tenta pegar do cache novo
+  const c = cache.get(chaveAlbum(d)); 
+  if(c) return c;
 
   let capa = "", faixas = [];
   try {
@@ -477,11 +478,17 @@ async function infoAlbum(d){
     }
   } catch {}
 
+  // Aplica os dados manuais por cima (eles têm prioridade)
   if (d.capa) capa = d.capa;
   if (d.faixas && d.faixas.length) faixas = normalizaFaixas(d.faixas);
 
   const r = {capa, faixas};
-  cache.set(chaveAlbum(d), r);
+  
+  // Só salva no cache se achou algo (para não guardar vazio se a net cair)
+  if(capa || faixas.length) {
+    cache.set(chaveAlbum(d), r);
+  }
+  
   return r;
 }
 
@@ -575,6 +582,7 @@ async function abreDisco(d){
     const {capa, faixas} = await infoAlbum(d);
     cont.textContent = "";
 
+    // Se tem capa, mostra a capa
     if(capa){
       const img = document.createElement("img");
       img.src = capa;
@@ -583,6 +591,7 @@ async function abreDisco(d){
       cont.append(img);
     }
 
+    // Sempre mostra as informações de texto
     const info = document.createElement("div");
     info.className = "info-modal";
     const h3 = document.createElement("h3");
@@ -596,28 +605,25 @@ async function abreDisco(d){
     info.append(h3, pArt, pDet);
     cont.append(info);
 
-    if(!faixas.length){
-      if(!capa){
-        cont.textContent = "Não encontrei informações deste disco no Last.fm.";
-      } else {
-        const p = document.createElement("p");
-        p.textContent = "Tracklist não encontrada.";
-        p.style.textAlign = "center";
-        p.style.color = "var(--mute)";
-        p.style.fontSize = ".85rem";
-        cont.append(p);
-      }
-      return;
+    // Se tem tracklist, mostra a tracklist
+    if(faixas && faixas.length > 0){
+      const ol = document.createElement("ol");
+      faixas.forEach(f => {
+        const li = document.createElement("li");
+        li.textContent = f.n;
+        if(f.s){ const s = document.createElement("small"); s.textContent = fmt(f.s); li.append(s); }
+        ol.append(li);
+      });
+      cont.append(ol);
+    } else {
+      // Se não tem tracklist, exibe o aviso
+      const p = document.createElement("p");
+      p.textContent = "Tracklist não encontrada.";
+      p.style.textAlign = "center";
+      p.style.color = "var(--mute)";
+      p.style.fontSize = ".85rem";
+      cont.append(p);
     }
-
-    const ol = document.createElement("ol");
-    faixas.forEach(f => {
-      const li = document.createElement("li");
-      li.textContent = f.n;
-      if(f.s){ const s = document.createElement("small"); s.textContent = fmt(f.s); li.append(s); }
-      ol.append(li);
-    });
-    cont.append(ol);
 
   }catch{
     cont.textContent = "Não consegui carregar este disco do Last.fm.";
