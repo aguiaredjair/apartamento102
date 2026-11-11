@@ -29,6 +29,94 @@ h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;lette
 .view.ativa{display:block}
 main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 
+/* ---------- MENU HAMBÚRGUER (GAVETA) ---------- */
+.menu-hamburguer-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  z-index: 10;
+}
+.menu-hamburguer-btn span {
+  display: block;
+  width: 26px;
+  height: 2.5px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform .2s;
+}
+.menu-hamburguer-btn:hover span { background: var(--accent); }
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+  z-index: 100;
+}
+.drawer-overlay.ativo {
+  opacity: 1;
+  pointer-events: auto;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 280px;
+  height: 100vh;
+  background: var(--card);
+  z-index: 101;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+  transition: left .3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+.drawer.aberto {
+  left: 0;
+}
+.drawer-fechar {
+  align-self: flex-end;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+.drawer-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.drawer-conteudo h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.5rem;
+}
+.drawer-item {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color .15s;
+}
+.drawer-item:hover { color: var(--accent); }
+
 /* ---------- BARRA DE PESQUISA ---------- */
 .barra-pesquisa-container {
   position: relative;
@@ -110,16 +198,14 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
   cursor:pointer;
   display:grid;
   place-content:center;
-  gap:5px;
   transition:background .15s;
 }
 .btn-filtros:hover{background:rgba(213,171,9,.15)}
 .btn-filtros[aria-expanded="true"]{background:rgba(213,171,9,.2)}
-.btn-filtros span{
-  display:block;
-  width:24px;height:2.5px;
-  background:var(--ink);
-  border-radius:2px;
+.btn-filtros svg {
+  width: 28px;
+  height: 28px;
+  fill: var(--ink);
 }
 .painel-filtros{
   width:100%;
@@ -383,6 +469,24 @@ li small{color:var(--mute);float:right}
 </style>
 </head>
 <body>
+
+<!-- MENU HAMBÚRGUER -->
+<button class="menu-hamburguer-btn" id="btn-menu-hamburguer" aria-label="Abrir menu">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- GAVETA LATERAL -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="drawer-menu">
+  <button class="drawer-fechar" id="btn-fechar-menu" aria-label="Fechar menu">×</button>
+  <div class="drawer-conteudo">
+    <h2>Menu</h2>
+    <a class="drawer-item">Meu Perfil</a>
+    <a class="drawer-item">Configurações</a>
+    <a class="drawer-item">Sair</a>
+  </div>
+</div>
+
 <header>
   <h1>apartamento 102</h1>
 </header>
@@ -394,6 +498,7 @@ li small{color:var(--mute);float:right}
 </nav>
 
 <main>
+  <!-- ABA DISCOS -->
   <section class="view ativa" id="view-discos" role="tabpanel" aria-labelledby="tab-discos">
     <p class="legenda" id="contagem-discos"></p>
 
@@ -404,7 +509,8 @@ li small{color:var(--mute);float:right}
 
     <div class="filtros-embutidos">
       <button class="btn-filtros" id="toggle-filtros" aria-label="Filtros" aria-expanded="false" aria-controls="painel-filtros">
-        <span></span><span></span><span></span>
+        <!-- Ícone de Filtro (Funil) -->
+        <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
       </button>
       <div class="painel-filtros" id="painel-filtros" hidden>
         <div class="filtro-titulo">Por letra do artista</div>
@@ -423,6 +529,7 @@ li small{color:var(--mute);float:right}
     <div id="grid"><p class="aviso">Carregando discos…</p></div>
   </section>
 
+  <!-- ABA ARTISTAS -->
   <section class="view" id="view-artistas" role="tabpanel" aria-labelledby="tab-artistas">
     <p class="legenda" id="contagem-artistas"></p>
 
@@ -437,6 +544,7 @@ li small{color:var(--mute);float:right}
     <div id="grid-artistas"></div>
   </section>
 
+  <!-- ABA KARAOKÊ -->
   <section class="view" id="view-karaoke" role="tabpanel" aria-labelledby="tab-karaoke">
     <div class="karaoke-wrap">
       <div class="karaoke-top">
@@ -495,6 +603,25 @@ const normBusca = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowe
 let discos = [];
 let letraFiltroArtista = null;
 let letraFiltroDisco = null;
+
+// ---- MENU LATERAL (GAVETA) ----
+const drawer = $("drawer-menu");
+const overlay = $("drawer-overlay");
+const btnAbrir = $("btn-menu-hamburguer");
+const btnFechar = $("btn-fechar-menu");
+
+function abrirMenu() {
+  drawer.classList.add("aberto");
+  overlay.classList.add("ativo");
+}
+function fecharMenu() {
+  drawer.classList.remove("aberto");
+  overlay.classList.remove("ativo");
+}
+
+btnAbrir.onclick = abrirMenu;
+btnFechar.onclick = fecharMenu;
+overlay.onclick = fecharMenu;
 
 // ---- TABS ----
 const tabs = ["discos","artistas","karaoke"];
