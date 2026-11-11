@@ -110,18 +110,16 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 
 /* --- TRANSFORMAÇÃO DO PICTURE DISC --- */
 .capa.picture-disc::before { display: none !important; }
-/* Apenas remove a sobreposição de cor, mantendo o hover padrão (círculo normal) */
 
 /* --- TRANSFORMAÇÃO DO SPLATTER (LOSANGO SUAVE) --- */
 .capa.splatter::before { display: none !important; }
 .capa.splatter {
     clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-    /* Sincronizado com o border-radius (.25s ease) para ficar na mesma velocidade */
     transition: clip-path .25s ease, transform .2s, border-radius .25s;
 }
 .disco:hover .capa.splatter {
-    border-radius: 0; /* Remove o formato circular */
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Formato de losango */
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 }
 
 .capa.zoetrope::before{display:none !important}
@@ -205,11 +203,11 @@ li small{color:var(--mute);float:right}
 
 /* ESTILOS DOS MODAIS DE EVENTO */
 dialog.modal-evento-ativo {
-  background: #fffdf5; /* Amarelo bem claro */
+  background: #fffdf5;
   border: 2px solid var(--accent);
 }
 dialog.modal-evento-encerrado {
-  background: #e8e8e8; /* Cinzento */
+  background: #e8e8e8;
   color: #666;
   border: 2px solid #ccc;
 }
@@ -218,6 +216,30 @@ dialog.modal-evento-encerrado h2, dialog.modal-evento-encerrado p.sub {
 }
 dialog.modal-evento-encerrado .fila-lista li {
   border-bottom-color: #ccc;
+}
+
+/* ---------- ESTILOS DE CONFIGURAÇÃO / AVATAR ---------- */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+.avatar-option {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.avatar-option:hover {
+  transform: scale(1.05);
+}
+.avatar-option.selecionado {
+  border-color: var(--accent);
 }
 
 @media(max-width:480px){
@@ -245,20 +267,33 @@ dialog.modal-evento-encerrado .fila-lista li {
 <div class="drawer" id="drawer-menu">
   <button class="drawer-fechar" id="btn-fechar-menu" aria-label="Fechar menu">×</button>
   
-  <!-- BLOCO DE PERFIL (PLACEHOLDER) -->
-  <div class="perfil-drawer">
-    <img src="assets/profiles/pfp/george-pfp.jpg" alt="Foto de perfil" class="pfp-drawer">
-    <div class="perfil-info">
-      <span class="username">demonio.digital</span>
-      <span class="perfil-sub">Membro</span>
+  <!-- BLOCO DE PERFIL LOGADO -->
+  <div id="menu-logado" style="display: none;">
+    <div class="perfil-drawer">
+      <img src="assets/profiles/pfp/george-pfp.jpg" id="menu-user-avatar" alt="Foto de perfil" class="pfp-drawer">
+      <div class="perfil-info">
+        <span class="username" id="menu-user-name">Usuário</span>
+        <span class="perfil-sub">Membro</span>
+      </div>
+    </div>
+    <div class="drawer-conteudo">
+      <h2>Opções</h2>
+      <a class="drawer-item" onclick="abrirConfiguracoes()">Configurações</a>
+      <a class="drawer-item" id="btn-logout" style="color: #c0392b;">Sair</a>
     </div>
   </div>
 
-  <div class="drawer-conteudo">
-    <h2>Opções</h2>
-    <a class="drawer-item">Meu Perfil</a>
-    <a class="drawer-item">Configurações</a>
-    <a class="drawer-item">Sair</a>
+  <!-- BLOCO DE LOGIN -->
+  <div id="menu-deslogado">
+    <div class="drawer-conteudo">
+      <h2>Acessar Conta</h2>
+      <form id="form-login" style="display: flex; flex-direction: column; gap: 0.8rem;">
+        <input type="email" id="login-email" placeholder="E-mail" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit;">
+        <input type="password" id="login-senha" placeholder="Senha" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit;">
+        <button type="submit" style="padding: 0.6rem; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Entrar</button>
+      </form>
+      <p id="login-msg" style="font-size: 0.8rem; color: var(--mute); text-align: center; margin-top: 0.5rem;"></p>
+    </div>
   </div>
 </div>
 
@@ -284,7 +319,6 @@ dialog.modal-evento-encerrado .fila-lista li {
 
     <div class="filtros-embutidos">
       <button class="btn-filtros" id="toggle-filtros" aria-label="Filtros" aria-expanded="false" aria-controls="painel-filtros">
-        <!-- Ícone de Filtro (Funil) -->
         <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
       </button>
       <div class="painel-filtros" id="painel-filtros" hidden>
@@ -333,9 +367,33 @@ dialog.modal-evento-encerrado .fila-lista li {
 
 <div id="tooltip" class="tooltip" aria-hidden="true"></div>
 
+<!-- MODAL DE DISCOS E ARTISTAS -->
 <dialog id="modal"><div class="modal">
   <button class="fechar" aria-label="Fechar" onclick="fecharModal()">×</button>
   <h2 id="m-nome"></h2><p class="sub" id="m-info"></p><div id="m-conteudo"></div>
+</div></dialog>
+
+<!-- MODAL DE CONFIGURAÇÕES / PRIMEIRO ACESSO -->
+<dialog id="modal-config"><div class="modal">
+  <button class="fechar" aria-label="Fechar" onclick="document.getElementById('modal-config').close()">×</button>
+  <h2 id="config-titulo">Configurações</h2>
+  <p class="sub" id="config-sub">Atualize sua foto e senha</p>
+  
+  <form id="form-config" style="display: flex; flex-direction: column;">
+    <label style="font-weight: bold; margin-bottom: 5px;">Escolha sua foto de perfil:</label>
+    <div class="avatar-grid" id="avatar-grid">
+      <img src="assets/profiles/pfp/george-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/george-pfp.jpg" onclick="selecionarAvatar(this)">
+      <img src="assets/profiles/pfp/john-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/john-pfp.jpg" onclick="selecionarAvatar(this)">
+      <img src="assets/profiles/pfp/paul-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/paul-pfp.jpg" onclick="selecionarAvatar(this)">
+      <img src="assets/profiles/pfp/ringo-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/ringo-pfp.jpg" onclick="selecionarAvatar(this)">
+    </div>
+
+    <label style="font-weight: bold; margin-bottom: 5px;">Nova Senha:</label>
+    <input type="password" id="config-senha" placeholder="Digite uma senha segura" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem;">
+    
+    <button type="submit" style="padding: 0.6rem; background: var(--ink); color: var(--bg); border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Salvar Alterações</button>
+    <p id="config-msg" style="font-size: 0.8rem; color: var(--accent); text-align: center; margin-top: 0.5rem; font-weight: bold;"></p>
+  </form>
 </div></dialog>
 
 <script>
@@ -389,9 +447,169 @@ btnAbrir.onclick = abrirMenu;
 btnFechar.onclick = fecharMenu;
 overlay.onclick = fecharMenu;
 
-// ---- TABS ----
+// ---- AUTENTICAÇÃO SUPABASE ----
+const formLogin = $("form-login");
+const btnLogout = $("btn-logout");
+const menuLogado = $("menu-logado");
+const menuDeslogado = $("menu-deslogado");
+const loginMsg = $("login-msg");
+
+let currentUser = null;
+let avatarSelecionado = "assets/profiles/pfp/george-pfp.jpg";
+
+async function checarUsuario() {
+  const { data: { session } } = await window.supabase.auth.getSession();
+  
+  if (session) {
+    currentUser = session.user;
+    const { data: profile, error } = await window.supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profile && profile.password_changed) {
+      menuLogado.style.display = "block";
+      menuDeslogado.style.display = "none";
+      $("menu-user-name").textContent = profile.username;
+      if (profile.avatar_url) {
+        $("menu-user-avatar").src = profile.avatar_url;
+      }
+    } else {
+      menuLogado.style.display = "none";
+      menuDeslogado.style.display = "block";
+      abrirConfiguracoes(true);
+    }
+  } else {
+    currentUser = null;
+    menuLogado.style.display = "none";
+    menuDeslogado.style.display = "block";
+  }
+}
+
+checarUsuario();
+
+window.supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+    checarUsuario();
+  }
+});
+
+formLogin.onsubmit = async (e) => {
+  e.preventDefault();
+  loginMsg.textContent = "Entrando...";
+  loginMsg.style.color = "var(--mute)";
+
+  const email = $("login-email").value;
+  const senha = $("login-senha").value;
+
+  const { data, error } = await window.supabase.auth.signInWithPassword({
+    email: email,
+    password: senha,
+  });
+
+  if (error) {
+    loginMsg.textContent = "Erro: " + error.message;
+    loginMsg.style.color = "#c0392b";
+  } else {
+    loginMsg.textContent = "";
+    formLogin.reset();
+    fecharMenu();
+  }
+};
+
+btnLogout.onclick = async () => {
+  await window.supabase.auth.signOut();
+  fecharMenu();
+};
+
+// ---- CONFIGURAÇÕES E PRIMEIRO ACESSO ----
+function abrirConfiguracoes(primeiroAcesso = false) {
+  const modalConfig = $("modal-config");
+  modalConfig.showModal();
+  
+  if (primeiroAcesso) {
+    $("config-titulo").textContent = "Bem-vindo(a) ao 102!";
+    $("config-sub").textContent = "Por favor, troque sua senha e escolha uma foto para continuar.";
+  } else {
+    $("config-titulo").textContent = "Configurações";
+    $("config-sub").textContent = "Atualize sua foto e senha.";
+  }
+  
+  // Preenche com o avatar atual
+  if (currentUser) {
+    window.supabase.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({data}) => {
+      const url = (data && data.avatar_url) ? data.avatar_url : "assets/profiles/pfp/george-pfp.jpg";
+      document.querySelectorAll('.avatar-option').forEach(img => {
+        if(img.getAttribute('data-path') === url) img.classList.add('selecionado');
+        else img.classList.remove('selecionado');
+      });
+      avatarSelecionado = url;
+    });
+  }
+}
+
+function selecionarAvatar(el) {
+  document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selecionado'));
+  el.classList.add('selecionado');
+  avatarSelecionado = el.getAttribute('data-path');
+}
+
+$("form-config").onsubmit = async (e) => {
+  e.preventDefault();
+  const novaSenha = $("config-senha").value;
+  const msg = $("config-msg");
+  
+  msg.textContent = "Salvando...";
+  msg.style.color = "var(--mute)";
+
+  // 1. Atualiza senha
+  if (novaSenha.length < 6) {
+    msg.textContent = "A senha precisa ter pelo menos 6 caracteres.";
+    msg.style.color = "#c0392b";
+    return;
+  }
+
+  const { error: authError } = await window.supabase.auth.updateUser({ password: novaSenha });
+  if (authError) {
+    msg.textContent = "Erro na senha: " + authError.message;
+    msg.style.color = "#c0392b";
+    return;
+  }
+
+  // 2. Atualiza perfil (avatar e flag)
+  if (currentUser) {
+    const { error: dbError } = await window.supabase
+      .from('profiles')
+      .update({ avatar_url: avatarSelecionado, password_changed: true })
+      .eq('id', currentUser.id);
+      
+    if (dbError) {
+      msg.textContent = "Erro ao salvar perfil: " + dbError.message;
+      msg.style.color = "#c0392b";
+      return;
+    }
+  }
+
+  msg.textContent = "Configurações salvas!";
+  msg.style.color = "var(--accent)";
+  
+  setTimeout(() => {
+    $("modal-config").close();
+    $("config-senha").value = "";
+    msg.textContent = "";
+    checarUsuario(); // Atualiza o menu
+  }, 1000);
+};
+
+// ---- TABS (COM PROTEÇÃO DE KARAOKÊ) ----
 const tabs = ["discos","artistas","karaoke"];
 function ativarTab(nome){
+  if (nome === "karaoke" && !currentUser) {
+    alert("Você precisa estar logado para acessar o Karaokê.");
+    return; // Bloqueia a troca de aba
+  }
+
   tabs.forEach(t => {
     const el = $("tab-"+t), view = $("view-"+t);
     const on = t === nome;
@@ -802,7 +1020,6 @@ function conectarEventos(){
         eventosRemotos = msg.eventos || [];
         desenhaKaraoke();
         
-        // Se o modal do evento estiver aberto e ele for encerrado em tempo real:
         if (eventoAbertoData) {
           const evAtual = eventosRemotos.find(e => (typeof e === "string" ? e : e.data) === eventoAbertoData);
           const estaEncerrado = evAtual ? (typeof evAtual === "object" && evAtual.encerrado) : false;
@@ -811,7 +1028,6 @@ function conectarEventos(){
             eventoAbertoEncerrado = true;
             const cont = $("m-conteudo");
             
-            // Remove o form e botão de encerrar
             const form = cont.querySelector(".form-add");
             if (form) form.remove();
             const btnEnc = cont.querySelector(".btn-encerrar");
@@ -854,7 +1070,6 @@ function desenhaKaraoke(){
     return;
   }
   
-  // Normaliza o array para o formato de objetos
   const eventos = eventosRemotos.map(e => typeof e === "string" ? { data: e, encerrado: false } : e);
   eventos.sort((a,b) => a.data < b.data ? 1 : -1);
   
@@ -869,7 +1084,6 @@ function desenhaKaraoke(){
     b.className = "evento-item";
     b.classList.add(ev.encerrado ? "encerrado" : "ativo");
     
-    // Legenda 'Ativo' e 'Encerrado'
     b.innerHTML = `<div><b>${esc(fmtDataLonga(ev.data))}</b><small>${ev.encerrado ? 'Encerrado' : 'Ativo'}</small></div><span>→</span>`;
     b.onclick = () => abrirEvento(ev);
     lista.append(b);
@@ -925,7 +1139,6 @@ function renderizarFila(fila){
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox"; checkbox.checked = !!item.cantou;
     
-    // Permitir marcar como cantou apenas se o evento não estiver encerrado
     if (eventoAbertoEncerrado) {
       checkbox.disabled = true;
     } else {
@@ -941,11 +1154,10 @@ function renderizarFila(fila){
     div.innerHTML = `<span class="nome">${esc(item.nome)}</span><span class="musica">${esc(item.musica)}</span>`;
     li.append(checkbox, num, div);
 
-    // Adiciona a lixeira se não estiver encerrado
     if (!eventoAbertoEncerrado) {
       const btnLixeira = document.createElement("button");
       btnLixeira.className = "btn-lixeira";
-      btnLixeira.innerHTML = "🗑️"; // emoji lixeira
+      btnLixeira.innerHTML = "🗑️";
       btnLixeira.title = "Sair da fila";
       btnLixeira.onclick = () => {
         if (confirm(`Remover ${item.nome} da fila?`)) {
@@ -970,13 +1182,11 @@ function abrirEvento(ev){
   $("m-nome").textContent = fmtDataLonga(eventoAbertoData);
   const cont = $("m-conteudo"); cont.textContent = "";
   
-  // Remove classes antigas de cor do modal
   modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
 
   const ol = document.createElement("ol"); ol.className = "fila-lista"; cont.append(ol);
 
   if (!eventoAbertoEncerrado) {
-    // Configuração do Modal Ativo (Amarelo)
     modalEl.classList.add("modal-evento-ativo");
     $("m-info").textContent = "Conectando à fila…";
 
@@ -1010,7 +1220,6 @@ function abrirEvento(ev){
     };
     cont.append(btnEncerrar);
   } else {
-    // Configuração do Modal Encerrado (Cinzento)
     modalEl.classList.add("modal-evento-encerrado");
     $("m-info").textContent = "Evento Encerrado";
   }
