@@ -1,9 +1,10 @@
-name = "apartamento102-v2"
+name = "apartamento102"
 pages_build_output_dir = "."
 
-[[unsafe.bindings]]
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[durable_objects.bindings]]
 name = "KARAOKE_ROOM"
-type = "durable_object_namespace"
 class_name = "KaraokeRoom"
 script_name = "karaoke-do"
-namespace_id = "c2d6bccf480b47668bce53ea8cb8099e"
