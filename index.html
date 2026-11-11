@@ -286,9 +286,9 @@ dialog.modal-evento-encerrado .fila-lista li {
   <!-- BLOCO DE LOGIN -->
   <div id="menu-deslogado">
     <div class="drawer-conteudo">
-      <h2>Acessar Conta</h2>
+      <h2>Acessar</h2>
       <form id="form-login" style="display: flex; flex-direction: column; gap: 0.8rem;">
-        <input type="email" id="login-email" placeholder="E-mail" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit;">
+        <input type="text" id="login-username" placeholder="Username" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit;">
         <input type="password" id="login-senha" placeholder="Senha" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit;">
         <button type="submit" style="padding: 0.6rem; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Entrar</button>
       </form>
@@ -458,11 +458,13 @@ let currentUser = null;
 let avatarSelecionado = "assets/profiles/pfp/george-pfp.jpg";
 
 async function checarUsuario() {
+  if (!window.supabase) return; // Aguarda o Supabase carregar
+  
   const { data: { session } } = await window.supabase.auth.getSession();
   
   if (session) {
     currentUser = session.user;
-    const { data: profile, error } = await window.supabase
+    const { data: profile } = await window.supabase
       .from('profiles')
       .select('*')
       .eq('id', session.user.id)
@@ -472,9 +474,7 @@ async function checarUsuario() {
       menuLogado.style.display = "block";
       menuDeslogado.style.display = "none";
       $("menu-user-name").textContent = profile.username;
-      if (profile.avatar_url) {
-        $("menu-user-avatar").src = profile.avatar_url;
-      }
+      if (profile.avatar_url) $("menu-user-avatar").src = profile.avatar_url;
     } else {
       menuLogado.style.display = "none";
       menuDeslogado.style.display = "block";
@@ -487,29 +487,47 @@ async function checarUsuario() {
   }
 }
 
-checarUsuario();
-
-window.supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-    checarUsuario();
+// Inicializa a autenticação quando o Supabase estiver pronto
+async function setupAuth() {
+  if (!window.supabase) {
+    setTimeout(setupAuth, 100);
+    return;
   }
-});
+  checarUsuario();
+  window.supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') checarUsuario();
+  });
+}
 
 formLogin.onsubmit = async (e) => {
   e.preventDefault();
-  loginMsg.textContent = "Entrando...";
+  loginMsg.textContent = "Buscando usuário...";
   loginMsg.style.color = "var(--mute)";
 
-  const email = $("login-email").value;
+  const username = $("login-username").value.trim();
   const senha = $("login-senha").value;
 
+  if (!window.supabase) return;
+
+  // 1. Busca o e-mail do usuário usando a função RPC que criamos no SQL
+  const { data: email, error: rpcError } = await window.supabase.rpc('get_email_by_username', { p_username: username });
+
+  if (rpcError || !email) {
+    loginMsg.textContent = "Usuário não encontrado.";
+    loginMsg.style.color = "#c0392b";
+    return;
+  }
+
+  loginMsg.textContent = "Entrando...";
+
+  // 2. Faz o login com o e-mail recuperado
   const { data, error } = await window.supabase.auth.signInWithPassword({
     email: email,
     password: senha,
   });
 
   if (error) {
-    loginMsg.textContent = "Erro: " + error.message;
+    loginMsg.textContent = "Senha incorreta.";
     loginMsg.style.color = "#c0392b";
   } else {
     loginMsg.textContent = "";
@@ -519,7 +537,7 @@ formLogin.onsubmit = async (e) => {
 };
 
 btnLogout.onclick = async () => {
-  await window.supabase.auth.signOut();
+  if (window.supabase) await window.supabase.auth.signOut();
   fecharMenu();
 };
 
@@ -536,8 +554,7 @@ function abrirConfiguracoes(primeiroAcesso = false) {
     $("config-sub").textContent = "Atualize sua foto e senha.";
   }
   
-  // Preenche com o avatar atual
-  if (currentUser) {
+  if (currentUser && window.supabase) {
     window.supabase.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({data}) => {
       const url = (data && data.avatar_url) ? data.avatar_url : "assets/profiles/pfp/george-pfp.jpg";
       document.querySelectorAll('.avatar-option').forEach(img => {
@@ -563,12 +580,13 @@ $("form-config").onsubmit = async (e) => {
   msg.textContent = "Salvando...";
   msg.style.color = "var(--mute)";
 
-  // 1. Atualiza senha
   if (novaSenha.length < 6) {
     msg.textContent = "A senha precisa ter pelo menos 6 caracteres.";
     msg.style.color = "#c0392b";
     return;
   }
+
+  if (!window.supabase) return;
 
   const { error: authError } = await window.supabase.auth.updateUser({ password: novaSenha });
   if (authError) {
@@ -577,7 +595,6 @@ $("form-config").onsubmit = async (e) => {
     return;
   }
 
-  // 2. Atualiza perfil (avatar e flag)
   if (currentUser) {
     const { error: dbError } = await window.supabase
       .from('profiles')
@@ -598,7 +615,7 @@ $("form-config").onsubmit = async (e) => {
     $("modal-config").close();
     $("config-senha").value = "";
     msg.textContent = "";
-    checarUsuario(); // Atualiza o menu
+    checarUsuario();
   }, 1000);
 };
 
@@ -607,7 +624,7 @@ const tabs = ["discos","artistas","karaoke"];
 function ativarTab(nome){
   if (nome === "karaoke" && !currentUser) {
     alert("Você precisa estar logado para acessar o Karaokê.");
-    return; // Bloqueia a troca de aba
+    return;
   }
 
   tabs.forEach(t => {
@@ -678,10 +695,7 @@ async function carregaCapa(el){
   const d = el._disco;
   const poe = src => { 
     const i = new Image(); i.alt = `Capa de ${d.nome}`; i.className = "capa-base";
-    i.onload = () => { 
-      el.textContent=""; 
-      el.append(i); 
-    }; 
+    i.onload = () => { el.textContent=""; el.append(i); }; 
     i.src = src; 
   };
   if(d.capa) return poe(d.capa);
@@ -1261,7 +1275,11 @@ async function init(){
   } catch {}
   ativarTab(inicial);
 }
+
+// Roda o carregamento do site independentemente do Supabase
 init();
+// Inicia a verificação de autenticação
+setupAuth();
 </script>
 </body>
 </html>
