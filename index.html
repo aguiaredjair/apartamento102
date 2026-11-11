@@ -317,15 +317,26 @@ dialog.modal-evento-encerrado .fila-lista li {
   height: 100%;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  background: var(--card);
+  background: var(--card); 
   border-radius: 8px;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  /* Ocultar barra de rolagem */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.flip-card-front::-webkit-scrollbar, .flip-card-back::-webkit-scrollbar { 
+  display: none; 
+}
+.flip-card-front {
+  z-index: 2;
 }
 .flip-card-back {
   transform: rotateY(180deg);
+  z-index: 1;
 }
 
 /* --- CONTEÚDO DO PERFIL --- */
@@ -444,7 +455,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   gap: 0.5rem;
   background-color: var(--bg);
   color: var(--ink);
-  border: 1px solid rgba(34,32,29,.15);
+  border: none; /* Borda removida */
   text-decoration: none;
   padding: 0.8rem 1.5rem;
   border-radius: 6px;
@@ -461,7 +472,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-align: center;
   font-size: 0.8rem;
   color: var(--mute);
-  margin-top: auto;
+  margin-top: 1.5rem; /* Espaçamento aumentado */
   padding-bottom: 1rem;
   font-style: italic;
 }
@@ -472,6 +483,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: var(--card); /* Fundo sólido para evitar vazamento */
 }
 .top-charts-header {
   text-align: center;
