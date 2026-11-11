@@ -102,12 +102,17 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
-.modal{padding:1.4rem}
+.modal{position:relative;padding:1.4rem}
 .modal h2{margin:0;font-size:1.45rem;line-height:1.1;padding-right:2rem;text-transform:capitalize}
 .modal p.sub{margin:.3rem 0 1rem;color:var(--mute);font-size:.88rem}
-.fechar{float:right;font:inherit;border:0;background:none;font-size:1.6rem;color:var(--ink);line-height:1;padding:0}
+.fechar{
+  position:absolute;top:1rem;right:1rem;
+  font:inherit;border:0;background:none;
+  font-size:1.6rem;color:var(--ink);
+  line-height:1;padding:0;cursor:pointer;
+}
 
-/* ---------- CAPA GRANDE NO MODAL ---------- */
+/* ---------- MODAL DO DISCO ---------- */
 .capa-modal{
   display:block;
   width:100%;
@@ -115,6 +120,29 @@ dialog::backdrop{background:#000a}
   aspect-ratio:1;
   object-fit:cover;
   margin:0 auto 1rem;
+  border-radius:20px;
+}
+.info-modal{
+  text-align:center;
+  margin-bottom:1.2rem;
+}
+.info-modal h3{
+  margin:0 0 .2rem;
+  font-size:1.3rem;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:-.02em;
+}
+.info-modal .artista-modal{
+  margin:0 0 .3rem;
+  font-size:.95rem;
+  color:var(--ink);
+  font-weight:600;
+}
+.info-modal .detalhes-modal{
+  margin:0;
+  font-size:.82rem;
+  color:var(--mute);
 }
 
 ol{padding-left:1.8rem;margin:.4rem 0}
@@ -309,8 +337,9 @@ const fmt = s => s ? Math.floor(s/60)+":"+String(s%60).padStart(2,"0") : "";
 
 async function abreDisco(d){
   escondeTooltip();
-  $("m-nome").textContent = d.nome;
-  $("m-info").textContent = `${d.artista} · ${d.ano || "ano não informado"} · ${d.genero} · ${d.cor.join(", ")}`;
+  // limpa o cabeçalho — as infos vão para dentro do m-conteudo, centralizadas
+  $("m-nome").textContent = "";
+  $("m-info").textContent = "";
   const cont = $("m-conteudo");
   cont.textContent = LASTFM_KEY ? "Buscando tracklist…" : "Falta a chave do Last.fm.";
   modalEl.classList.remove("grande");
@@ -328,6 +357,20 @@ async function abreDisco(d){
       img.className = "capa-modal";
       cont.append(img);
     }
+
+    // bloco centralizado: nome / artista / ano · gênero · cor
+    const info = document.createElement("div");
+    info.className = "info-modal";
+    const h3 = document.createElement("h3");
+    h3.textContent = d.nome;
+    const pArt = document.createElement("p");
+    pArt.className = "artista-modal";
+    pArt.textContent = d.artista;
+    const pDet = document.createElement("p");
+    pDet.className = "detalhes-modal";
+    pDet.textContent = `${d.ano || "ano não informado"} · ${d.genero} · ${d.cor.join(", ")}`;
+    info.append(h3, pArt, pDet);
+    cont.append(info);
 
     if(!faixas.length){
       if(!capa){
