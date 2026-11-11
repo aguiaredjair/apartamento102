@@ -226,6 +226,10 @@ function ativarTab(nome){
   if (nome === "karaoke") { painel.hidden = true; btnMenu.setAttribute("aria-expanded", false); }
   if (nome === "artistas") desenhaArtistas();
   if (nome === "karaoke") { conectarEventos(); desenhaKaraoke(); }
+
+  // Persistência do estado
+  try { localStorage.setItem("abaAtiva", nome); } catch {}
+  if (location.hash !== "#" + nome) history.replaceState(null, "", "#" + nome);
 }
 tabs.forEach(t => $("tab-"+t).onclick = () => ativarTab(t));
 
@@ -417,7 +421,7 @@ const loadEventos = () => { try { return JSON.parse(localStorage.getItem(KARAOKE
 const saveEventos = ev => { try { localStorage.setItem(KARAOKE_KEY, JSON.stringify(ev)); } catch {} };
 
 let wsEventos = null;
-let eventosRemotos = null; // null = ainda não recebemos nada do servidor
+let eventosRemotos = null;
 let wsKaraoke = null;
 let filaAtual = [];
 
@@ -426,7 +430,6 @@ function fmtDataLonga(iso){
   return new Date(y, m-1, d).toLocaleDateString("pt-BR",{weekday:"long", day:"2-digit", month:"long", year:"numeric"});
 }
 
-// WebSocket global da lista de eventos
 function conectarEventos(){
   if (wsEventos && (wsEventos.readyState === WebSocket.OPEN || wsEventos.readyState === WebSocket.CONNECTING)) return;
 
@@ -447,17 +450,10 @@ function conectarEventos(){
       }
     } catch (e) { console.warn("Mensagem inválida (eventos):", e); }
   };
-
-  wsEventos.onerror = () => {
-    console.warn("Erro no WebSocket de eventos");
-  };
-
-  wsEventos.onclose = () => {
-    wsEventos = null;
-  };
+  wsEventos.onerror = () => { console.warn("Erro no WebSocket de eventos"); };
+  wsEventos.onclose = () => { wsEventos = null; };
 }
 
-// Migração: envia eventos locais (localStorage) para o servidor uma vez
 function migrarEventosLocais(){
   if (!eventosRemotos) return;
   const locais = loadEventos();
@@ -473,11 +469,8 @@ function migrarEventosLocais(){
     }
   });
 
-  // Se todos os eventos locais já existem no servidor (ou foram enviados), limpa o cache local
   const todosNoServidor = locais.every(ev => eventosRemotos.includes(ev.data));
-  if (algoMigrado || todosNoServidor) {
-    saveEventos([]);
-  }
+  if (algoMigrado || todosNoServidor) saveEventos([]);
 }
 
 function desenhaKaraoke(){
@@ -511,16 +504,13 @@ function novoEvento(){
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos.");
     return;
   }
-
   if (eventosRemotos && eventosRemotos.includes(data)) {
     alert("Já existe um evento nessa data.");
     return;
   }
-
   wsEventos.send(JSON.stringify({ tipo: "criar_evento", data }));
 }
 
-// WebSocket por evento (fila)
 function conectarKaraoke(data){
   if (wsKaraoke) { try { wsKaraoke.close(); } catch {} wsKaraoke = null; }
 
@@ -633,6 +623,16 @@ async function init(){
   }catch(e){
     $("grid").innerHTML = '<p class="aviso">Não consegui carregar os discos. Verifique o arquivo discos.json.</p>';
   }
+
+  // Restaura a última aba usada (hash da URL tem prioridade; senão, localStorage)
+  let inicial = "discos";
+  try {
+    const daHash = location.hash.replace("#", "");
+    const doStorage = localStorage.getItem("abaAtiva");
+    if (tabs.includes(daHash)) inicial = daHash;
+    else if (tabs.includes(doStorage)) inicial = doStorage;
+  } catch {}
+  ativarTab(inicial);
 }
 init();
 </script>
