@@ -162,11 +162,11 @@ dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88v
 /* CORREÇÃO DO MODAL DE PERFIL */
 dialog#modal-perfil { 
   width: min(680px, 94vw); 
-  min-height: min(580px, 85vh); /* Garante que o modal não colapse para 0 */
+  min-height: min(580px, 85vh);
   padding: 0; 
   background: transparent; 
   border: none;
-  overflow: visible; /* Permite que a carta rotacione sem cortes */
+  overflow: visible;
 }
 dialog#modal-pessoas { width: min(420px, 94vw); }
 dialog.grande{width:min(820px,94vw)}
@@ -297,7 +297,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 .flip-card-container {
   perspective: 1200px;
   width: 100%;
-  height: min(580px, 85vh); /* Altura do Card */
+  height: min(580px, 85vh);
   cursor: pointer;
   position: relative;
 }
@@ -1158,7 +1158,6 @@ async function abrirPerfil(username) {
     const flipCard = $("flip-card");
     if (flipCard) {
       flipCard.addEventListener('click', (e) => {
-        // Impede que o clique no link do lastfm vire a carta de volta
         if(e.target.closest('.link-lastfm')) return;
         flipCard.classList.toggle('flipped');
       });
@@ -1733,4 +1732,352 @@ function desenhaArtistas(){
     const btn = document.createElement("button"); btn.type = "button";
     btn.className = "letra-btn" + (letraFiltroArtista === letra ? " ativo" : "");
     btn.textContent = letra;
-    btn.onclick = () => { letraFiltroArtista = (letraFiltroArtista === letra) ?
+    btn.onclick = () => { letraFiltroArtista = (letraFiltroArtista === letra) ? null : letra; desenhaArtistas(); };
+    filtro.append(btn);
+  });
+
+  const g = $("grid-artistas"); g.textContent = "";
+
+  if (letraFiltroArtista) {
+    const nomes = grupos[letraFiltroArtista] || [];
+    if (!nomes.length) {
+      $("contagem-artistas").textContent = `Nenhum artista com a letra "${letraFiltroArtista}" ainda (de ${total} no total)`;
+      g.innerHTML = `<p class="aviso">Nenhum artista com a letra "${esc(letraFiltroArtista)}" ainda.</p>`;
+      return;
+    }
+    $("contagem-artistas").textContent = `Mostrando ${nomes.length} ${nomes.length===1?"artista":"artistas"} · letra ${letraFiltroArtista} (de ${total})`;
+
+    const divisor = document.createElement("h2"); divisor.className = "divisor-letra"; divisor.textContent = letraFiltroArtista; g.append(divisor);
+    nomes.forEach(nome => {
+      const b = document.createElement("button"); b.className = "artista-item";
+      const n = document.createElement("span"); n.className = "artista-nome"; n.textContent = nome;
+      const c = document.createElement("span"); c.className = "artista-contagem"; c.textContent = `${contagem[nome]} ${contagem[nome]===1 ? "disco" : "discos"}`;
+      b.append(n, c); b.onclick = () => abreArtista(nome); g.append(b);
+    });
+  } else {
+    $("contagem-artistas").textContent = `Mostrando ${total} ${total===1?"artista":"artistas"}`;
+    Object.keys(grupos).sort().forEach(letra => {
+      const nomes = grupos[letra];
+      if (!nomes.length) return;
+      const divisor = document.createElement("h2"); divisor.className = "divisor-letra"; divisor.textContent = letra; g.append(divisor);
+      nomes.forEach(nome => {
+        const b = document.createElement("button"); b.className = "artista-item";
+        const n = document.createElement("span"); n.className = "artista-nome"; n.textContent = nome;
+        const c = document.createElement("span"); c.className = "artista-contagem"; c.textContent = `${contagem[nome]} ${contagem[nome]===1 ? "disco" : "discos"}`;
+        b.append(n, c); b.onclick = () => abreArtista(nome); g.append(b);
+      });
+    });
+  }
+}
+
+async function abreArtista(nome){
+  const discs = ordena(discos.filter(d => d.artista === nome));
+  $("m-nome").textContent = nome;
+  $("m-info").textContent = `${discs.length} ${discs.length===1?"disco":"discos"} na coleção`;
+  const cont = $("m-conteudo"); cont.textContent = "";
+  const grid = document.createElement("div"); grid.className = "grid-capas";
+
+  discs.forEach(d => {
+    const c = document.createElement("div"); c.className = "capa"; c.textContent = d.nome; c._disco = d;
+    c.style.cursor = "pointer"; c.onclick = () => { fecharModal(); setTimeout(() => abreDisco(d), 100); };
+    grid.append(c);
+    infoAlbum(d).then(r => {
+      if(r.capa){
+        const i = new Image(); i.alt = `Capa de ${d.nome}`;
+        i.onload = () => { c.textContent=""; c.append(i); }; i.src = r.capa;
+      }
+    }).catch(()=>{});
+  });
+  cont.append(grid);
+  modalEl.classList.add("grande"); modalEl.showModal();
+}
+
+// ---- KARAOKÊ (SALAS) ----
+let wsSalas = null;
+let salasRemotas = null;
+let wsKaraoke = null;
+let filaAtual = [];
+let salaAbertaId = null;
+let salaAbertaEncerrada = false;
+
+function conectarSalas(){
+  if (wsSalas && (wsSalas.readyState === WebSocket.OPEN || wsSalas.readyState === WebSocket.CONNECTING)) return;
+
+  const protocolo = location.protocol === "https:" ? "wss:" : "ws:";
+  const url = `${protocolo}//${location.host}/api/karaoke/salas`;
+  wsSalas = new WebSocket(url);
+
+  wsSalas.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.tipo === "estado_inicial") {
+        salasRemotas = msg.salas || [];
+        desenhaSalas();
+      } else if (msg.tipo === "salas_atualizadas") {
+        salasRemotas = msg.salas || [];
+        desenhaSalas();
+        
+        if (salaAbertaId) {
+          const sAtual = salasRemotas.find(e => e.id === salaAbertaId);
+          const estaEncerrada = sAtual ? sAtual.encerrado : false;
+          
+          if (estaEncerrada && !salaAbertaEncerrada) {
+            salaAbertaEncerrada = true;
+            const cont = $("m-conteudo");
+            
+            const form = cont.querySelector(".form-add");
+            if (form) form.remove();
+            const btnEnc = cont.querySelector(".btn-encerrar");
+            if (btnEnc) btnEnc.remove();
+            
+            $("m-info").textContent = "Sala Encerrada";
+            modalEl.classList.remove("modal-evento-ativo");
+            modalEl.classList.add("modal-evento-encerrado");
+          }
+        }
+      }
+    } catch (e) { console.warn("Msg inválida (salas):", e); }
+  };
+  wsSalas.onerror = () => { console.warn("Erro no WS de salas"); };
+  wsSalas.onclose = () => { wsSalas = null; };
+}
+
+function desenhaSalas(){
+  if (salasRemotas === null) {
+    $("contagem-salas").textContent = "Conectando…";
+    $("lista-salas").innerHTML = '<p class="aviso">Conectando ao servidor…</p>';
+    return;
+  }
+  
+  const salas = [...salasRemotas];
+  salas.sort((a,b) => a.id < b.id ? 1 : -1);
+  
+  $("contagem-salas").textContent = `Mostrando ${salas.length} ${salas.length===1?"sala":"salas"}`;
+  const lista = $("lista-salas"); lista.textContent = "";
+  if(!salas.length){
+    lista.innerHTML = '<p class="aviso">Nenhuma sala ainda. Crie a primeira!</p>';
+    return;
+  }
+  salas.forEach(sala => {
+    const b = document.createElement("button");
+    b.className = "evento-item";
+    b.classList.add(sala.encerrado ? "encerrado" : "ativo");
+    
+    const legenda = `${sala.data} · ${sala.encerrado ? 'Encerrado' : 'Ativo'}`;
+    b.innerHTML = `
+      <div>
+        <b style="text-transform: none;">${esc(sala.nome)}</b>
+        <small>${esc(legenda)}</small>
+      </div>
+      <span>→</span>
+    `;
+    b.onclick = () => abrirSala(sala);
+    lista.append(b);
+  });
+}
+
+function novaSala(){
+  const nome = prompt("Qual o nome da sala?");
+  if(!nome) return;
+  
+  const agora = new Date();
+  const dataStr = agora.toLocaleDateString('pt-BR');
+  const id = "sala_" + Date.now();
+
+  if (!wsSalas || wsSalas.readyState !== WebSocket.OPEN) {
+    alert("Sem conexão com o servidor. Tente de novo em alguns segundos."); return;
+  }
+  
+  wsSalas.send(JSON.stringify({ tipo: "criar_sala", id, nome, data: dataStr }));
+}
+
+function conectarKaraoke(id){
+  if (wsKaraoke) { try { wsKaraoke.close(); } catch {} wsKaraoke = null; }
+  const protocolo = location.protocol === "https:" ? "wss:" : "ws:";
+  const url = `${protocolo}//${location.host}/api/karaoke/${encodeURIComponent(id)}`;
+  wsKaraoke = new WebSocket(url);
+
+  wsKaraoke.onopen = () => { $("m-info").textContent = salaAbertaEncerrada ? "Sala Encerrada" : "Conectado. Adicione seu nome à fila."; };
+  wsKaraoke.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.tipo === "estado_inicial" || msg.tipo === "fila_atualizada") {
+        filaAtual = msg.fila || [];
+        renderizarFila(filaAtual);
+      }
+    } catch (e) { console.warn("Msg inválida (fila):", e); }
+  };
+  wsKaraoke.onerror = () => { $("m-info").textContent = "Erro de conexão. Recarregue a página."; };
+  wsKaraoke.onclose = () => {};
+}
+
+function renderizarFila(fila){
+  const ol = document.querySelector("#m-conteudo .fila-lista");
+  if (!ol) return;
+  ol.innerHTML = "";
+  if (!fila.length) {
+    const li = document.createElement("li");
+    li.style.borderBottom = "0"; li.style.color = "var(--mute)";
+    li.textContent = "Ninguém na fila ainda. Seja o primeiro!";
+    ol.append(li); return;
+  }
+  
+  fila.forEach((item, i) => {
+    const li = document.createElement("li");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox"; checkbox.checked = !!item.cantou;
+    
+    if (salaAbertaEncerrada) {
+      checkbox.disabled = true;
+    } else {
+      checkbox.onchange = () => {
+        if (wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN) {
+          wsKaraoke.send(JSON.stringify({ tipo: "marcar_cantou", index: i, cantou: checkbox.checked }));
+        }
+      };
+    }
+
+    const num = document.createElement("span"); num.className = "num"; num.textContent = `${i+1}.`;
+    
+    const div = document.createElement("div");
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "0.6rem";
+    
+    const avatarSrc = item.avatar || DEFAULT_AVATAR;
+    div.innerHTML = `
+      <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc; cursor: pointer;" onclick="abrirPerfil('${esc(item.nome)}')">
+      <div>
+        <span class="nome" onclick="abrirPerfil('${esc(item.nome)}')">${esc(item.nome)}</span>
+        <span class="musica">${esc(item.musica)}</span>
+      </div>
+    `;
+    
+    li.append(checkbox, num, div);
+
+    if (!salaAbertaEncerrada && userProfile && item.nome === userProfile.username) {
+      const btnLixeira = document.createElement("button");
+      btnLixeira.className = "btn-lixeira";
+      btnLixeira.innerHTML = "🗑️";
+      btnLixeira.title = "Sair da fila";
+      btnLixeira.onclick = () => {
+        if (confirm(`Remover sua música (${item.musica}) da fila?`)) {
+          if (wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN) {
+            wsKaraoke.send(JSON.stringify({ tipo: "sair_da_fila", index: i }));
+          }
+        }
+      };
+      li.append(btnLixeira);
+    }
+
+    if (item.cantou) li.style.opacity = "0.5";
+    ol.append(li);
+  });
+}
+
+function abrirSala(sala){
+  escondeTooltip();
+  salaAbertaId = sala.id;
+  salaAbertaEncerrada = sala.encerrado;
+  
+  $("m-nome").textContent = sala.nome;
+  $("m-info").textContent = sala.data;
+  const cont = $("m-conteudo"); cont.textContent = "";
+  
+  modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
+
+  const ol = document.createElement("ol"); ol.className = "fila-lista"; cont.append(ol);
+
+  if (!salaAbertaEncerrada) {
+    modalEl.classList.add("modal-evento-ativo");
+    
+    const form = document.createElement("form"); form.className = "form-add";
+    form.innerHTML = `
+      <input type="text" placeholder="Música que vai cantar" required maxlength="100">
+      <button type="submit">Entrar na fila</button>
+    `;
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const musica = form.querySelector("input").value.trim();
+      
+      if(!musica) return;
+      if(!userProfile) {
+        alert("Você precisa estar logado para entrar na fila.");
+        return;
+      }
+      
+      if(wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN){
+        wsKaraoke.send(JSON.stringify({ 
+          tipo: "entrar_na_fila", 
+          nome: userProfile.username,
+          avatar: userProfile.avatar_url,
+          musica: musica 
+        }));
+      }
+      form.reset();
+    };
+    cont.append(form);
+
+    const btnEncerrar = document.createElement("button");
+    btnEncerrar.className = "btn-encerrar";
+    btnEncerrar.textContent = "Encerrar Sala";
+    btnEncerrar.onclick = () => {
+      if (confirm("Tem certeza que deseja encerrar esta sala? Ninguém mais poderá entrar na fila.")) {
+        if (wsSalas && wsSalas.readyState === WebSocket.OPEN) {
+          wsSalas.send(JSON.stringify({ tipo: "encerrar_sala", id: salaAbertaId }));
+        }
+      }
+    };
+    cont.append(btnEncerrar);
+  } else {
+    modalEl.classList.add("modal-evento-encerrado");
+    $("m-info").textContent = `${sala.data} · Encerrada`;
+  }
+
+  modalEl.showModal();
+  conectarKaraoke(salaAbertaId);
+}
+
+$("nova-sala").onclick = novaSala;
+
+// ---- INIT ----
+async function init(){
+  try{
+    let dados = DADOS;
+    if(API_URL){
+      try{
+        const r = await fetch(API_URL);
+        if(r.ok) dados = await r.json();
+      }catch{}
+    }
+
+    if (Array.isArray(dados)) discos = dados.map(norm);
+    else discos = (dados.discos || []).map(norm);
+
+    opcoes($("f-artista"),"Todos os artistas","artista");
+    opcoes($("f-genero"),"Todos os gêneros","genero");
+    opcoes($("f-cor"),"Todas as cores","cor");
+    desenhaDiscos(); desenhaArtistas(); desenhaSalas();
+  }catch(e){
+    $("grid").innerHTML = '<p class="aviso">Não consegui carregar os discos. Verifique o arquivo discos.json.</p>';
+  }
+
+  let inicial = "discos";
+  try {
+    const daHash = location.hash.replace("#", "");
+    const doStorage = localStorage.getItem("abaAtiva");
+    if (tabs.includes(daHash)) inicial = daHash;
+    else if (tabs.includes(doStorage)) inicial = doStorage;
+  } catch {}
+  
+  if (inicial === "karaoke" && !currentUser) {
+    inicial = "discos";
+  }
+  ativarTab(inicial);
+}
+
+init();
+setupAuth();
+</script>
+</body>
+</html>
