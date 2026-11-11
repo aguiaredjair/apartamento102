@@ -242,6 +242,25 @@ dialog.modal-evento-encerrado .fila-lista li {
   border-color: var(--accent);
 }
 
+/* --- ANIMAÇÃO DE BOAS VINDAS --- */
+#config-titulo {
+  text-align: center;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@keyframes welcomeAnim {
+  0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+  15% { opacity: 1; transform: translateY(0) scale(1); }
+  85% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+}
+.welcome-animating {
+  animation: welcomeAnim 1.2s forwards;
+  display: inline-block;
+}
+
 @media(max-width:480px){
   .tabs{gap:.3rem}
   .tab{padding:.5rem .8rem;font-size:.78rem}
@@ -375,8 +394,8 @@ dialog.modal-evento-encerrado .fila-lista li {
 
 <!-- MODAL DE CONFIGURAÇÕES / PRIMEIRO ACESSO -->
 <dialog id="modal-config"><div class="modal">
-  <button class="fechar" aria-label="Fechar" onclick="document.getElementById('modal-config').close()">×</button>
-  <h2 id="config-titulo">Configurações</h2>
+  <button class="fechar" aria-label="Fechar" onclick="fecharConfiguracoes()">×</button>
+  <h2 id="config-titulo"><span id="welcome-text"></span></h2>
   <p class="sub" id="config-sub">Atualize sua foto e senha</p>
   
   <form id="form-config" style="display: flex; flex-direction: column;">
@@ -391,7 +410,7 @@ dialog.modal-evento-encerrado .fila-lista li {
     <label style="font-weight: bold; margin-bottom: 5px;">Nova Senha:</label>
     <input type="password" id="config-senha" placeholder="Digite uma senha segura" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem;">
     
-    <button type="submit" style="padding: 0.6rem; background: var(--ink); color: var(--bg); border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Salvar Alterações</button>
+    <button type="submit" style="padding: 0.6rem; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s;">Salvar Alterações</button>
     <p id="config-msg" style="font-size: 0.8rem; color: var(--accent); text-align: center; margin-top: 0.5rem; font-weight: bold;"></p>
   </form>
 </div></dialog>
@@ -457,8 +476,42 @@ const loginMsg = $("login-msg");
 let currentUser = null;
 let avatarSelecionado = "assets/profiles/pfp/george-pfp.jpg";
 
+// Variáveis da Animação de Boas-Vindas
+const welcomeWords = ["Bem-vindo", "Welcome", "Добро пожаловать", "환영합니다", "ようこそ", "欢迎", "مرحبا", "स्वागतम्", "Καλώς ορίσατε", "Bienvenue", "Willkommen", "Bienvenido", "Benvenuto"];
+let welcomeIndex = 0;
+let welcomeInterval = null;
+
+function iniciarAnimacaoBoasVindas() {
+  const span = $("welcome-text");
+  welcomeIndex = 0;
+  span.textContent = welcomeWords[0];
+  span.classList.add("welcome-animating");
+
+  welcomeInterval = setInterval(() => {
+    welcomeIndex = (welcomeIndex + 1) % welcomeWords.length;
+    span.textContent = welcomeWords[welcomeIndex];
+    
+    // Reiniciar a animação CSS
+    span.classList.remove("welcome-animating");
+    void span.offsetWidth; // trigger reflow
+    span.classList.add("welcome-animating");
+  }, 1200); // 1.2s por palavra
+}
+
+function pararAnimacaoBoasVindas() {
+  if (welcomeInterval) {
+    clearInterval(welcomeInterval);
+    welcomeInterval = null;
+  }
+}
+
+function fecharConfiguracoes() {
+  pararAnimacaoBoasVindas();
+  $("modal-config").close();
+}
+
 async function checarUsuario() {
-  if (!window.supabase) return; // Aguarda o Supabase carregar
+  if (!window.supabase) return;
   
   const { data: { session } } = await window.supabase.auth.getSession();
   
@@ -487,7 +540,6 @@ async function checarUsuario() {
   }
 }
 
-// Inicializa a autenticação quando o Supabase estiver pronto
 async function setupAuth() {
   if (!window.supabase) {
     setTimeout(setupAuth, 100);
@@ -509,7 +561,6 @@ formLogin.onsubmit = async (e) => {
 
   if (!window.supabase) return;
 
-  // 1. Busca o e-mail do usuário usando a função RPC que criamos no SQL
   const { data: email, error: rpcError } = await window.supabase.rpc('get_email_by_username', { p_username: username });
 
   if (rpcError || !email) {
@@ -520,7 +571,6 @@ formLogin.onsubmit = async (e) => {
 
   loginMsg.textContent = "Entrando...";
 
-  // 2. Faz o login com o e-mail recuperado
   const { data, error } = await window.supabase.auth.signInWithPassword({
     email: email,
     password: senha,
@@ -547,11 +597,17 @@ function abrirConfiguracoes(primeiroAcesso = false) {
   modalConfig.showModal();
   
   if (primeiroAcesso) {
-    $("config-titulo").textContent = "Bem-vindo(a) ao 102!";
+    $("config-titulo").style.display = "flex";
+    $("welcome-text").style.display = "inline-block";
+    $("config-sub").style.display = "block";
     $("config-sub").textContent = "Por favor, troque sua senha e escolha uma foto para continuar.";
+    iniciarAnimacaoBoasVindas();
   } else {
-    $("config-titulo").textContent = "Configurações";
-    $("config-sub").textContent = "Atualize sua foto e senha.";
+    pararAnimacaoBoasVindas();
+    $("config-titulo").style.display = "flex";
+    $("welcome-text").textContent = "Configurações";
+    $("welcome-text").classList.remove("welcome-animating");
+    $("config-sub").style.display = "none"; // Oculta o subtítulo no modo de configurações normais
   }
   
   if (currentUser && window.supabase) {
@@ -612,7 +668,7 @@ $("form-config").onsubmit = async (e) => {
   msg.style.color = "var(--accent)";
   
   setTimeout(() => {
-    $("modal-config").close();
+    fecharConfiguracoes();
     $("config-senha").value = "";
     msg.textContent = "";
     checarUsuario();
@@ -1276,9 +1332,7 @@ async function init(){
   ativarTab(inicial);
 }
 
-// Roda o carregamento do site independentemente do Supabase
 init();
-// Inicia a verificação de autenticação
 setupAuth();
 </script>
 </body>
