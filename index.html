@@ -103,6 +103,15 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 .capa img{ position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block; z-index:0;border-radius:inherit; }
 .disco:hover .capa{transform:translateY(-4px);border-radius:50%}
 .disco:hover .capa::before{opacity:.5}
+
+/* --- TRANSFORMAÇÃO DO PICTURE DISC --- */
+.capa.picture-disc::before { display: none !important; }
+.disco:hover .capa.picture-disc {
+    transform: translateY(-4px) scale(0.95); /* 95% de tamanho */
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 5px #22201d; /* Moldura preta */
+}
+
 .capa.zoetrope::before{display:none !important}
 .capa.zoetrope:hover{animation:girar 2s linear infinite}
 @keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -662,6 +671,8 @@ function desenhaDiscos(){
     c.style.setProperty("--cor-disco", corParaCss(d.cor));
     if(corNome.includes("zoetrope")) c.classList.add("zoetrope");
     if(corNome.includes("splatter")) c.classList.add("splatter");
+    if(corNome.includes("picture disc")) c.classList.add("picture-disc");
+    
     b.append(c);
     b.onclick = () => abreDisco(d);
     b.addEventListener("mouseenter", e => mostraTooltip(e, d));
@@ -854,7 +865,8 @@ function desenhaKaraoke(){
     b.className = "evento-item";
     b.classList.add(ev.encerrado ? "encerrado" : "ativo");
     
-    b.innerHTML = `<div><b>${esc(fmtDataLonga(ev.data))}</b><small>${ev.encerrado ? 'Encerrado' : 'abrir fila →'}</small></div><span>→</span>`;
+    // Alteração aqui: 'abrir fila →' virou 'Ativo'
+    b.innerHTML = `<div><b>${esc(fmtDataLonga(ev.data))}</b><small>${ev.encerrado ? 'Encerrado' : 'Ativo'}</small></div><span>→</span>`;
     b.onclick = () => abrirEvento(ev);
     lista.append(b);
   });
