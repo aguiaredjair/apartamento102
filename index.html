@@ -162,7 +162,7 @@ dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88v
 /* CORREÇÃO DO MODAL DE PERFIL */
 dialog#modal-perfil { 
   width: min(680px, 94vw); 
-  min-height: min(580px, 85vh);
+  min-height: min(520px, 80vh); /* Altura do modal reduzida */
   padding: 0; 
   background: transparent; 
   border: none;
@@ -297,7 +297,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 .flip-card-container {
   perspective: 1200px;
   width: 100%;
-  height: min(580px, 85vh);
+  height: min(500px, 80vh); /* Reduzido para evitar rolagem na frente */
   cursor: pointer;
   position: relative;
 }
@@ -342,7 +342,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 /* --- CONTEÚDO DO PERFIL --- */
 .perfil-capa {
   width: 100%;
-  padding: 2rem 1.4rem 1.5rem 1.4rem;
+  padding: 1.5rem 1.4rem 1rem 1.4rem; /* Reduzido */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -365,17 +365,17 @@ dialog.modal-evento-encerrado .fila-lista li {
   z-index: 2;
 }
 .perfil-avatar {
-  width: 120px;
-  height: 120px;
+  width: 90px; /* Reduzido */
+  height: 90px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid var(--card);
   background: var(--bg);
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 .perfil-capa h3 {
-  font-size: 1.6rem;
+  font-size: 1.4rem; /* Reduzido */
   font-weight: 800;
   margin: 0 0 0.2rem 0;
   color: var(--ink);
@@ -383,7 +383,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 }
 .perfil-capa p {
   color: var(--mute);
-  font-size: 0.95rem;
+  font-size: 0.85rem; /* Reduzido */
   margin: 0;
 }
 .perfil-capa.com-imagem h3, .perfil-capa.com-imagem p {
@@ -392,7 +392,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 }
 
 .perfil-corpo {
-  padding: 1.4rem;
+  padding: 1rem 1.4rem; /* Reduzido */
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -402,26 +402,26 @@ dialog.modal-evento-encerrado .fila-lista li {
 
 /* --- FAIXAS RECENTES --- */
 .faixas-recentes-container {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   width: 100%;
   text-align: left;
 }
 .faixas-recentes-titulo {
-  font-size: 1.25rem;
+  font-size: 1.1rem; /* Reduzido */
   font-weight: 800;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   color: var(--ink);
 }
 .faixa-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.8rem 0;
+  gap: 0.8rem;
+  padding: 0.5rem 0; /* Reduzido */
   border-bottom: 1px solid rgba(34,32,29,.12);
 }
 .faixa-cover {
-  width: 48px;
-  height: 48px;
+  width: 36px; /* Reduzido */
+  height: 36px;
   border-radius: 4px;
   object-fit: cover;
   background: #eee;
@@ -430,7 +430,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 .faixa-track {
   flex: 1;
   min-width: 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem; /* Reduzido */
   font-weight: 700;
   color: var(--ink);
   white-space: nowrap;
@@ -440,7 +440,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 .faixa-artist {
   flex: 0.6;
   min-width: 0;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Reduzido */
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
@@ -472,8 +472,8 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-align: center;
   font-size: 0.8rem;
   color: var(--mute);
-  margin-top: 1.5rem; /* Espaçamento aumentado */
-  padding-bottom: 1rem;
+  margin-top: 1rem;
+  padding-bottom: 0.5rem;
   font-style: italic;
 }
 
@@ -493,11 +493,6 @@ dialog.modal-evento-encerrado .fila-lista li {
   margin: 0;
   font-size: 1.4rem;
   font-weight: 800;
-}
-.top-charts-header p {
-  margin: 0.2rem 0 0;
-  font-size: 0.85rem;
-  color: var(--mute);
 }
 .top-charts-grid {
   display: grid;
@@ -614,10 +609,10 @@ dialog.modal-evento-encerrado .fila-lista li {
 }
 
 @media(max-width:500px) {
-  .faixa-item { gap: 0.6rem; padding: 0.7rem 0; }
-  .faixa-cover { width: 40px; height: 40px; }
-  .faixa-track { font-size: 0.85rem; flex: 1.5; }
-  .faixa-artist { font-size: 0.8rem; flex: 1; }
+  .faixa-item { gap: 0.6rem; padding: 0.5rem 0; }
+  .faixa-cover { width: 32px; height: 32px; }
+  .faixa-track { font-size: 0.8rem; flex: 1.5; }
+  .faixa-artist { font-size: 0.75rem; flex: 1; }
   
   .top-charts-grid { grid-template-columns: 1fr; gap: 2rem; }
 }
@@ -1120,7 +1115,7 @@ async function abrirPerfil(username) {
         <div class="top-charts-wrapper">
           <div class="top-charts-header">
             <h3>Mais ouvidos da semana</h3>
-            <p>(últimos 7 dias)</p>
+            <!-- Removido o subtítulo "(últimos 7 dias)" -->
           </div>
           <div class="top-charts-grid">
             <div class="top-charts-col">
