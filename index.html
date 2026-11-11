@@ -97,15 +97,17 @@ button.limpar{
   padding:.55rem 1.2rem;
 }
 
-/* ---------- FILTRO ALFABÉTICO (UNIFICADO 9x3) ---------- */
-.filtro-letras {
+/* ---------- FILTROS ALFABÉTICOS ---------- */
+
+/* 1. Aba de artistas (com contorno circular) */
+.filtro-artistas {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   gap: .4rem;
   max-width: 460px;
   margin: 0 auto;
 }
-.letra-btn {
+.filtro-artistas .letra-btn {
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
   font-size:.85rem;
   font-weight:700;
@@ -123,75 +125,64 @@ button.limpar{
   place-items:center;
   line-height:1;
 }
-.letra-btn:hover { background:rgba(213,171,9,.2); border-color:var(--accent); transform:translateY(-1px); }
-.letra-btn.ativo { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 3px 8px -3px rgba(213,171,9,.7); }
-.letra-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.filtro-artistas .letra-btn:hover { background:rgba(213,171,9,.2); border-color:var(--accent); transform:translateY(-1px); }
+.filtro-artistas .letra-btn.ativo { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 3px 8px -3px rgba(213,171,9,.7); }
+
+/* 2. Aba de discos (sem contorno circular, só o texto) */
+.filtro-discos {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: .4rem;
+  max-width: 460px;
+  margin: 0 auto;
+}
+.filtro-discos .letra-btn {
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  width: 100%;
+  aspect-ratio: 1;
+  border: none;
+  background: transparent;
+  color: var(--mute);
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  text-transform: lowercase;
+  transition: color .15s, transform .1s;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+.filtro-discos .letra-btn:hover { color: var(--ink); transform: scale(1.15); }
+.filtro-discos .letra-btn.ativo { color: var(--accent); font-size: 1.1rem; }
 
 /* ---------- GRID DISCOS ---------- */
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.2rem 1rem;align-items:start}
 .disco{
-  min-width:0;
-  background:none;
-  border:0;
-  padding:0;
-  text-align:center;
-  font:inherit;
-  color:inherit;
-  -webkit-tap-highlight-color:transparent;
-  display:block;
-  position:relative;
-  z-index:1;
+  min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;
+  -webkit-tap-highlight-color:transparent;display:block;position:relative;z-index:1;
 }
 .disco:hover{ z-index:10; }
 .disco:focus{outline:none}
 .disco:focus-visible .capa{outline:2px solid var(--accent);outline-offset:3px}
 
 .capa{
-  position:relative;
-  width:100%;
-  min-width:0;
-  aspect-ratio:1;
-  overflow:hidden;
-  display:grid;
-  place-items:center;
-  text-align:center;
-  transition:transform .2s, border-radius .25s;
-  color:var(--mute);
-  font-weight:700;
-  font-size:.7rem;
-  padding:.5rem;
-  overflow-wrap:anywhere;
-  background:transparent;
-  border-radius:10px;
+  position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;
+  display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .25s;
+  color:var(--mute);font-weight:700;font-size:.7rem;padding:.5rem;overflow-wrap:anywhere;
+  background:transparent;border-radius:10px;
 }
 .capa::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:var(--cor-disco, transparent);
-  opacity:0;
-  transition:opacity .2s;
-  pointer-events:none;
-  z-index:1;
-  border-radius:inherit;
+  content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);
+  opacity:0;transition:opacity .2s;pointer-events:none;z-index:1;border-radius:inherit;
 }
 .capa img{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  z-index:0;
-  border-radius:inherit;
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+  z-index:0;border-radius:inherit;
 }
-.disco:hover .capa{
-  transform:translateY(-4px);
-  border-radius:50%;
-}
-.disco:hover .capa::before{
-  opacity:.5;
-}
+.disco:hover .capa{transform:translateY(-4px);border-radius:50%}
+.disco:hover .capa::before{opacity:.5}
 
 .capa.zoetrope::before{display:none !important}
 .capa.zoetrope:hover{animation:girar 2s linear infinite}
@@ -213,20 +204,11 @@ button.limpar{
 
 /* Círculo central (20% do tamanho) */
 .splatter-center {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    width: 20%; height: 20%;
-    border-radius: 50%;
-    background-size: cover;
-    background-position: center;
-    z-index: 2;
-    pointer-events: none;
-    transition: transform .3s;
+    position: absolute;top: 50%; left: 50%;transform: translate(-50%, -50%) scale(0);
+    width: 20%; height: 20%;border-radius: 50%;background-size: cover;background-position: center;
+    z-index: 2;pointer-events: none;transition: transform .3s;
 }
-.capa.splatter:hover .splatter-center {
-    transform: translate(-50%, -50%) scale(1);
-}
+.capa.splatter:hover .splatter-center { transform: translate(-50%, -50%) scale(1); }
 
 /* ---------- TOOLTIP ---------- */
 .tooltip{
@@ -329,8 +311,10 @@ li small{color:var(--mute);float:right}
   .artista-item{padding:.6rem .3rem}
   .artista-nome{font-size:.95rem}
   #grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem .8rem}
-  .filtro-letras{gap:.25rem}
-  .letra-btn{font-size:.72rem;border-width:1.2px}
+  .filtro-artistas{gap:.25rem}
+  .filtro-artistas .letra-btn{font-size:.72rem;border-width:1.2px}
+  .filtro-discos{gap:.25rem}
+  .filtro-discos .letra-btn{font-size:.8rem}
   .painel-filtros{padding:.9rem}
 }
 </style>
@@ -356,7 +340,7 @@ li small{color:var(--mute);float:right}
       </button>
       <div class="painel-filtros" id="painel-filtros" hidden>
         <div class="filtro-titulo">Por letra do artista</div>
-        <div id="filtro-letras-discos" class="filtro-letras" role="group" aria-label="Filtrar por letra do artista"></div>
+        <div id="filtro-letras-discos" class="filtro-discos" role="group" aria-label="Filtrar por letra do artista"></div>
         <div class="selects-filtros">
           <select id="f-artista" aria-label="Artista"></select>
           <select id="f-genero" aria-label="Gênero"></select>
@@ -371,7 +355,7 @@ li small{color:var(--mute);float:right}
 
   <section class="view" id="view-artistas" role="tabpanel" aria-labelledby="tab-artistas">
     <p class="legenda" id="contagem-artistas"></p>
-    <div id="filtro-letras" class="filtro-letras" role="group" aria-label="Filtrar por letra inicial"></div>
+    <div id="filtro-letras" class="filtro-artistas" role="group" aria-label="Filtrar por letra inicial"></div>
     <div id="grid-artistas"></div>
   </section>
 
@@ -636,9 +620,8 @@ async function abreDisco(d){
   }
 }
 
-// ---- DISCOS ----
+// ---- ORDENAÇÃO ----
 const collator = new Intl.Collator('pt-BR', { sensitivity: 'base', numeric: true });
-
 const ordena = l => {
   return [...l].sort((a,b) => {
     const artA = semArtigo(a.artista);
@@ -665,6 +648,7 @@ function opcoes(sel, rotulo, campo){
   sel.value = v;
 }
 
+// ---- DISCOS ----
 function desenhaFiltroLetrasDiscos(){
   const filtro = $("filtro-letras-discos");
   filtro.textContent = "";
@@ -685,21 +669,23 @@ function desenhaFiltroLetrasDiscos(){
 function desenhaDiscos(){
   const fa = $("f-artista").value, fg = $("f-genero").value, fc = $("f-cor").value;
 
-  const base = discos.filter(d =>
+  let l = discos.filter(d =>
     (!fa||d.artista===fa) &&
     (!fg||d.genero===fg) &&
     (!fc||d.cor.includes(fc))
   );
-  const total = base.length;
+  const total = l.length;
 
-  let l = base;
   if (letraFiltroDisco) {
-    l = base.filter(d => {
+    l = l.filter(d => {
       const primeira = semArtigo(d.artista).charAt(0).toLowerCase();
       const chave = /[a-z]/.test(primeira) ? primeira : "#";
       return chave === letraFiltroDisco;
     });
   }
+
+  // --- AQUI ESTAVA O ERRO! Adicionado 'ordena()' para classificar a lista final ---
+  l = ordena(l);
 
   if (letraFiltroDisco) {
     if (l.length === 0) {
