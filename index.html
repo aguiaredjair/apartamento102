@@ -474,6 +474,7 @@ const menuDeslogado = $("menu-deslogado");
 const loginMsg = $("login-msg");
 
 let currentUser = null;
+let userProfile = null; // Armazena o perfil completo do usuário
 let avatarSelecionado = "assets/profiles/pfp/george-pfp.jpg";
 
 // Variáveis da Animação de Boas-Vindas
@@ -524,17 +525,20 @@ async function checarUsuario() {
       .single();
 
     if (profile && profile.password_changed) {
+      userProfile = profile; // Salva o perfil globalmente
       menuLogado.style.display = "block";
       menuDeslogado.style.display = "none";
       $("menu-user-name").textContent = profile.username;
       if (profile.avatar_url) $("menu-user-avatar").src = profile.avatar_url;
     } else {
+      userProfile = null;
       menuLogado.style.display = "none";
       menuDeslogado.style.display = "block";
       abrirConfiguracoes(true);
     }
   } else {
     currentUser = null;
+    userProfile = null;
     menuLogado.style.display = "none";
     menuDeslogado.style.display = "block";
   }
@@ -1204,6 +1208,7 @@ function renderizarFila(fila){
     li.textContent = "Ninguém na fila ainda. Seja o primeiro!";
     ol.append(li); return;
   }
+  
   fila.forEach((item, i) => {
     const li = document.createElement("li");
     const checkbox = document.createElement("input");
@@ -1220,17 +1225,32 @@ function renderizarFila(fila){
     }
 
     const num = document.createElement("span"); num.className = "num"; num.textContent = `${i+1}.`;
+    
     const div = document.createElement("div");
-    div.innerHTML = `<span class="nome">${esc(item.nome)}</span><span class="musica">${esc(item.musica)}</span>`;
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "0.6rem";
+    
+    // Miniatura do Avatar
+    const avatarSrc = item.avatar || "assets/profiles/pfp/george-pfp.jpg";
+    div.innerHTML = `
+      <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
+      <div>
+        <span class="nome">${esc(item.nome)}</span>
+        <span class="musica">${esc(item.musica)}</span>
+      </div>
+    `;
+    
     li.append(checkbox, num, div);
 
-    if (!eventoAbertoEncerrado) {
+    // Lixeira (apenas se o item for do próprio usuário logado)
+    if (!eventoAbertoEncerrado && userProfile && item.nome === userProfile.username) {
       const btnLixeira = document.createElement("button");
       btnLixeira.className = "btn-lixeira";
       btnLixeira.innerHTML = "🗑️";
       btnLixeira.title = "Sair da fila";
       btnLixeira.onclick = () => {
-        if (confirm(`Remover ${item.nome} da fila?`)) {
+        if (confirm(`Remover sua música (${item.musica}) da fila?`)) {
           if (wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN) {
             wsKaraoke.send(JSON.stringify({ tipo: "sair_da_fila", index: i }));
           }
@@ -1262,17 +1282,26 @@ function abrirEvento(ev){
 
     const form = document.createElement("form"); form.className = "form-add";
     form.innerHTML = `
-      <input type="text" placeholder="Seu nome" required maxlength="40">
       <input type="text" placeholder="Música que vai cantar" required maxlength="100">
       <button type="submit">Entrar na fila</button>
     `;
     form.onsubmit = (e) => {
       e.preventDefault();
-      const inputs = form.querySelectorAll("input");
-      const nome = inputs[0].value.trim(); const musica = inputs[1].value.trim();
-      if(!nome || !musica) return;
+      const musica = form.querySelector("input").value.trim();
+      
+      if(!musica) return;
+      if(!userProfile) {
+        alert("Você precisa estar logado para entrar na fila.");
+        return;
+      }
+      
       if(wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN){
-        wsKaraoke.send(JSON.stringify({ tipo: "entrar_na_fila", nome, musica }));
+        wsKaraoke.send(JSON.stringify({ 
+          tipo: "entrar_na_fila", 
+          nome: userProfile.username,
+          avatar: userProfile.avatar_url,
+          musica: musica 
+        }));
       }
       form.reset();
     };
