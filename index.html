@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>sento em dois</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐱%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap">
 <style>
 :root{
-  --bg: #e8f4f8;        /* azul pastel bem claro */
-  --ink: #2c3e50;       /* azul escuro suave */
+  --bg: #e8f4f8;
+  --ink: #2c3e50;
   --mute: #7f8c8d;
-  --accent: #e74c3c;    /* coral vibrante */
-  --card: #fef9e7;      /* amarelo pastel */
+  --accent: #e74c3c;
+  --card: #fef9e7;
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
 }
 *{box-sizing:border-box}
@@ -22,9 +23,7 @@ body{
   color:var(--ink);
 }
 header{position:relative;padding:2.2rem 1.25rem 1rem;max-width:1200px;margin:auto}
-h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;letter-spacing:-.03em;text-align:center;
-   background: linear-gradient(90deg, #e74c3c, #f39c12, #27ae60, #2980b9, #8e44ad);
-   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;}
+h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;letter-spacing:-.03em;text-align:center;color:#22201d}
 .menu-btn{position:absolute;top:1rem;left:1.25rem;width:44px;height:44px;border:0;border-radius:6px;background:none;color:var(--ink);cursor:pointer;display:grid;place-content:center;gap:5px}
 .menu-btn span{display:block;width:24px;height:2.5px;background:var(--ink);border-radius:2px}
 .menu-btn:focus-visible{outline:2px solid var(--accent)}
@@ -56,13 +55,51 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .disco b,.disco span{display:block;width:100%}
 .disco b{margin-top:.55rem;font-size:.82rem;line-height:1.2;height:2.4em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
 .disco span{margin-top:.15rem;font-size:.74rem;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#grid-artistas{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1.8rem 1.1rem;align-items:start}
-.artista{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center}
-.artista .foto{width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:var(--ink);font-weight:800;font-size:1.6rem;transition:transform .15s;text-transform:uppercase;background:transparent}
-.artista:hover .foto{transform:translateY(-4px)}
-.artista:focus-visible .foto{outline:2px solid var(--accent);outline-offset:3px}
-.artista .foto img{width:100%;height:100%;object-fit:cover;display:block}
-.artista b{margin-top:.6rem;font-size:.85rem;line-height:1.2;width:100%}
+
+/* ---------- ÍNDICE DE ARTISTAS ---------- */
+#grid-artistas{max-width:760px;margin:0 auto}
+.divisor-letra{
+  font-size:clamp(2.5rem,8vw,4rem);
+  font-weight:800;
+  line-height:1;
+  color:var(--accent);
+  margin:2.5rem 0 .4rem;
+  padding-bottom:.4rem;
+  border-bottom:3px solid var(--accent);
+  letter-spacing:-.04em;
+  font-style:italic;
+}
+.divisor-letra:first-child{margin-top:0}
+.artista-item{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:1rem;
+  padding:.7rem .5rem;
+  border:0;
+  border-bottom:1px solid rgba(44,62,80,.12);
+  background:none;
+  font:inherit;
+  color:inherit;
+  cursor:pointer;
+  text-align:left;
+  width:100%;
+  transition:background .15s, padding-left .15s;
+}
+.artista-item:hover{background:rgba(231,76,60,.08);padding-left:1rem}
+.artista-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.artista-nome{font-size:1.05rem;font-weight:700}
+.artista-contagem{
+  font-size:.75rem;
+  color:var(--mute);
+  background:var(--card);
+  padding:.2rem .65rem;
+  border-radius:999px;
+  white-space:nowrap;
+  border:1px solid rgba(44,62,80,.15);
+  font-weight:600;
+}
+
 .legenda{text-align:center;color:var(--mute);font-size:.9rem;padding:.5rem 0 1.2rem}
 .karaoke-wrap{max-width:640px;margin:auto}
 .karaoke-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap}
@@ -90,7 +127,7 @@ li small{color:var(--mute);float:right}
 .fila-lista .num{font-weight:800;color:var(--accent);min-width:1.8rem;font-size:1rem}
 .fila-lista .nome{font-weight:700;font-size:.95rem}
 .fila-lista .musica{color:var(--mute);font-size:.82rem;display:block;margin-top:.1rem}
-.fila-lista input[type="checkbox"]{width:1.2rem;height:1.2rem;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.fila-lista input[type="checkbox"]{width:1.2rem;height:1.2rem;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
 .form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid #0002}
 .form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px}
 .form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--ink);color:var(--bg);border-radius:6px;cursor:pointer}
@@ -98,6 +135,8 @@ li small{color:var(--mute);float:right}
 @media(max-width:480px){
   .tabs{gap:.3rem}
   .tab{padding:.5rem .8rem;font-size:.78rem}
+  .artista-item{padding:.6rem .3rem}
+  .artista-nome{font-size:.95rem}
 }
 </style>
 </head>
@@ -214,73 +253,6 @@ async function infoAlbum(d){
   return r;
 }
 
-// ---------- BUSCA DE FOTOS DE ARTISTAS (Deezer + fallback iTunes) ----------
-async function fotoArtistaDeezer(nome){
-  const cacheKey = "dz:" + nome.toLowerCase();
-  const emCache = cache.get(cacheKey);
-  if (emCache !== null && emCache !== undefined) return emCache;
-
-  try {
-    const alvo = encodeURIComponent(`artist:"${nome}"`);
-    const urlDeezer = `https://api.deezer.com/search?q=${alvo}&limit=5`;
-    const resp = await fetch(`/api/deezer?url=${encodeURIComponent(urlDeezer)}`);
-    if (!resp.ok) throw new Error(`Proxy Deezer ${resp.status}`);
-
-    const dados = await resp.json();
-    const itens = dados.data || [];
-    if (itens.length === 0) { cache.set(cacheKey, ""); return ""; }
-
-    const alvoLower = nome.toLowerCase().trim();
-    const exato = itens.find(item => item.artist?.name?.toLowerCase().trim() === alvoLower);
-    const escolhido = exato || itens[0];
-
-    const url = escolhido.artist?.picture_xl || escolhido.artist?.picture_big || "";
-    cache.set(cacheKey, url);
-    return url;
-  } catch (e) {
-    console.warn(`Deezer falhou para "${nome}":`, e);
-    cache.set(cacheKey, "");
-    return "";
-  }
-}
-
-async function fotoArtistaItunes(nome){
-  const cacheKey = "it:" + nome.toLowerCase();
-  const emCache = cache.get(cacheKey);
-  if (emCache !== null && emCache !== undefined) return emCache;
-
-  try {
-    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(nome)}&entity=musicArtist&limit=1`;
-    const resp = await fetch(`/api/itunes?url=${encodeURIComponent(url)}`);
-    if (!resp.ok) throw new Error(`Proxy iTunes ${resp.status}`);
-
-    const dados = await resp.json();
-    const artista = dados.results?.[0];
-    const urlImagem = artista?.artworkUrl100 || "";
-    // Sobe a resolução para 600x600
-    const urlFinal = urlImagem.replace("100x100", "600x600");
-    cache.set(cacheKey, urlFinal);
-    return urlFinal;
-  } catch (e) {
-    console.warn(`iTunes falhou para "${nome}":`, e);
-    cache.set(cacheKey, "");
-    return "";
-  }
-}
-
-async function fotoArtista(nome){
-  let foto = await fotoArtistaDeezer(nome);
-  if (foto) return foto;
-  foto = await fotoArtistaItunes(nome);
-  if (foto) return foto;
-  // Fallback final: capa do primeiro álbum
-  try{
-    const primeiro = discos.find(d => d.artista === nome);
-    if(primeiro){ const r = await infoAlbum(primeiro); if(r.capa) return r.capa; }
-  }catch{}
-  return "";
-}
-
 // ---------- CAPAS DOS DISCOS ----------
 const obs = new IntersectionObserver(es => es.forEach(e => {
   if(e.isIntersecting){ obs.unobserve(e.target); carregaCapa(e.target); }
@@ -356,20 +328,42 @@ function desenhaDiscos(){
 ["f-artista","f-genero","f-cor"].forEach(id => $(id).onchange = desenhaDiscos);
 $("limpar").onclick = () => { ["f-artista","f-genero","f-cor"].forEach(id => $(id).value=""); desenhaDiscos(); };
 
+// ---------- ÍNDICE DE ARTISTAS ----------
 function desenhaArtistas(){
   const artistas = [...new Set(discos.map(d => d.artista))].sort((a,b) => cmp(semArtigo(a),semArtigo(b)));
   $("contagem-artistas").textContent = `Mostrando ${artistas.length} ${artistas.length===1?"artista":"artistas"}`;
-  const g = $("grid-artistas"); g.textContent = "";
+
+  const contagem = {};
+  discos.forEach(d => { contagem[d.artista] = (contagem[d.artista] || 0) + 1; });
+
+  const grupos = {};
   artistas.forEach(nome => {
-    const b = document.createElement("button"); b.className = "artista";
-    const f = document.createElement("div"); f.className = "foto"; f.textContent = nome.charAt(0);
-    const t = document.createElement("b"); t.textContent = nome;
-    b.append(f,t); b.onclick = () => abreArtista(nome); g.append(b);
-    fotoArtista(nome).then(url => {
-      if(!url) return;
-      const i = new Image(); i.alt = `Foto de ${nome}`;
-      i.onload = () => { f.textContent=""; f.append(i); };
-      i.src = url;
+    const primeira = semArtigo(nome).charAt(0).toUpperCase();
+    const chave = /[A-Z]/.test(primeira) ? primeira : "#";
+    (grupos[chave] = grupos[chave] || []).push(nome);
+  });
+
+  const g = $("grid-artistas");
+  g.textContent = "";
+
+  Object.keys(grupos).sort().forEach(letra => {
+    const divisor = document.createElement("h2");
+    divisor.className = "divisor-letra";
+    divisor.textContent = letra;
+    g.append(divisor);
+
+    grupos[letra].forEach(nome => {
+      const b = document.createElement("button");
+      b.className = "artista-item";
+      const n = document.createElement("span");
+      n.className = "artista-nome";
+      n.textContent = nome;
+      const c = document.createElement("span");
+      c.className = "artista-contagem";
+      c.textContent = `${contagem[nome]} ${contagem[nome]===1 ? "disco" : "discos"}`;
+      b.append(n, c);
+      b.onclick = () => abreArtista(nome);
+      g.append(b);
     });
   });
 }
