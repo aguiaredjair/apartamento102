@@ -263,54 +263,79 @@ dialog.modal-evento-encerrado .fila-lista li {
   display: inline-block;
 }
 
-/* --- ESTILOS DO PERFIL PÚBLICO --- */
+/* --- PERFIL PÚBLICO E BANNER --- */
 .perfil-publico {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  margin: -1.4rem; /* Quebra o padding do modal para o banner ir de ponta a ponta */
+  margin: -1.4rem; /* Quebra o padding do modal */
   border-radius: 8px;
   overflow: hidden;
   background: var(--card);
 }
-.profile-banner {
+.perfil-capa {
   width: 100%;
-  height: 140px;
+  padding: 2rem 1.4rem 1.5rem 1.4rem; /* Espaçamento interno para afastar da borda */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: var(--accent); /* Amarelo padrão */
   background-size: cover;
   background-position: center;
-  margin-bottom: -60px; /* Puxa o avatar para cima */
+  position: relative;
+  border-radius: 8px 8px 0 0;
 }
-.profile-avatar {
+/* Overlay escuro para garantir leitura do texto caso tenha imagem */
+.perfil-capa.com-imagem::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+  z-index: 1;
+}
+.perfil-capa > * {
+  position: relative;
+  z-index: 2;
+}
+.perfil-avatar {
   width: 120px;
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid var(--card);
   background: var(--bg);
-  position: relative;
-  z-index: 2;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-.perfil-dados {
-  padding: 0 1.4rem 1.4rem 1.4rem;
+.perfil-capa h3 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 0.2rem 0;
+  color: var(--ink); /* Texto escuro para o fundo amarelo */
+  text-shadow: none;
+}
+.perfil-capa p {
+  color: var(--mute);
+  font-size: 0.95rem;
+  margin: 0;
+}
+/* Quando tem imagem, o texto fica branco */
+.perfil-capa.com-imagem h3, .perfil-capa.com-imagem p {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.perfil-corpo {
+  padding: 1.4rem;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.perfil-dados h3 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0 0 0.5rem 0;
-}
-.perfil-dados p {
-  color: var(--mute);
-  font-size: 0.9rem;
-  margin: 0.2rem 0;
-}
+
 #modal-perfil .fechar {
-  background: var(--card); /* Fundo para o X não sumir no banner */
+  background: var(--card);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -320,11 +345,12 @@ dialog.modal-evento-encerrado .fila-lista li {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   top: 0.5rem;
   right: 0.5rem;
+  color: var(--ink);
 }
 
-/* --- NOVO LAYOUT: FAIXAS RECENTES --- */
+/* --- FAIXAS RECENTES --- */
 .faixas-recentes-container {
-  margin-top: 2rem;
+  margin-top: 1rem;
   width: 100%;
   text-align: left;
 }
@@ -435,6 +461,7 @@ dialog.modal-evento-encerrado .fila-lista li {
     <div class="drawer-conteudo">
       <h2>Opções</h2>
       <a class="drawer-item" onclick="abrirPerfil(userProfile.username)">Meu Perfil</a>
+      <a class="drawer-item" onclick="abrirPessoas()">Pessoas</a>
       <a class="drawer-item" onclick="abrirConfiguracoes()">Configurações</a>
       <a class="drawer-item" id="btn-logout" style="color: #c0392b;">Sair</a>
     </div>
@@ -545,8 +572,11 @@ dialog.modal-evento-encerrado .fila-lista li {
       <img src="assets/profiles/pfp/ringo-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/ringo-pfp.jpg" onclick="selecionarAvatar(this)">
     </div>
 
-    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Ou envie sua própria foto:</label>
+    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Ou envie sua própria foto de perfil:</label>
     <input type="file" id="config-file-avatar" accept="image/*" style="margin-bottom: 15px; font-size: 0.9rem;">
+
+    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Foto de capa (opcional, padrão é amarelo):</label>
+    <input type="file" id="config-file-cover" accept="image/*" style="margin-bottom: 15px; font-size: 0.9rem;">
 
     <label style="font-weight: bold; margin-bottom: 5px;">Username do Last.fm (opcional):</label>
     <input type="text" id="config-lastfm" placeholder="Ex: demonio_digital" style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem;">
@@ -565,6 +595,14 @@ dialog.modal-evento-encerrado .fila-lista li {
   <div class="perfil-publico" id="perfil-publico-conteudo">
     <!-- Conteúdo injetado via JS -->
   </div>
+</div></dialog>
+
+<!-- MODAL DE PESSOAS -->
+<dialog id="modal-pessoas"><div class="modal">
+  <button class="fechar" aria-label="Fechar" onclick="document.getElementById('modal-pessoas').close()">×</button>
+  <h2>Pessoas</h2>
+  <p class="sub">Todos os membros do 102</p>
+  <div id="lista-pessoas" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;"></div>
 </div></dialog>
 
 <script>
@@ -746,6 +784,56 @@ btnLogout.onclick = async () => {
   fecharMenu();
 };
 
+// ---- LISTA DE PESSOAS ----
+async function abrirPessoas() {
+  fecharMenu();
+  const modal = $("modal-pessoas");
+  const lista = $("lista-pessoas");
+  modal.showModal();
+  
+  lista.innerHTML = "<p>Carregando...</p>";
+
+  if (!window.supabase) return;
+
+  const { data: profiles, error } = await window.supabase
+    .from('profiles')
+    .select('*')
+    .order('username', { ascending: true });
+
+  if (error || !profiles) {
+    lista.innerHTML = "<p>Erro ao carregar pessoas.</p>";
+    return;
+  }
+
+  lista.innerHTML = "";
+  profiles.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = "artista-item"; // Reusing artist style for clean list
+    btn.style.padding = "0.5rem";
+    btn.style.borderRadius = "6px";
+    
+    const img = document.createElement("img");
+    img.src = p.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
+    img.style.width = "32px";
+    img.style.height = "32px";
+    img.style.borderRadius = "50%";
+    img.style.objectFit = "cover";
+    img.style.marginRight = "0.8rem";
+    
+    const span = document.createElement("span");
+    span.textContent = p.username;
+    span.className = "artista-nome";
+    span.style.fontSize = "1rem";
+    
+    btn.append(img, span);
+    btn.onclick = () => {
+      modal.close();
+      abrirPerfil(p.username);
+    };
+    lista.append(btn);
+  });
+}
+
 // ---- PERFIL PÚBLICO ----
 async function abrirPerfil(username) {
   fecharMenu();
@@ -770,10 +858,21 @@ async function abrirPerfil(username) {
   const dataObj = new Date(profile.created_at);
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const avatar = profile.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
+  
+  // Configura a capa
+  let capaStyle = "";
+  let capaClass = "perfil-capa";
+  if (profile.cover_url) {
+    capaStyle = `background-image: url('${profile.cover_url}');`;
+    capaClass += " com-imagem";
+  }
 
   const headerHtml = `
-    <div class="profile-banner" style="background-image: url('${avatar}')"></div>
-    <img src="${avatar}" alt="Foto de ${profile.username}" class="profile-avatar">
+    <div class="${capaClass}" style="${capaStyle}">
+      <img src="${avatar}" alt="Foto de ${profile.username}" class="perfil-avatar">
+      <h3>${esc(profile.username)}</h3>
+      <p>Membro desde ${dataFormatada}</p>
+    </div>
   `;
 
   let musicaHtml = "";
@@ -784,9 +883,7 @@ async function abrirPerfil(username) {
     
     cont.innerHTML = `
       ${headerHtml}
-      <div class="perfil-dados">
-        <h3>${esc(profile.username)}</h3>
-        <p>Membro desde ${dataFormatada}</p>
+      <div class="perfil-corpo">
         ${musicaHtml}
       </div>
     `;
@@ -840,9 +937,7 @@ async function abrirPerfil(username) {
     musicaHtml = `<div class="musica-bloco vazio">Nenhuma conta musical conectada</div>`;
     cont.innerHTML = `
       ${headerHtml}
-      <div class="perfil-dados">
-        <h3>${esc(profile.username)}</h3>
-        <p>Membro desde ${dataFormatada}</p>
+      <div class="perfil-corpo">
         ${musicaHtml}
       </div>
     `;
@@ -890,14 +985,15 @@ function selecionarAvatar(el) {
   document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selecionado'));
   el.classList.add('selecionado');
   avatarSelecionado = el.getAttribute('data-path');
-  $("config-file-avatar").value = "";
+  $("config-file-avatar").value = ""; 
 }
 
 $("form-config").onsubmit = async (e) => {
   e.preventDefault();
   const novaSenha = $("config-senha").value;
   const lastfmUser = $("config-lastfm").value.trim();
-  const fileInput = $("config-file-avatar");
+  const fileAvatar = $("config-file-avatar");
+  const fileCover = $("config-file-cover");
   const msg = $("config-msg");
   
   msg.textContent = "Salvando...";
@@ -906,28 +1002,53 @@ $("form-config").onsubmit = async (e) => {
   if (!window.supabase) return;
 
   let finalAvatarUrl = avatarSelecionado;
-  if (fileInput.files.length > 0) {
-    const file = fileInput.files[0];
+  let finalCoverUrl = null;
+
+  // Verifica se já tem uma capa salva para não sobrescrever com null
+  const { data: currProfile } = await window.supabase.from('profiles').select('cover_url').eq('id', currentUser.id).single();
+  if (currProfile && currProfile.cover_url) finalCoverUrl = currProfile.cover_url;
+
+  // 1. Upload do Avatar
+  if (fileAvatar.files.length > 0) {
+    const file = fileAvatar.files[0];
     const fileExt = file.name.split('.').pop();
-    const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+    const fileName = `${currentUser.id}/avatar_${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await window.supabase.storage
       .from('avatars')
       .upload(fileName, file, { upsert: true });
 
     if (uploadError) {
-      msg.textContent = "Erro no upload: " + uploadError.message;
+      msg.textContent = "Erro no upload da foto: " + uploadError.message;
       msg.style.color = "#c0392b";
       return;
     }
 
-    const { data: urlData } = window.supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
-    
+    const { data: urlData } = window.supabase.storage.from('avatars').getPublicUrl(fileName);
     finalAvatarUrl = urlData.publicUrl;
   }
 
+  // 2. Upload da Capa
+  if (fileCover.files.length > 0) {
+    const file = fileCover.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${currentUser.id}/cover_${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await window.supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      msg.textContent = "Erro no upload da capa: " + uploadError.message;
+      msg.style.color = "#c0392b";
+      return;
+    }
+
+    const { data: urlData } = window.supabase.storage.from('avatars').getPublicUrl(fileName);
+    finalCoverUrl = urlData.publicUrl;
+  }
+
+  // 3. Troca de senha (se preenchida)
   if (novaSenha.length > 0) {
     if (novaSenha.length < 6) {
       msg.textContent = "A senha precisa ter pelo menos 6 caracteres.";
@@ -942,11 +1063,13 @@ $("form-config").onsubmit = async (e) => {
     }
   }
 
+  // 4. Atualiza o perfil no banco
   if (currentUser) {
     const { error: dbError } = await window.supabase
       .from('profiles')
       .update({ 
         avatar_url: finalAvatarUrl, 
+        cover_url: finalCoverUrl,
         lastfm_username: lastfmUser || null,
         password_changed: true 
       })
@@ -966,6 +1089,7 @@ $("form-config").onsubmit = async (e) => {
     fecharConfiguracoes();
     $("config-senha").value = "";
     $("config-file-avatar").value = "";
+    $("config-file-cover").value = "";
     msg.textContent = "";
     checarUsuario();
   }, 1000);
