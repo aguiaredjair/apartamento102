@@ -105,7 +105,7 @@ button.limpar{
   grid-template-columns: repeat(9, 1fr);
   gap: .4rem;
   max-width: 460px;
-  margin: 0 auto;
+  margin: 0 auto 2rem; /* ESPAÇAMENTO ADICIONADO AQUI */
 }
 .filtro-artistas .letra-btn {
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
@@ -134,7 +134,7 @@ button.limpar{
   grid-template-columns: repeat(9, 1fr);
   gap: .4rem;
   max-width: 460px;
-  margin: 0 auto;
+  margin: 0 auto 1rem; /* ESPAÇAMENTO ADICIONADO AQUI */
 }
 .filtro-discos .letra-btn {
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
@@ -684,7 +684,6 @@ function desenhaDiscos(){
     });
   }
 
-  // --- AQUI ESTAVA O ERRO! Adicionado 'ordena()' para classificar a lista final ---
   l = ordena(l);
 
   if (letraFiltroDisco) {
