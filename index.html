@@ -159,7 +159,7 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 
 /* ---------- DIALOG ---------- */
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
-dialog#modal-perfil { width: min(680px, 94vw); }
+dialog#modal-perfil { width: min(680px, 94vw); overflow: hidden; }
 dialog#modal-pessoas { width: min(420px, 94vw); }
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
@@ -294,7 +294,29 @@ dialog.modal-evento-encerrado .fila-lista li {
   border-radius: 8px;
   overflow: hidden;
   background: var(--card);
+  width: calc(100% + 2.8rem);
 }
+
+/* --- CARROSSEL DE CARDS DE PERFIL --- */
+.perfil-cards-container {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* Firefox */
+}
+.perfil-cards-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+.perfil-card {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
 .perfil-capa {
   width: 100%;
   padding: 2rem 1.4rem 1.5rem 1.4rem;
@@ -449,6 +471,90 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-align: center;
 }
 
+/* --- INDICADOR DE SWIPE --- */
+.swipe-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 10;
+}
+.swipe-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(34,32,29,0.2);
+  transition: background 0.3s;
+}
+.swipe-dot.ativo {
+  background: var(--ink);
+}
+
+/* --- SEGUNDO CARD (TOP CHARTS) --- */
+.top-charts-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem 1.4rem;
+  width: 100%;
+}
+.top-charts-col {
+  display: flex;
+  flex-direction: column;
+}
+.top-charts-col h4 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--ink);
+}
+.top-charts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.top-charts-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(34,32,29,.12);
+  padding-bottom: 0.6rem;
+}
+.top-charts-list .chart-cover {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #eee;
+  flex-shrink: 0;
+}
+.top-charts-list .chart-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.top-charts-list .chart-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+.top-charts-list .chart-artist {
+  font-size: 0.75rem;
+  color: var(--mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ---------- MODAL DE PESSOAS ---------- */
 .pessoa-item {
   display: flex;
@@ -502,6 +608,8 @@ dialog.modal-evento-encerrado .fila-lista li {
   .faixa-cover { width: 40px; height: 40px; }
   .faixa-track { font-size: 0.85rem; flex: 1.5; }
   .faixa-artist { font-size: 0.8rem; flex: 1; }
+  
+  .top-charts-container { grid-template-columns: 1fr; gap: 2rem; }
 }
 
 @media(max-width:480px){
@@ -677,7 +785,7 @@ dialog.modal-evento-encerrado .fila-lista li {
 </div></dialog>
 
 <!-- MODAL DE PERFIL PÚBLICO -->
-<dialog id="modal-perfil"><div class="modal">
+<dialog id="modal-perfil"><div class="modal" style="padding: 0;">
   <button class="fechar" aria-label="Fechar" onclick="document.getElementById('modal-perfil').close()">×</button>
   <div class="perfil-publico" id="perfil-publico-conteudo">
     <!-- Conteúdo injetado via JS -->
@@ -814,7 +922,6 @@ async function checarUsuario() {
       menuLogado.style.display = "block";
       menuDeslogado.style.display = "none";
       $("menu-user-name").textContent = profile.username;
-      // FALLBACK NEUTRO NO MENU
       $("menu-user-avatar").src = profile.avatar_url || DEFAULT_AVATAR;
     } else {
       userProfile = null;
@@ -909,7 +1016,6 @@ async function abrirPessoas() {
     btn.className = "pessoa-item";
 
     const img = document.createElement("img");
-    // FALLBACK NEUTRO NA LISTA DE PESSOAS
     img.src = p.avatar_url || DEFAULT_AVATAR;
 
     const infoDiv = document.createElement("div");
@@ -957,7 +1063,7 @@ async function abrirPerfil(username) {
   fecharMenu();
   const modalPerfil = $("modal-perfil");
   const cont = $("perfil-publico-conteudo");
-  cont.innerHTML = "<p>Carregando perfil...</p>";
+  cont.innerHTML = "<p style='padding: 2rem; text-align: center;'>Carregando perfil...</p>";
   modalPerfil.showModal();
 
   if (!window.supabase) return;
@@ -969,13 +1075,12 @@ async function abrirPerfil(username) {
     .single();
 
   if (error || !profile) {
-    cont.innerHTML = "<p>Perfil não encontrado.</p>";
+    cont.innerHTML = "<p style='padding: 2rem; text-align: center;'>Perfil não encontrado.</p>";
     return;
   }
 
   const dataObj = new Date(profile.created_at);
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  // FALLBACK NEUTRO NO PERFIL
   const avatar = profile.avatar_url || DEFAULT_AVATAR;
   
   let capaStyle = "";
@@ -993,72 +1098,156 @@ async function abrirPerfil(username) {
     </div>
   `;
 
-  let musicaHtml = "";
+  let card2Html = "";
+  let swipeDotsHtml = "";
 
+  // Se tiver Last.fm, cria o segundo card e os pontinhos
   if (profile.lastfm_username) {
-    const linkPerfil = `https://www.last.fm/user/${encodeURIComponent(profile.lastfm_username)}`;
-    musicaHtml = `<div id="bloco-musica" style="width: 100%;">Carregando faixas...</div>`;
-    
-    cont.innerHTML = `
-      ${headerHtml}
-      <div class="perfil-corpo">
-        ${musicaHtml}
+    card2Html = `
+      <div class="perfil-card" id="card-top-charts">
+        <div class="perfil-corpo" style="justify-content: flex-start; padding-top: 2rem;">
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; text-align: center; width: 100%;">
+            Mais ouvidos da semana
+            <span style="font-size: 0.8rem; font-weight: 400; color: var(--mute); display: block;">(últimos 7 dias)</span>
+          </h3>
+          <div class="top-charts-container">
+            <div class="top-charts-col">
+              <h4>Músicas</h4>
+              <ol class="top-charts-list" id="top-tracks-list"><li style="border: none; justify-content: center; color: var(--mute);">Carregando...</li></ol>
+            </div>
+            <div class="top-charts-col">
+              <h4>Álbuns</h4>
+              <ol class="top-charts-list" id="top-albums-list"><li style="border: none; justify-content: center; color: var(--mute);">Carregando...</li></ol>
+            </div>
+          </div>
+        </div>
       </div>
     `;
+    swipeDotsHtml = `
+      <div class="swipe-indicator" id="swipe-indicator">
+        <div class="swipe-dot ativo"></div>
+        <div class="swipe-dot"></div>
+      </div>
+    `;
+  }
 
-    try {
-      const url = `https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=3`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const tracks = (data.recenttracks?.track || []).slice(0, 3);
+  // Renderiza os cards no contêiner deslizável
+  cont.innerHTML = `
+    <div class="perfil-cards-container" id="perfil-cards">
       
-      const bloco = $("bloco-musica");
-      if (tracks.length > 0) {
-        let listaHtml = `<div class="faixas-recentes-container">
-            <div class="faixas-recentes-titulo">Faixas recentes</div>`;
-            
-        tracks.forEach(track => {
+      <!-- CARD 1: Padrão -->
+      <div class="perfil-card">
+        ${headerHtml}
+        <div class="perfil-corpo" id="bloco-musica-card1">
+          ${profile.lastfm_username ? 'Carregando faixas...' : '<div class="musica-bloco vazio">Nenhuma conta musical conectada</div>'}
+        </div>
+      </div>
+
+      <!-- CARD 2: Estatísticas (se tiver Last.fm) -->
+      ${card2Html}
+    </div>
+    ${swipeDotsHtml}
+  `;
+
+  // Adiciona evento de scroll para atualizar os pontinhos
+  if (profile.lastfm_username) {
+    const container = $("perfil-cards");
+    const dots = document.querySelectorAll('.swipe-dot');
+    container.addEventListener('scroll', () => {
+      const scrollLeft = container.scrollLeft;
+      const width = container.clientWidth;
+      const index = Math.round(scrollLeft / width);
+      dots.forEach((dot, i) => dot.classList.toggle('ativo', i === index));
+    });
+  }
+
+  // --- CARREGAMENTO DAS APIS DO LAST.FM ---
+  if (profile.lastfm_username) {
+    const linkPerfil = `https://www.last.fm/user/${encodeURIComponent(profile.lastfm_username)}`;
+    const blocoMusica = $("bloco-musica-card1");
+
+    // 1. Faixas Recentes (Card 1)
+    fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=3`)
+      .then(res => res.json())
+      .then(data => {
+        const tracks = (data.recenttracks?.track || []).slice(0, 3);
+        if (tracks.length > 0) {
+          let listaHtml = `<div class="faixas-recentes-container"><div class="faixas-recentes-titulo">Faixas recentes</div>`;
+          tracks.forEach(track => {
             let coverUrl = "";
             if (track.image && track.image.length > 0) {
                 for (let i = track.image.length - 1; i >= 0; i--) {
-                    if (track.image[i]["#text"]) {
-                        coverUrl = track.image[i]["#text"];
-                        break;
-                    }
+                    if (track.image[i]["#text"]) { coverUrl = track.image[i]["#text"]; break; }
                 }
             }
-            
             listaHtml += `
               <div class="faixa-item">
                 ${coverUrl ? `<img src="${coverUrl}" class="faixa-cover" alt="Capa">` : `<div class="faixa-cover"></div>`}
                 <div class="faixa-track" title="${esc(track.name)}">${esc(track.name)}</div>
                 <div class="faixa-artist" title="${esc(track.artist['#text'])}">${esc(track.artist['#text'])}</div>
-              </div>
-            `;
-        });
-        
-        listaHtml += `</div>
-          <a href="${linkPerfil}" target="_blank" class="link-lastfm">Ir para perfil no Last.fm <span>→</span></a>
-        `;
-        
-        bloco.innerHTML = listaHtml;
-      } else {
-        bloco.innerHTML = `<div class="musica-bloco vazio">Nenhuma faixa recente encontrada</div>`;
-      }
-    } catch(e) {
-      const bloco = $("bloco-musica");
-      if(bloco) {
-          bloco.innerHTML = `<div class="musica-bloco vazio">Erro ao carregar o Last.fm</div>`;
-      }
-    }
-  } else {
-    musicaHtml = `<div class="musica-bloco vazio">Nenhuma conta musical conectada</div>`;
-    cont.innerHTML = `
-      ${headerHtml}
-      <div class="perfil-corpo">
-        ${musicaHtml}
-      </div>
-    `;
+              </div>`;
+          });
+          listaHtml += `</div><a href="${linkPerfil}" target="_blank" class="link-lastfm">Ir para perfil no Last.fm <span>→</span></a>`;
+          blocoMusica.innerHTML = listaHtml;
+        } else {
+          blocoMusica.innerHTML = `<div class="musica-bloco vazio">Nenhuma faixa recente encontrada</div>`;
+        }
+      })
+      .catch(() => { blocoMusica.innerHTML = `<div class="musica-bloco vazio">Erro ao carregar o Last.fm</div>`; });
+
+    // 2. Top Músicas (Card 2)
+    fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getTopTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=3&period=7day`)
+      .then(res => res.json())
+      .then(data => {
+        const tracks = data.toptracks?.track || [];
+        const ol = $("top-tracks-list");
+        if (tracks.length > 0) {
+          ol.innerHTML = tracks.map((t, i) => {
+            let cover = "";
+            if (t.image && t.image.length > 0) {
+              for (let j = t.image.length - 1; j >= 0; j--) {
+                if (t.image[j]["#text"]) { cover = t.image[j]["#text"]; break; }
+              }
+            }
+            return `
+              <li>
+                <span style="font-weight:800; color:var(--accent); min-width: 12px;">${i+1}.</span>
+                ${cover ? `<img src="${cover}" class="chart-cover" alt="Capa">` : ''}
+                <div class="chart-info">
+                  <span class="chart-name" title="${esc(t.name)}">${esc(t.name)}</span>
+                  <span class="chart-artist" title="${esc(t.artist.name)}">${esc(t.artist.name)}</span>
+                </div>
+              </li>`;
+          }).join("");
+        } else { ol.innerHTML = "<li style='border:none; justify-content:center;'>Nenhuma música</li>"; }
+      }).catch(() => { $("top-tracks-list").innerHTML = "<li style='border:none; justify-content:center;'>Erro</li>"; });
+
+    // 3. Top Álbuns (Card 2)
+    fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getTopAlbums&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=3&period=7day`)
+      .then(res => res.json())
+      .then(data => {
+        const albums = data.topalbums?.album || [];
+        const ol = $("top-albums-list");
+        if (albums.length > 0) {
+          ol.innerHTML = albums.map((a, i) => {
+            let cover = "";
+            if (a.image && a.image.length > 0) {
+              for (let j = a.image.length - 1; j >= 0; j--) {
+                if (a.image[j]["#text"]) { cover = a.image[j]["#text"]; break; }
+              }
+            }
+            return `
+              <li>
+                <span style="font-weight:800; color:var(--accent); min-width: 12px;">${i+1}.</span>
+                ${cover ? `<img src="${cover}" class="chart-cover" alt="Capa">` : ''}
+                <div class="chart-info">
+                  <span class="chart-name" title="${esc(a.name)}">${esc(a.name)}</span>
+                  <span class="chart-artist" title="${esc(a.artist.name)}">${esc(a.artist.name)}</span>
+                </div>
+              </li>`;
+          }).join("");
+        } else { ol.innerHTML = "<li style='border:none; justify-content:center;'>Nenhum álbum</li>"; }
+      }).catch(() => { $("top-albums-list").innerHTML = "<li style='border:none; justify-content:center;'>Erro</li>"; });
   }
 }
 
@@ -1096,7 +1285,6 @@ function abrirConfiguracoes(primeiroAcesso = false) {
   
   if (currentUser && window.supabase) {
     window.supabase.from('profiles').select('avatar_url, lastfm_username').eq('id', currentUser.id).single().then(({data}) => {
-      // FALLBACK NEUTRO NAS CONFIGS
       const url = (data && data.avatar_url) ? data.avatar_url : DEFAULT_AVATAR;
       document.querySelectorAll('.avatar-option').forEach(img => {
         if(img.getAttribute('data-path') === url) img.classList.add('selecionado');
@@ -1764,7 +1952,6 @@ function renderizarFila(fila){
     div.style.alignItems = "center";
     div.style.gap = "0.6rem";
     
-    // FALLBACK NEUTRO NO KARAOKÊ
     const avatarSrc = item.avatar || DEFAULT_AVATAR;
     div.innerHTML = `
       <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc; cursor: pointer;" onclick="abrirPerfil('${esc(item.nome)}')">
