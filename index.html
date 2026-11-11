@@ -92,8 +92,43 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
   color: var(--ink);
   cursor: pointer;
   padding: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
+
+/* --- NOVA ÁREA DE PERFIL --- */
+.perfil-drawer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(34,32,29,.1);
+}
+.pfp-drawer {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+  background: var(--bg);
+}
+.perfil-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.username {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.perfil-sub {
+  font-size: .75rem;
+  color: var(--mute);
+  margin-top: .2rem;
+}
+
 .drawer-conteudo {
   display: flex;
   flex-direction: column;
@@ -101,11 +136,11 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 }
 .drawer-conteudo h2 {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--accent);
-  border-bottom: 2px solid var(--accent);
-  padding-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--mute);
 }
 .drawer-item {
   font-size: 1rem;
@@ -148,7 +183,7 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
   overflow-y: auto;
   z-index: 50;
   box-shadow: 0 8px 24px -12px rgba(0,0,0,.3);
-  display: none; /* Controlado via JS */
+  display: none;
 }
 .resultados-pesquisa.ativo { display: block; }
 .res-item {
@@ -479,8 +514,18 @@ li small{color:var(--mute);float:right}
 <div class="drawer-overlay" id="drawer-overlay"></div>
 <div class="drawer" id="drawer-menu">
   <button class="drawer-fechar" id="btn-fechar-menu" aria-label="Fechar menu">×</button>
+  
+  <!-- BLOCO DE PERFIL (PLACEHOLDER) -->
+  <div class="perfil-drawer">
+    <img src="assets/profiles/pfp/george-pfp.jpg" alt="Foto de perfil" class="pfp-drawer">
+    <div class="perfil-info">
+      <span class="username">demonio.digital</span>
+      <span class="perfil-sub">Membro</span>
+    </div>
+  </div>
+
   <div class="drawer-conteudo">
-    <h2>Menu</h2>
+    <h2>Opções</h2>
     <a class="drawer-item">Meu Perfil</a>
     <a class="drawer-item">Configurações</a>
     <a class="drawer-item">Sair</a>
