@@ -270,7 +270,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-align: center;
   padding: 1rem 0;
 }
-.perfil-publico img {
+.perfil-publico > img {
   width: 120px;
   height: 120px;
   border-radius: 50%;
@@ -288,31 +288,51 @@ dialog.modal-evento-encerrado .fila-lista li {
   font-size: 0.9rem;
   margin: 0.2rem 0;
 }
-.musica-placeholder {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  border-radius: 8px;
+
+/* --- NOVO ESTILO DE MÚSICA (LIMPO - 3 BLOCOS) --- */
+.musica-bloco {
+  margin-top: 2rem;
   width: 100%;
-  font-size: 0.9rem;
-  background: rgba(0,0,0,0.04);
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
+  text-decoration: none;
+  color: var(--ink);
+  transition: opacity 0.2s, transform 0.2s;
+  padding: 0;
+  border: none;
 }
-.musica-placeholder.lastfm {
-  border: 1px dashed #d51007;
-  color: #d51007;
-  background: rgba(213, 16, 7, 0.05);
+.musica-bloco:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
 }
-.musica-placeholder.spotify {
-  border: 1px dashed #1DB954;
-  color: #1DB954;
-  background: rgba(29, 185, 84, 0.05);
+.musica-bloco .album-cover {
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-.musica-placeholder.vazio {
-  border: 1px dashed #ccc;
+.musica-bloco .track-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.2;
+  text-align: left;
+}
+.musica-bloco .track-artist {
+  font-size: 0.85rem;
   color: var(--mute);
+  text-align: right;
+}
+.musica-bloco.vazio {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--mute);
+  font-style: italic;
+  margin-top: 1.5rem;
+  text-align: center;
 }
 
 @media(max-width:480px){
@@ -688,11 +708,11 @@ async function abrirPerfil(username) {
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const avatar = profile.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
 
-  // Prepara o bloco de música
   let musicaHtml = "";
 
   if (profile.lastfm_username) {
-    musicaHtml = `<div class="musica-placeholder lastfm" id="bloco-musica">Carregando música do Last.fm...</div>`;
+    const linkPerfil = `https://www.last.fm/user/${encodeURIComponent(profile.lastfm_username)}`;
+    musicaHtml = `<a href="${linkPerfil}" target="_blank" class="musica-bloco" id="bloco-musica">Carregando...</a>`;
     
     cont.innerHTML = `
       <img src="${avatar}" alt="Foto de ${profile.username}">
@@ -701,7 +721,6 @@ async function abrirPerfil(username) {
       ${musicaHtml}
     `;
 
-    // Busca música no Last.fm
     try {
       const url = `https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=1`;
       const res = await fetch(url);
@@ -710,18 +729,35 @@ async function abrirPerfil(username) {
       
       const bloco = $("bloco-musica");
       if (track) {
-        const isNowPlaying = track["@attr"]?.nowplaying === "true";
-        const prefixo = isNowPlaying ? "🎵 Ouvindo agora:" : "🎵 Última música:";
-        bloco.innerHTML = `${prefixo} <b>${esc(track.name)}</b> - ${esc(track.artist['#text'])}`;
+        let coverUrl = "";
+        if (track.image && track.image.length > 0) {
+            for (let i = track.image.length - 1; i >= 0; i--) {
+                if (track.image[i]["#text"]) {
+                    coverUrl = track.image[i]["#text"];
+                    break;
+                }
+            }
+        }
+        
+        bloco.innerHTML = `
+          ${coverUrl ? `<img src="${coverUrl}" class="album-cover" alt="Capa">` : ''}
+          <span class="track-name">${esc(track.name)}</span>
+          <span class="track-artist">${esc(track.artist['#text'])}</span>
+        `;
       } else {
-        bloco.innerHTML = `🎵 Nenhuma música recente encontrada no Last.fm`;
+        bloco.innerHTML = `<span class="vazio" style="grid-column: 1 / -1; text-align: center;">Nenhuma música recente encontrada</span>`;
+        bloco.classList.add("vazio");
+        bloco.removeAttribute("href");
       }
     } catch(e) {
       const bloco = $("bloco-musica");
-      if(bloco) bloco.innerHTML = `🎵 Erro ao carregar o Last.fm`;
+      if(bloco) {
+          bloco.innerHTML = `<span class="vazio" style="grid-column: 1 / -1; text-align: center;">Erro ao carregar o Last.fm</span>`;
+          bloco.removeAttribute("href");
+      }
     }
   } else {
-    musicaHtml = `<div class="musica-placeholder vazio">🎵 Nenhuma conta musical conectada</div>`;
+    musicaHtml = `<div class="musica-bloco vazio">Nenhuma conta musical conectada</div>`;
     cont.innerHTML = `
       <img src="${avatar}" alt="Foto de ${profile.username}">
       <h3>${esc(profile.username)}</h3>
@@ -1389,7 +1425,6 @@ function renderizarFila(fila){
     div.style.gap = "0.6rem";
     
     const avatarSrc = item.avatar || "assets/profiles/pfp/george-pfp.jpg";
-    // Adicionado onclick="abrirPerfil()" no avatar e no nome
     div.innerHTML = `
       <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc; cursor: pointer;" onclick="abrirPerfil('${esc(item.nome)}')">
       <div>
