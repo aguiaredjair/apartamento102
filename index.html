@@ -3,62 +3,99 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>sento em dois</title>
+<title>apartamento 102</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap">
 <style>
 :root{
-  --bg: #dedbd4;
+  --bg: #FAF9F6;
   --ink: #22201d;
   --mute: #6b665e;
-  --accent: #7c8266;
-  --card: #efede8;
+  --accent: #d5ab09;
+  --card: #f3f1ec;
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
 }
 *{box-sizing:border-box; cursor:url('cursor.cur'), auto;}
 body{margin:0;background:var(--bg);color:var(--ink)}
 header{position:relative;padding:2.2rem 1.25rem 1rem;max-width:1200px;margin:auto}
 h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;letter-spacing:-.03em;text-align:center;color:var(--ink)}
-.menu-btn{position:absolute;top:1rem;left:1.25rem;width:44px;height:44px;border:0;border-radius:6px;background:none;color:var(--ink);display:grid;place-content:center;gap:5px}
-.menu-btn span{display:block;width:24px;height:2.5px;background:var(--ink);border-radius:2px}
-.menu-btn:focus-visible{outline:2px solid var(--accent)}
-.painel{position:absolute;top:4rem;left:1.25rem;z-index:5;width:min(280px,calc(100vw - 2.5rem));background:var(--card);border-radius:8px;padding:1rem;display:flex;flex-direction:column;gap:.6rem;box-shadow:0 12px 30px -10px #0006}
-.painel[hidden]{display:none}
-select,button.limpar{font:inherit;padding:.5rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px}
 .tabs{display:flex;justify-content:center;gap:.5rem;padding:0 1.25rem 1rem;max-width:1200px;margin:auto}
-.tab{font:inherit;font-weight:700;padding:.55rem 1.1rem;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:6px;letter-spacing:.05em;font-size:.85rem}
+.tab{font:inherit;font-weight:700;padding:.55rem 1.1rem;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:6px;letter-spacing:.05em;font-size:.85rem;cursor:pointer}
 .tab[aria-selected="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .view{display:none}
 .view.ativa{display:block}
 main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 
-#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.2rem 1rem;align-items:start}
-.disco{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;display:block}
-.disco:focus{outline:none}
-.disco:focus-visible .capa{outline:2px solid var(--accent);outline-offset:3px}
-.capa{position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .25s;color:var(--mute);font-weight:700;font-size:.7rem;padding:.5rem;overflow-wrap:anywhere;background:transparent;border-radius:10px}
-.capa::before{content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);opacity:0;transition:opacity .2s;pointer-events:none;z-index:1;border-radius:inherit}
-.capa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;border-radius:inherit}
-.disco:hover .capa{transform:translateY(-4px);border-radius:50%}
-.disco:hover .capa::before{opacity:.5}
-.capa.zoetrope::before{display:none !important}
-.capa.zoetrope:hover{animation:girar 2s linear infinite}
-.capa.splatter::before{display:none !important}
-.capa.splatter:hover{animation:flipX 2s linear infinite}
-@keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes flipX{from{transform:rotateX(0deg)}to{transform:rotateX(360deg)}}
-
-.tooltip{
-  position:fixed;top:0;left:0;
-  background:var(--ink);color:var(--bg);
-  padding:.55rem .8rem;border-radius:6px;
-  font-size:.8rem;line-height:1.3;
-  pointer-events:none;opacity:0;transition:opacity .12s;
-  z-index:100;max-width:240px;
-  box-shadow:0 8px 24px -8px rgba(0,0,0,.55);
+/* ---------- FILTROS EMBUTIDOS ---------- */
+.filtros-embutidos{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin:0 auto 1rem;
+  max-width:760px;
 }
-.tooltip.visivel{opacity:1}
-.tooltip b{display:block;font-weight:700;margin-bottom:.15rem;font-size:.85rem}
-.tooltip span{display:block;opacity:.75;font-size:.75rem}
+.btn-filtros{
+  width:48px;height:48px;
+  border:1.5px solid var(--ink);
+  background:transparent;
+  border-radius:8px;
+  cursor:pointer;
+  display:grid;
+  place-content:center;
+  gap:5px;
+  transition:background .15s, border-color .15s;
+}
+.btn-filtros:hover{background:rgba(213,171,9,.12);border-color:var(--accent)}
+.btn-filtros[aria-expanded="true"]{background:rgba(213,171,9,.15);border-color:var(--accent)}
+.btn-filtros span{
+  display:block;
+  width:24px;height:2.5px;
+  background:var(--ink);
+  border-radius:2px;
+}
+.painel-filtros{
+  width:100%;
+  margin-top:1rem;
+  padding:1.2rem;
+  background:var(--card);
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.15);
+}
+.painel-filtros[hidden]{display:none}
+.filtro-titulo{
+  font-size:.8rem;
+  font-weight:700;
+  color:var(--mute);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  text-align:center;
+}
+.selects-filtros{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:.5rem;
+}
+@media(min-width:600px){
+  .selects-filtros{grid-template-columns:1fr 1fr 1fr}
+}
+select,button.limpar{
+  font:inherit;
+  padding:.5rem .7rem;
+  border:1.5px solid var(--ink);
+  background:var(--bg);
+  color:var(--ink);
+  border-radius:6px;
+  cursor:pointer;
+}
+button.limpar{
+  background:var(--ink);
+  color:var(--bg);
+  font-weight:700;
+  align-self:center;
+  padding:.55rem 1.2rem;
+}
 
 /* ---------- FILTRO ALFABÉTICO (9 × 3) ---------- */
 .filtro-letras{
@@ -66,8 +103,7 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
   grid-template-columns:repeat(9, 1fr);
   gap:.35rem;
   max-width:460px;
-  margin:0 auto 1.5rem;
-  padding:0;
+  margin:0 auto;
 }
 .letra-btn{
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
@@ -87,22 +123,85 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
   place-items:center;
   line-height:1;
 }
-.letra-btn:hover{
-  background:rgba(124,130,102,.18);
-  border-color:var(--accent);
-  transform:translateY(-1px);
+.letra-btn:hover{background:rgba(213,171,9,.2);border-color:var(--accent);transform:translateY(-1px)}
+.letra-btn.ativo{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 3px 8px -3px rgba(213,171,9,.7)}
+.letra-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- GRID DISCOS ---------- */
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.2rem 1rem;align-items:start}
+.disco{min-width:0;background:none;border:0;padding:0;text-align:center;font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;display:block}
+.disco:focus{outline:none}
+.disco:focus-visible .capa{outline:2px solid var(--accent);outline-offset:3px}
+.capa{position:relative;width:100%;min-width:0;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;text-align:center;transition:transform .2s, border-radius .25s;color:var(--mute);font-weight:700;font-size:.7rem;padding:.5rem;overflow-wrap:anywhere;background:transparent;border-radius:10px}
+.capa::before{content:"";position:absolute;inset:0;background:var(--cor-disco, transparent);opacity:0;transition:opacity .2s;pointer-events:none;z-index:1;border-radius:inherit}
+.capa img.capa-base{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;border-radius:inherit}
+.disco:hover .capa{transform:translateY(-4px);border-radius:50%}
+.disco:hover .capa::before{opacity:.5}
+.capa.zoetrope::before{display:none !important}
+.capa.zoetrope:hover{animation:girar 2s linear infinite}
+@keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ---------- SPLATTER (ELÉTRONS ORBITANDO) ---------- */
+.capa.splatter { overflow: visible; }
+.capa.splatter::before { display: none !important; }
+.capa.splatter .capa-base { transition: opacity .3s; }
+.capa.splatter:hover .capa-base { opacity: 0; }
+.capa.splatter .slice {
+   position: absolute;
+   width: 36%;
+   aspect-ratio: 1;
+   border-radius: 50%;
+   overflow: hidden;
+   opacity: 0;
+   transition: opacity .3s;
+   pointer-events: none;
+   top: 50%; left: 50%;
+   box-shadow: 0 0 8px rgba(0,0,0,0.3);
+   background: var(--card);
 }
-.letra-btn.ativo{
-  background:var(--accent);
-  color:#fff;
-  border-color:var(--accent);
-  box-shadow:0 3px 8px -3px rgba(124,130,102,.6);
+.capa.splatter:hover .slice { opacity: 1; }
+.slice img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* As 5 órbitas com velocidades e eixos diferentes */
+.s1 { --x: 0; --y: -32%; animation: orbit 4s linear infinite; }
+.s1 img { animation: counter-orbit 4s linear infinite; }
+
+.s2 { --x: 0; --y: 32%; animation: orbit 5s linear infinite reverse; }
+.s2 img { animation: counter-orbit 5s linear infinite reverse; }
+
+.s3 { --x: 32%; --y: 0; animation: orbit 6s linear infinite; }
+.s3 img { animation: counter-orbit 6s linear infinite; }
+
+.s4 { --x: -32%; --y: 0; animation: orbit 3.5s linear infinite reverse; }
+.s4 img { animation: counter-orbit 3.5s linear infinite reverse; }
+
+.s5 { --x: 22%; --y: -22%; animation: orbit 4.5s linear infinite; }
+.s5 img { animation: counter-orbit 4.5s linear infinite; }
+
+@keyframes orbit {
+   0% { transform: translate(-50%, -50%) translate(var(--x, 0), var(--y, 0)) rotate(0deg); }
+   100% { transform: translate(-50%, -50%) translate(var(--x, 0), var(--y, 0)) rotate(360deg); }
 }
-.letra-btn:focus-visible{
-  outline:2px solid var(--accent);
-  outline-offset:2px;
+@keyframes counter-orbit {
+   0% { transform: rotate(0deg); }
+   100% { transform: rotate(-360deg); }
 }
 
+/* ---------- TOOLTIP ---------- */
+.tooltip{
+  position:fixed;top:0;left:0;
+  background:var(--ink);color:var(--bg);
+  padding:.55rem .8rem;border-radius:6px;
+  font-size:.8rem;line-height:1.3;
+  pointer-events:none;opacity:0;transition:opacity .12s;
+  z-index:100;max-width:240px;
+  box-shadow:0 8px 24px -8px rgba(0,0,0,.55);
+}
+.tooltip.visivel{opacity:1}
+.tooltip b{display:block;font-weight:700;margin-bottom:.15rem;font-size:.85rem}
+.tooltip span{display:block;opacity:.75;font-size:.75rem}
+
+/* ---------- ARTISTAS ---------- */
 #grid-artistas{max-width:760px;margin:0 auto}
 .divisor-letra{
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
@@ -121,9 +220,10 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
   padding:.7rem .5rem;border:0;
   border-bottom:1px solid rgba(34,32,29,.12);
   background:none;font:inherit;color:inherit;text-align:left;width:100%;
+  cursor:pointer;
   transition:background .15s, padding-left .15s;
 }
-.artista-item:hover{background:rgba(124,130,102,.12);padding-left:1rem}
+.artista-item:hover{background:rgba(213,171,9,.1);padding-left:1rem}
 .artista-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .artista-nome{font-size:1.05rem;font-weight:700}
 .artista-contagem{
@@ -133,15 +233,19 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 }
 
 .legenda{text-align:center;color:var(--mute);font-size:.9rem;padding:.5rem 0 1.2rem}
+
+/* ---------- KARAOKÊ ---------- */
 .karaoke-wrap{max-width:640px;margin:auto}
 .karaoke-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap}
 .karaoke-top .legenda{padding:0;margin:0}
-.btn-primary{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--accent);color:#fff;border-radius:6px}
+.btn-primary{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer}
 .lista-eventos{display:flex;flex-direction:column;gap:.6rem}
-.evento-item{background:var(--card);border:0;font:inherit;color:inherit;text-align:left;padding:1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:1rem;width:100%}
+.evento-item{background:var(--card);border:0;font:inherit;color:inherit;text-align:left;padding:1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:1rem;width:100%;cursor:pointer}
 .evento-item:hover{outline:2px solid var(--accent);outline-offset:-2px}
 .evento-item b{display:block;font-size:1rem;text-transform:capitalize}
 .evento-item small{color:var(--mute);font-size:.8rem}
+
+/* ---------- DIALOG ---------- */
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
@@ -154,38 +258,20 @@ dialog::backdrop{background:#000a}
   font-size:1.6rem;color:var(--ink);
   line-height:1;padding:0;cursor:pointer;
 }
-
-/* ---------- MODAL DO DISCO ---------- */
 .capa-modal{
-  display:block;
-  width:100%;
-  max-width:280px;
-  aspect-ratio:1;
-  object-fit:cover;
-  margin:0 auto 1rem;
-  border-radius:10px;
+  display:block;width:100%;max-width:280px;aspect-ratio:1;
+  object-fit:cover;margin:0 auto 1rem;border-radius:10px;
 }
-.info-modal{
-  text-align:center;
-  margin-bottom:1.2rem;
-}
-.info-modal h3{
-  margin:0 0 .2rem;
-  font-size:1.3rem;
-  font-weight:800;
-  line-height:1.15;
-  letter-spacing:-.02em;
-}
-.info-modal .artista-modal{
-  margin:0 0 .3rem;
-  font-size:.95rem;
-  color:var(--ink);
-  font-weight:600;
-}
-.info-modal .detalhes-modal{
-  margin:0;
-  font-size:.82rem;
-  color:var(--mute);
+.info-modal{text-align:center;margin-bottom:1.2rem}
+.info-modal h3{margin:0 0 .2rem;font-size:1.3rem;font-weight:800;line-height:1.15;letter-spacing:-.02em}
+.info-modal .artista-modal{margin:0 0 .3rem;font-size:.95rem;color:var(--ink);font-weight:600}
+.info-modal .detalhes-modal{margin:0;font-size:.82rem;color:var(--mute)}
+.bio-artista{
+  font-size:.9rem;color:var(--ink);line-height:1.55;
+  margin:0 0 1.2rem;padding:.8rem 1rem;
+  border-left:3px solid var(--accent);
+  background:rgba(213,171,9,.06);
+  border-radius:0 6px 6px 0;
 }
 
 ol{padding-left:1.8rem;margin:.4rem 0}
@@ -201,7 +287,7 @@ li small{color:var(--mute);float:right}
 .fila-lista input[type="checkbox"]{width:1.2rem;height:1.2rem;accent-color:var(--accent);flex-shrink:0}
 .form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid #0002}
 .form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px}
-.form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--ink);color:var(--bg);border-radius:6px}
+.form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--ink);color:var(--bg);border-radius:6px;cursor:pointer}
 .aviso{grid-column:1/-1;color:var(--mute);text-align:center;padding:1rem}
 @media(max-width:480px){
   .tabs{gap:.3rem}
@@ -209,21 +295,15 @@ li small{color:var(--mute);float:right}
   .artista-item{padding:.6rem .3rem}
   .artista-nome{font-size:.95rem}
   #grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem .8rem}
-  .filtro-letras{gap:.25rem;max-width:100%;padding:0 .3rem}
+  .filtro-letras{gap:.25rem;padding:0 .3rem}
   .letra-btn{font-size:.72rem;border-width:1.2px}
+  .painel-filtros{padding:.9rem}
 }
 </style>
 </head>
 <body>
 <header>
-  <button class="menu-btn" id="menu-btn" aria-label="Filtros" aria-expanded="false" aria-controls="painel"><span></span><span></span><span></span></button>
-  <h1>sento em dois</h1>
-  <div class="painel" id="painel" hidden>
-    <select id="f-artista" aria-label="Artista"></select>
-    <select id="f-genero" aria-label="Gênero"></select>
-    <select id="f-cor" aria-label="Cor"></select>
-    <button class="limpar" id="limpar">Limpar filtros</button>
-  </div>
+  <h1>apartamento 102</h1>
 </header>
 
 <nav class="tabs" role="tablist">
@@ -235,13 +315,32 @@ li small{color:var(--mute);float:right}
 <main>
   <section class="view ativa" id="view-discos" role="tabpanel" aria-labelledby="tab-discos">
     <p class="legenda" id="contagem-discos"></p>
+
+    <div class="filtros-embutidos">
+      <button class="btn-filtros" id="toggle-filtros" aria-label="Filtros" aria-expanded="false" aria-controls="painel-filtros">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="painel-filtros" id="painel-filtros" hidden>
+        <div class="filtro-titulo">Por letra do álbum</div>
+        <div id="filtro-letras-discos" class="filtro-letras" role="group" aria-label="Filtrar por letra do álbum"></div>
+        <div class="selects-filtros">
+          <select id="f-artista" aria-label="Artista"></select>
+          <select id="f-genero" aria-label="Gênero"></select>
+          <select id="f-cor" aria-label="Cor"></select>
+        </div>
+        <button class="limpar" id="limpar">Limpar filtros</button>
+      </div>
+    </div>
+
     <div id="grid"><p class="aviso">Carregando discos…</p></div>
   </section>
+
   <section class="view" id="view-artistas" role="tabpanel" aria-labelledby="tab-artistas">
     <p class="legenda" id="contagem-artistas"></p>
     <div id="filtro-letras" class="filtro-letras" role="group" aria-label="Filtrar por letra inicial"></div>
     <div id="grid-artistas"></div>
   </section>
+
   <section class="view" id="view-karaoke" role="tabpanel" aria-labelledby="tab-karaoke">
     <div class="karaoke-wrap">
       <div class="karaoke-top">
@@ -266,7 +365,6 @@ const LASTFM_KEY = "76a09b3a6c3d66772961d2789ab87e8c";
 const API_URL = "discos.json";
 const DADOS = [];
 
-// 26 letras + #
 const ALFABETO = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","#"];
 
 const CORES_HEX = {
@@ -284,24 +382,26 @@ const CORES_HEX = {
 
 const $ = id => document.getElementById(id);
 const norm = d => ({
-  nome: d.nome ?? d.name ?? "", artista: d.artista ?? d.artist ?? "",
-  ano: Number(d.ano ?? d.year) || 0, genero: d.genero ?? d["gênero"] ?? d.genre ?? "",
-  cor: [].concat(d.cor ?? d.color ?? []).filter(Boolean), capa: d.capa ?? ""
+  nome: d.nome ?? d.name ?? "",
+  artista: d.artista ?? d.artist ?? "",
+  ano: Number(d.ano ?? d.year) || 0,
+  genero: d.genero ?? d["gênero"] ?? d.genre ?? "",
+  cor: [].concat(d.cor ?? d.color ?? []).filter(Boolean),
+  capa: d.capa ?? "",
+  faixas: Array.isArray(d.faixas) ? d.faixas : null
 });
 const semArtigo = s => s
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .replace(/^(the|an?|os?|as)\s+(?=\S)/i, "");
 const cmp = (a,b) => a.localeCompare(b,"pt-BR",{sensitivity:"base"});
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
 let discos = [];
+let artistasOverride = {};
 let letraFiltroArtista = null;
+let letraFiltroDisco = null;
 
-const painel = $("painel"), btnMenu = $("menu-btn");
-const menu = abrir => { painel.hidden = !abrir; btnMenu.setAttribute("aria-expanded", abrir); };
-btnMenu.onclick = e => { e.stopPropagation(); menu(painel.hidden); };
-document.addEventListener("click", e => { if(!painel.hidden && !painel.contains(e.target) && e.target !== btnMenu) menu(false); });
-document.addEventListener("keydown", e => { if(e.key==="Escape") menu(false); });
-
+// ---- TABS ----
 const tabs = ["discos","artistas","karaoke"];
 function ativarTab(nome){
   tabs.forEach(t => {
@@ -310,8 +410,6 @@ function ativarTab(nome){
     el.setAttribute("aria-selected", on);
     view.classList.toggle("ativa", on);
   });
-  btnMenu.style.display = nome === "karaoke" ? "none" : "";
-  if (nome === "karaoke") { painel.hidden = true; btnMenu.setAttribute("aria-expanded", false); }
   if (nome === "artistas") desenhaArtistas();
   if (nome === "karaoke") { conectarEventos(); desenhaKaraoke(); }
 
@@ -320,39 +418,107 @@ function ativarTab(nome){
 }
 tabs.forEach(t => $("tab-"+t).onclick = () => ativarTab(t));
 
+// ---- FILTROS EMBUTIDOS ----
+const btnToggleFiltros = $("toggle-filtros");
+const painelFiltros = $("painel-filtros");
+btnToggleFiltros.onclick = () => {
+  const aberto = painelFiltros.hidden;
+  painelFiltros.hidden = !aberto;
+  btnToggleFiltros.setAttribute("aria-expanded", aberto ? "true" : "false");
+};
+
+// ---- CACHE ----
 const cache = {
   get(k){ try{ return JSON.parse(localStorage.getItem("dc:"+k)); }catch{ return null; } },
   set(k,v){ try{ localStorage.setItem("dc:"+k, JSON.stringify(v)); }catch{} }
 };
 const chaveAlbum = d => "lf:"+(d.artista+"|"+d.nome).toLowerCase();
+const chaveBio = nome => "bio:"+nome.toLowerCase();
 
-// ---------- LAST.FM ----------
+// ---- LAST.FM ----
 async function infoAlbum(d){
   const c = cache.get(chaveAlbum(d)); if(c) return c;
-  const u = `https://ws.audioscrobbler.com/2.0/?method=album.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(d.artista)}&album=${encodeURIComponent(d.nome)}&autocorrect=1&format=json`;
-  const data = await (await fetch(u)).json();
-  const a = data.album;
-  if(!a) return {capa:"",faixas:[]};
-  const imgs = (a.image||[]).map(i => i["#text"]).filter(x => x && !x.includes("2a96cbd8b46e442fc41c2b86b821562f"));
-  const r = {capa: imgs[imgs.length-1]||"", faixas: [].concat(a.tracks?.track||[]).map(t => ({n:t.name, s:Number(t.duration)||0}))};
+
+  if (d.capa && d.faixas && d.faixas.length){
+    const faixas = normalizaFaixas(d.faixas);
+    const r = {capa: d.capa, faixas};
+    cache.set(chaveAlbum(d), r);
+    return r;
+  }
+
+  let capa = "", faixas = [];
+  try {
+    const u = `https://ws.audioscrobbler.com/2.0/?method=album.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(d.artista)}&album=${encodeURIComponent(d.nome)}&autocorrect=1&format=json`;
+    const data = await (await fetch(u)).json();
+    const a = data.album;
+    if (a){
+      const imgs = (a.image||[]).map(i => i["#text"]).filter(x => x && !x.includes("2a96cbd8b46e442fc41c2b86b821562f"));
+      capa = imgs[imgs.length-1]||"";
+      faixas = [].concat(a.tracks?.track||[]).map(t => ({n:t.name, s:Number(t.duration)||0}));
+    }
+  } catch {}
+
+  if (d.capa) capa = d.capa;
+  if (d.faixas && d.faixas.length) faixas = normalizaFaixas(d.faixas);
+
+  const r = {capa, faixas};
   cache.set(chaveAlbum(d), r);
   return r;
 }
 
-// ---------- CAPAS ----------
+function normalizaFaixas(arr){
+  return arr.map(f => typeof f === "string" ? {n: f, s: 0} : {n: f.n || "", s: Number(f.s) || 0});
+}
+
+async function bioArtista(nome){
+  if (artistasOverride[nome] && artistasOverride[nome].bio) return artistasOverride[nome].bio;
+  const c = cache.get(chaveBio(nome)); if(c) return c;
+
+  try {
+    const u = `https://ws.audioscrobbler.com/2.0/?method=artist.getInfo&api_key=${LASTFM_KEY}&artist=${encodeURIComponent(nome)}&autocorrect=1&format=json`;
+    const data = await (await fetch(u)).json();
+    const raw = data.artist?.bio?.content || data.artist?.bio?.summary || "";
+    const limpa = raw.replace(/<a[^>]*>.*?<\/a>/gi, "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+    cache.set(chaveBio(nome), limpa);
+    return limpa;
+  } catch { return ""; }
+}
+
+// ---- CAPAS ----
 const obs = new IntersectionObserver(es => es.forEach(e => {
   if(e.isIntersecting){ obs.unobserve(e.target); carregaCapa(e.target); }
 }), {rootMargin:"300px"});
 
 async function carregaCapa(el){
   const d = el._disco;
-  const poe = src => { const i = new Image(); i.alt = `Capa de ${d.nome}`; i.onload = () => { el.textContent=""; el.append(i); }; i.src = src; };
+  const poe = src => { 
+    const i = new Image(); 
+    i.alt = `Capa de ${d.nome}`; 
+    i.className = "capa-base";
+    i.onload = () => { 
+      el.textContent=""; 
+      el.append(i); 
+      
+      // Se for splatter, injeta as fatias orbitais
+      if (el.classList.contains("splatter")) {
+         const classes = ["s1", "s2", "s3", "s4", "s5"];
+         classes.forEach(cls => {
+            const slice = document.createElement("div");
+            slice.className = "slice " + cls;
+            const img = new Image();
+            img.src = src;
+            slice.append(img);
+            el.append(slice);
+         });
+      }
+    }; 
+    i.src = src; 
+  };
   if(d.capa) return poe(d.capa);
-  if(!LASTFM_KEY) return;
   try{ const r = await infoAlbum(d); if(r.capa) poe(r.capa); }catch{}
 }
 
-// ---------- TOOLTIP ----------
+// ---- TOOLTIP ----
 const tooltip = $("tooltip");
 function posicionaTooltip(x, y){
   const pad = 14;
@@ -374,7 +540,19 @@ function escondeTooltip(){
   tooltip.setAttribute("aria-hidden", "true");
 }
 
-// ---------- MODAL ----------
+// ---- GRADIENTE DE CORES MÚLTIPLAS ----
+function corParaCss(cores){
+  const hexes = cores.map(c => CORES_HEX[c.toLowerCase()] || "#888888");
+  if (hexes.length === 1) return hexes[0];
+  const stops = hexes.map((hex, i) => {
+    const start = (i / hexes.length) * 100;
+    const end = ((i + 1) / hexes.length) * 100;
+    return `${hex} ${start}%, ${hex} ${end}%`;
+  }).join(", ");
+  return `linear-gradient(135deg, ${stops})`;
+}
+
+// ---- MODAL ----
 const modalEl = $("modal");
 window.fecharModal = () => {
   if (wsKaraoke) { try { wsKaraoke.close(); } catch {} wsKaraoke = null; }
@@ -390,10 +568,9 @@ async function abreDisco(d){
   $("m-nome").textContent = "";
   $("m-info").textContent = "";
   const cont = $("m-conteudo");
-  cont.textContent = LASTFM_KEY ? "Buscando tracklist…" : "Falta a chave do Last.fm.";
+  cont.textContent = "Buscando tracklist…";
   modalEl.classList.remove("grande");
   modalEl.showModal();
-  if(!LASTFM_KEY) return;
 
   try{
     const {capa, faixas} = await infoAlbum(d);
@@ -448,6 +625,7 @@ async function abreDisco(d){
   }
 }
 
+// ---- DISCOS ----
 const ordena = l => [...l].sort((a,b) => cmp(semArtigo(a.artista),semArtigo(b.artista)) || a.ano - b.ano || cmp(a.nome,b.nome));
 
 function opcoes(sel, rotulo, campo){
@@ -457,19 +635,71 @@ function opcoes(sel, rotulo, campo){
   sel.value = v;
 }
 
+function desenhaFiltroLetrasDiscos(){
+  const filtro = $("filtro-letras-discos");
+  filtro.textContent = "";
+  ALFABETO.forEach(letra => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "letra-btn" + (letraFiltroDisco === letra ? " ativo" : "");
+    btn.textContent = letra;
+    btn.setAttribute("aria-pressed", letraFiltroDisco === letra ? "true" : "false");
+    btn.onclick = () => {
+      letraFiltroDisco = (letraFiltroDisco === letra) ? null : letra;
+      desenhaDiscos();
+    };
+    filtro.append(btn);
+  });
+}
+
 function desenhaDiscos(){
   const fa = $("f-artista").value, fg = $("f-genero").value, fc = $("f-cor").value;
-  const l = ordena(discos.filter(d => (!fa||d.artista===fa) && (!fg||d.genero===fg) && (!fc||d.cor.includes(fc))));
-  $("contagem-discos").textContent = `Mostrando ${l.length} ${l.length===1?"disco":"discos"}`;
+
+  const base = discos.filter(d =>
+    (!fa||d.artista===fa) &&
+    (!fg||d.genero===fg) &&
+    (!fc||d.cor.includes(fc))
+  );
+  const total = base.length;
+
+  let l = base;
+  if (letraFiltroDisco) {
+    l = base.filter(d => {
+      const primeira = semArtigo(d.nome).charAt(0).toLowerCase();
+      const chave = /[a-z]/.test(primeira) ? primeira : "#";
+      return chave === letraFiltroDisco;
+    });
+  }
+
+  if (letraFiltroDisco) {
+    if (l.length === 0) {
+      $("contagem-discos").textContent = `Nenhum disco com a letra "${letraFiltroDisco}" (de ${total} no total)`;
+    } else {
+      $("contagem-discos").textContent = `Mostrando ${l.length} ${l.length===1?"disco":"discos"} · letra ${letraFiltroDisco} (de ${total})`;
+    }
+  } else {
+    $("contagem-discos").textContent = `Mostrando ${total} ${total===1?"disco":"discos"}`;
+  }
+
+  desenhaFiltroLetrasDiscos();
+
   const g = $("grid"); g.textContent = "";
-  if(!l.length){ g.innerHTML = '<p class="aviso">Nenhum disco com esses filtros.</p>'; return; }
+  if(!l.length){
+    g.innerHTML = letraFiltroDisco
+      ? `<p class="aviso">Nenhum disco com a letra "${esc(letraFiltroDisco)}" ainda.</p>`
+      : '<p class="aviso">Nenhum disco com esses filtros.</p>';
+    return;
+  }
+
   l.forEach(d => {
     const b = document.createElement("button"); b.className = "disco";
     const c = document.createElement("div"); c.className = "capa"; c.textContent = d.nome; c._disco = d;
+
     const corNome = (d.cor[0] || "").toLowerCase();
-    c.style.setProperty("--cor-disco", CORES_HEX[corNome] || "#888888");
+    c.style.setProperty("--cor-disco", corParaCss(d.cor));
     if(corNome.includes("zoetrope")) c.classList.add("zoetrope");
     if(corNome.includes("splatter")) c.classList.add("splatter");
+
     b.append(c);
     b.onclick = () => abreDisco(d);
     b.addEventListener("mouseenter", e => mostraTooltip(e, d));
@@ -481,12 +711,15 @@ function desenhaDiscos(){
 }
 
 ["f-artista","f-genero","f-cor"].forEach(id => $(id).onchange = desenhaDiscos);
-$("limpar").onclick = () => { ["f-artista","f-genero","f-cor"].forEach(id => $(id).value=""); desenhaDiscos(); };
+$("limpar").onclick = () => {
+  ["f-artista","f-genero","f-cor"].forEach(id => $(id).value = "");
+  letraFiltroDisco = null;
+  desenhaDiscos();
+};
 
-// ---------- ARTISTAS ----------
+// ---- ARTISTAS ----
 function desenhaArtistas(){
   const artistas = [...new Set(discos.map(d => d.artista))].sort((a,b) => cmp(semArtigo(a),semArtigo(b)));
-
   const contagem = {};
   discos.forEach(d => { contagem[d.artista] = (contagem[d.artista] || 0) + 1; });
 
@@ -499,7 +732,6 @@ function desenhaArtistas(){
 
   const total = artistas.length;
 
-  // --- filtro alfabético (26 + #, sempre todos) ---
   const filtro = $("filtro-letras");
   filtro.textContent = "";
   ALFABETO.forEach(letra => {
@@ -507,7 +739,6 @@ function desenhaArtistas(){
     btn.type = "button";
     btn.className = "letra-btn" + (letraFiltroArtista === letra ? " ativo" : "");
     btn.textContent = letra;
-    btn.setAttribute("aria-pressed", letraFiltroArtista === letra ? "true" : "false");
     btn.onclick = () => {
       letraFiltroArtista = (letraFiltroArtista === letra) ? null : letra;
       desenhaArtistas();
@@ -515,7 +746,6 @@ function desenhaArtistas(){
     filtro.append(btn);
   });
 
-  // --- legenda e lista ---
   const g = $("grid-artistas");
   g.textContent = "";
 
@@ -526,19 +756,18 @@ function desenhaArtistas(){
       g.innerHTML = `<p class="aviso">Nenhum artista com a letra "${esc(letraFiltroArtista)}" ainda.</p>`;
       return;
     }
-    $("contagem-artistas").textContent = `Mostrando ${nomes.length} ${nomes.length===1?"artista":"artistas"} · letra ${letraFiltroArtista} (de ${total} no total)`;
+    $("contagem-artistas").textContent = `Mostrando ${nomes.length} ${nomes.length===1?"artista":"artistas"} · letra ${letraFiltroArtista} (de ${total})`;
 
     const divisor = document.createElement("h2");
     divisor.className = "divisor-letra";
-    divisor.textContent = letraFiltroArtista.toLowerCase();
+    divisor.textContent = letraFiltroArtista;
     g.append(divisor);
 
     nomes.forEach(nome => {
       const b = document.createElement("button");
       b.className = "artista-item";
       const n = document.createElement("span");
-      n.className = "artista-nome";
-      n.textContent = nome;
+      n.className = "artista-nome"; n.textContent = nome;
       const c = document.createElement("span");
       c.className = "artista-contagem";
       c.textContent = `${contagem[nome]} ${contagem[nome]===1 ? "disco" : "discos"}`;
@@ -549,22 +778,20 @@ function desenhaArtistas(){
   } else {
     $("contagem-artistas").textContent = `Mostrando ${total} ${total===1?"artista":"artistas"}`;
 
-    const letras = Object.keys(grupos).sort();
-    letras.forEach(letra => {
+    Object.keys(grupos).sort().forEach(letra => {
       const nomes = grupos[letra];
-      if (!nomes || !nomes.length) return;
+      if (!nomes.length) return;
 
       const divisor = document.createElement("h2");
       divisor.className = "divisor-letra";
-      divisor.textContent = letra.toLowerCase();
+      divisor.textContent = letra;
       g.append(divisor);
 
       nomes.forEach(nome => {
         const b = document.createElement("button");
         b.className = "artista-item";
         const n = document.createElement("span");
-        n.className = "artista-nome";
-        n.textContent = nome;
+        n.className = "artista-nome"; n.textContent = nome;
         const c = document.createElement("span");
         c.className = "artista-contagem";
         c.textContent = `${contagem[nome]} ${contagem[nome]===1 ? "disco" : "discos"}`;
@@ -576,11 +803,22 @@ function desenhaArtistas(){
   }
 }
 
-function abreArtista(nome){
+async function abreArtista(nome){
   const discs = ordena(discos.filter(d => d.artista === nome));
   $("m-nome").textContent = nome;
   $("m-info").textContent = `${discs.length} ${discs.length===1?"disco":"discos"} na coleção`;
   const cont = $("m-conteudo"); cont.textContent = "";
+
+  const bio = document.createElement("p");
+  bio.className = "bio-artista";
+  bio.textContent = "Carregando biografia…";
+  cont.append(bio);
+
+  bioArtista(nome).then(texto => {
+    if (texto) bio.textContent = texto;
+    else bio.remove();
+  });
+
   const grid = document.createElement("div"); grid.className = "grid-capas";
   discs.forEach(d => {
     const c = document.createElement("div"); c.className = "capa"; c.textContent = d.nome; c._disco = d;
@@ -596,11 +834,12 @@ function abreArtista(nome){
     }).catch(()=>{});
   });
   cont.append(grid);
+
   modalEl.classList.add("grande");
   modalEl.showModal();
 }
 
-// ---------- KARAOKÊ ----------
+// ---- KARAOKÊ ----
 const KARAOKE_KEY = "karaoke:eventos";
 const loadEventos = () => { try { return JSON.parse(localStorage.getItem(KARAOKE_KEY)) || []; } catch { return []; } };
 const saveEventos = ev => { try { localStorage.setItem(KARAOKE_KEY, JSON.stringify(ev)); } catch {} };
@@ -633,9 +872,9 @@ function conectarEventos(){
         eventosRemotos = msg.eventos || [];
         desenhaKaraoke();
       }
-    } catch (e) { console.warn("Mensagem inválida (eventos):", e); }
+    } catch (e) { console.warn("Msg inválida (eventos):", e); }
   };
-  wsEventos.onerror = () => { console.warn("Erro no WebSocket de eventos"); };
+  wsEventos.onerror = () => { console.warn("Erro no WS de eventos"); };
   wsEventos.onclose = () => { wsEventos = null; };
 }
 
@@ -653,7 +892,6 @@ function migrarEventosLocais(){
       }
     }
   });
-
   const todosNoServidor = locais.every(ev => eventosRemotos.includes(ev.data));
   if (algoMigrado || todosNoServidor) saveEventos([]);
 }
@@ -684,7 +922,6 @@ function novoEvento(){
   const data = prompt("Data do evento (AAAA-MM-DD):", hoje);
   if(!data) return;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(data)){ alert("Data inválida. Use AAAA-MM-DD."); return; }
-
   if (!wsEventos || wsEventos.readyState !== WebSocket.OPEN) {
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos.");
     return;
@@ -698,7 +935,6 @@ function novoEvento(){
 
 function conectarKaraoke(data){
   if (wsKaraoke) { try { wsKaraoke.close(); } catch {} wsKaraoke = null; }
-
   const protocolo = location.protocol === "https:" ? "wss:" : "ws:";
   const url = `${protocolo}//${location.host}/api/karaoke/${encodeURIComponent(data)}`;
   wsKaraoke = new WebSocket(url);
@@ -711,7 +947,7 @@ function conectarKaraoke(data){
         filaAtual = msg.fila || [];
         renderizarFila(filaAtual);
       }
-    } catch (e) { console.warn("Mensagem inválida (fila):", e); }
+    } catch (e) { console.warn("Msg inválida (fila):", e); }
   };
   wsKaraoke.onerror = () => { $("m-info").textContent = "Erro de conexão. Recarregue a página."; };
   wsKaraoke.onclose = () => {};
@@ -740,8 +976,7 @@ function renderizarFila(fila){
       }
     };
     const num = document.createElement("span");
-    num.className = "num";
-    num.textContent = `${i+1}.`;
+    num.className = "num"; num.textContent = `${i+1}.`;
     const div = document.createElement("div");
     div.innerHTML = `<span class="nome">${esc(item.nome)}</span><span class="musica">${esc(item.musica)}</span>`;
     li.append(checkbox, num, div);
@@ -752,7 +987,6 @@ function renderizarFila(fila){
 
 function abrirEvento(data){
   escondeTooltip();
-
   $("m-nome").textContent = fmtDataLonga(data);
   $("m-info").textContent = "Conectando à fila…";
   const cont = $("m-conteudo"); cont.textContent = "";
@@ -788,7 +1022,7 @@ function abrirEvento(data){
 
 $("novo-evento").onclick = novoEvento;
 
-// ---------- INIT ----------
+// ---- INIT ----
 async function init(){
   try{
     let dados = DADOS;
@@ -798,7 +1032,15 @@ async function init(){
         if(r.ok) dados = await r.json();
       }catch{}
     }
-    discos = (Array.isArray(dados) ? dados : dados.discos || []).map(norm);
+
+    if (Array.isArray(dados)) {
+      discos = dados.map(norm);
+      artistasOverride = {};
+    } else {
+      discos = (dados.discos || []).map(norm);
+      artistasOverride = dados.artistas || {};
+    }
+
     opcoes($("f-artista"),"Todos os artistas","artista");
     opcoes($("f-genero"),"Todos os gêneros","genero");
     opcoes($("f-cor"),"Todas as cores","cor");
