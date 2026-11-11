@@ -159,6 +159,7 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 
 /* ---------- DIALOG ---------- */
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
+dialog#modal-perfil { width: min(680px, 94vw); }
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
 .modal{position:relative;padding:1.4rem}
@@ -294,6 +295,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   margin-top: 2rem;
   width: 100%;
   text-align: left;
+  padding: 0 1rem; /* Adicionado padding para não colar nas bordas */
 }
 .faixas-recentes-titulo {
   font-size: 1.25rem;
@@ -317,7 +319,8 @@ dialog.modal-evento-encerrado .fila-lista li {
   flex-shrink: 0;
 }
 .faixa-track {
-  flex: 2;
+  flex: 1;
+  min-width: 0; /* Permite encolher e aplicar ellipsis */
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--ink);
@@ -326,19 +329,14 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-overflow: ellipsis;
 }
 .faixa-artist {
-  flex: 1.5;
+  flex: 0.6;
+  min-width: 0;
   font-size: 0.9rem;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.faixa-time {
-  flex-shrink: 0;
-  font-size: 0.85rem;
-  color: #a0a0a0;
-  text-align: right;
-  white-space: nowrap;
+  text-align: right; /* Joga o nome do artista para a direita */
 }
 .link-lastfm {
   display: block;
@@ -367,7 +365,6 @@ dialog.modal-evento-encerrado .fila-lista li {
   .faixa-cover { width: 40px; height: 40px; }
   .faixa-track { font-size: 0.85rem; flex: 1.5; }
   .faixa-artist { font-size: 0.8rem; flex: 1; }
-  .faixa-time { display: none; } /* Esconde o tempo no celular para não quebrar */
 }
 
 @media(max-width:480px){
@@ -777,14 +774,13 @@ async function abrirPerfil(username) {
                     }
                 }
             }
-            const timeAgo = track.date ? track.date["#text"] : "Agora";
             
+            // Removido o timeAgo e a div .faixa-time
             listaHtml += `
               <div class="faixa-item">
                 ${coverUrl ? `<img src="${coverUrl}" class="faixa-cover" alt="Capa">` : `<div class="faixa-cover"></div>`}
-                <div class="faixa-track">${esc(track.name)}</div>
-                <div class="faixa-artist">${esc(track.artist['#text'])}</div>
-                <div class="faixa-time">${esc(timeAgo)}</div>
+                <div class="faixa-track" title="${esc(track.name)}">${esc(track.name)}</div>
+                <div class="faixa-artist" title="${esc(track.artist['#text'])}">${esc(track.artist['#text'])}</div>
               </div>
             `;
         });
