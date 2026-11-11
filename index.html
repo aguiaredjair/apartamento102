@@ -288,15 +288,31 @@ dialog.modal-evento-encerrado .fila-lista li {
   font-size: 0.9rem;
   margin: 0.2rem 0;
 }
-.spotify-placeholder {
+.musica-placeholder {
   margin-top: 1.5rem;
   padding: 1rem;
-  border: 1px dashed #ccc;
   border-radius: 8px;
-  color: var(--mute);
   width: 100%;
   font-size: 0.9rem;
-  background: rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.musica-placeholder.lastfm {
+  border: 1px dashed #d51007;
+  color: #d51007;
+  background: rgba(213, 16, 7, 0.05);
+}
+.musica-placeholder.spotify {
+  border: 1px dashed #1DB954;
+  color: #1DB954;
+  background: rgba(29, 185, 84, 0.05);
+}
+.musica-placeholder.vazio {
+  border: 1px dashed #ccc;
+  color: var(--mute);
 }
 
 @media(max-width:480px){
@@ -438,7 +454,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   <p class="sub" id="config-sub">Atualize sua foto e senha</p>
   
   <form id="form-config" style="display: flex; flex-direction: column;">
-    <label style="font-weight: bold; margin-bottom: 5px;">Escolha sua foto de perfil:</label>
+    <label style="font-weight: bold; margin-bottom: 5px;">Escolha uma foto de perfil:</label>
     <div class="avatar-grid" id="avatar-grid">
       <img src="assets/profiles/pfp/george-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/george-pfp.jpg" onclick="selecionarAvatar(this)">
       <img src="assets/profiles/pfp/john-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/john-pfp.jpg" onclick="selecionarAvatar(this)">
@@ -446,8 +462,14 @@ dialog.modal-evento-encerrado .fila-lista li {
       <img src="assets/profiles/pfp/ringo-pfp.jpg" class="avatar-option" data-path="assets/profiles/pfp/ringo-pfp.jpg" onclick="selecionarAvatar(this)">
     </div>
 
+    <label style="font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Ou envie sua própria foto:</label>
+    <input type="file" id="config-file-avatar" accept="image/*" style="margin-bottom: 15px; font-size: 0.9rem;">
+
+    <label style="font-weight: bold; margin-bottom: 5px;">Username do Last.fm (opcional):</label>
+    <input type="text" id="config-lastfm" placeholder="Ex: demonio_digital" style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem;">
+
     <label style="font-weight: bold; margin-bottom: 5px;">Nova Senha:</label>
-    <input type="password" id="config-senha" placeholder="Digite uma senha segura" required style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem;">
+    <input type="password" id="config-senha" placeholder="Digite uma senha segura" style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem;">
     
     <button type="submit" style="padding: 0.6rem; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s;">Salvar Alterações</button>
     <p id="config-msg" style="font-size: 0.8rem; color: var(--accent); text-align: center; margin-top: 0.5rem; font-weight: bold;"></p>
@@ -662,21 +684,51 @@ async function abrirPerfil(username) {
     return;
   }
 
-  // Formata a data de criação
   const dataObj = new Date(profile.created_at);
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-
   const avatar = profile.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
 
-  cont.innerHTML = `
-    <img src="${avatar}" alt="Foto de ${profile.username}">
-    <h3>${esc(profile.username)}</h3>
-    <p>Membro desde ${dataFormatada}</p>
+  // Prepara o bloco de música
+  let musicaHtml = "";
+
+  if (profile.lastfm_username) {
+    musicaHtml = `<div class="musica-placeholder lastfm" id="bloco-musica">Carregando música do Last.fm...</div>`;
     
-    <div class="spotify-placeholder">
-      🎵 Conectar com o Spotify (em breve)
-    </div>
-  `;
+    cont.innerHTML = `
+      <img src="${avatar}" alt="Foto de ${profile.username}">
+      <h3>${esc(profile.username)}</h3>
+      <p>Membro desde ${dataFormatada}</p>
+      ${musicaHtml}
+    `;
+
+    // Busca música no Last.fm
+    try {
+      const url = `https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(profile.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=1`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const track = data.recenttracks?.track?.[0];
+      
+      const bloco = $("bloco-musica");
+      if (track) {
+        const isNowPlaying = track["@attr"]?.nowplaying === "true";
+        const prefixo = isNowPlaying ? "🎵 Ouvindo agora:" : "🎵 Última música:";
+        bloco.innerHTML = `${prefixo} <b>${esc(track.name)}</b> - ${esc(track.artist['#text'])}`;
+      } else {
+        bloco.innerHTML = `🎵 Nenhuma música recente encontrada no Last.fm`;
+      }
+    } catch(e) {
+      const bloco = $("bloco-musica");
+      if(bloco) bloco.innerHTML = `🎵 Erro ao carregar o Last.fm`;
+    }
+  } else {
+    musicaHtml = `<div class="musica-placeholder vazio">🎵 Nenhuma conta musical conectada</div>`;
+    cont.innerHTML = `
+      <img src="${avatar}" alt="Foto de ${profile.username}">
+      <h3>${esc(profile.username)}</h3>
+      <p>Membro desde ${dataFormatada}</p>
+      ${musicaHtml}
+    `;
+  }
 }
 
 // ---- CONFIGURAÇÕES E PRIMEIRO ACESSO ----
@@ -699,13 +751,19 @@ function abrirConfiguracoes(primeiroAcesso = false) {
   }
   
   if (currentUser && window.supabase) {
-    window.supabase.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({data}) => {
+    window.supabase.from('profiles').select('avatar_url, lastfm_username').eq('id', currentUser.id).single().then(({data}) => {
       const url = (data && data.avatar_url) ? data.avatar_url : "assets/profiles/pfp/george-pfp.jpg";
       document.querySelectorAll('.avatar-option').forEach(img => {
         if(img.getAttribute('data-path') === url) img.classList.add('selecionado');
         else img.classList.remove('selecionado');
       });
       avatarSelecionado = url;
+      
+      if (data && data.lastfm_username) {
+        $("config-lastfm").value = data.lastfm_username;
+      } else {
+        $("config-lastfm").value = "";
+      }
     });
   }
 }
@@ -714,35 +772,69 @@ function selecionarAvatar(el) {
   document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selecionado'));
   el.classList.add('selecionado');
   avatarSelecionado = el.getAttribute('data-path');
+  $("config-file-avatar").value = ""; // Limpa o upload de arquivo se clicar num padrão
 }
 
 $("form-config").onsubmit = async (e) => {
   e.preventDefault();
   const novaSenha = $("config-senha").value;
+  const lastfmUser = $("config-lastfm").value.trim();
+  const fileInput = $("config-file-avatar");
   const msg = $("config-msg");
   
   msg.textContent = "Salvando...";
   msg.style.color = "var(--mute)";
 
-  if (novaSenha.length < 6) {
-    msg.textContent = "A senha precisa ter pelo menos 6 caracteres.";
-    msg.style.color = "#c0392b";
-    return;
-  }
-
   if (!window.supabase) return;
 
-  const { error: authError } = await window.supabase.auth.updateUser({ password: novaSenha });
-  if (authError) {
-    msg.textContent = "Erro na senha: " + authError.message;
-    msg.style.color = "#c0392b";
-    return;
+  // 1. Upload de arquivo (se houver)
+  let finalAvatarUrl = avatarSelecionado;
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await window.supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      msg.textContent = "Erro no upload: " + uploadError.message;
+      msg.style.color = "#c0392b";
+      return;
+    }
+
+    const { data: urlData } = window.supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName);
+    
+    finalAvatarUrl = urlData.publicUrl;
   }
 
+  // 2. Troca de senha (se preenchida)
+  if (novaSenha.length > 0) {
+    if (novaSenha.length < 6) {
+      msg.textContent = "A senha precisa ter pelo menos 6 caracteres.";
+      msg.style.color = "#c0392b";
+      return;
+    }
+    const { error: authError } = await window.supabase.auth.updateUser({ password: novaSenha });
+    if (authError) {
+      msg.textContent = "Erro na senha: " + authError.message;
+      msg.style.color = "#c0392b";
+      return;
+    }
+  }
+
+  // 3. Atualiza o perfil no banco
   if (currentUser) {
     const { error: dbError } = await window.supabase
       .from('profiles')
-      .update({ avatar_url: avatarSelecionado, password_changed: true })
+      .update({ 
+        avatar_url: finalAvatarUrl, 
+        lastfm_username: lastfmUser || null,
+        password_changed: true 
+      })
       .eq('id', currentUser.id);
       
     if (dbError) {
@@ -758,6 +850,7 @@ $("form-config").onsubmit = async (e) => {
   setTimeout(() => {
     fecharConfiguracoes();
     $("config-senha").value = "";
+    $("config-file-avatar").value = "";
     msg.textContent = "";
     checarUsuario();
   }, 1000);
