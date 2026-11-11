@@ -112,8 +112,8 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 .capa.splatter::before { display: none !important; }
 .capa.splatter {
     clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-    /* Transição suave para a máscara e para o movimento de subida */
-    transition: clip-path 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.2s, border-radius 0.25s;
+    /* Sincronizado com o border-radius (.25s ease) para ficar na mesma velocidade */
+    transition: clip-path .25s ease, transform .2s, border-radius .25s;
 }
 .disco:hover .capa.splatter {
     border-radius: 0; /* Remove o formato circular */
