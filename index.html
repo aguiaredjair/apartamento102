@@ -106,20 +106,18 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 
 /* --- TRANSFORMAÇÃO DO PICTURE DISC --- */
 .capa.picture-disc::before { display: none !important; }
-.disco:hover .capa.picture-disc {
-    transform: translateY(-4px) scale(0.95); /* 95% de tamanho */
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 5px #22201d; /* Moldura preta */
+/* Apenas remove a sobreposição de cor, mantendo o hover padrão (círculo normal) */
+
+/* --- TRANSFORMAÇÃO DO SPLATTER (LOSANGO) --- */
+.capa.splatter::before { display: none !important; }
+.disco:hover .capa.splatter {
+    border-radius: 0; /* Remove o círculo */
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Formato de losango */
 }
 
 .capa.zoetrope::before{display:none !important}
 .capa.zoetrope:hover{animation:girar 2s linear infinite}
 @keyframes girar{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.capa.splatter::before { display: none !important; }
-.capa.splatter img.capa-base { -webkit-mask-image: radial-gradient(circle, transparent 0%, black 0%); mask-image: radial-gradient(circle, transparent 0%, black 0%); transition: -webkit-mask-image .3s, mask-image .3s; }
-.capa.splatter:hover img.capa-base { -webkit-mask-image: radial-gradient(circle, transparent 34%, black 35%); mask-image: radial-gradient(circle, transparent 34%, black 35%); }
-.splatter-center { position: absolute;top: 50%; left: 50%;transform: translate(-50%, -50%) scale(0); width: 20%; height: 20%;border-radius: 50%;background-size: cover;background-position: center; z-index: 2;pointer-events: none;transition: transform .3s; }
-.capa.splatter:hover .splatter-center { transform: translate(-50%, -50%) scale(1); }
 
 /* ---------- TOOLTIP ---------- */
 .tooltip{ position:fixed;top:0;left:0; background:var(--ink);color:var(--bg); padding:.55rem .8rem;border-radius:6px; font-size:.8rem;line-height:1.3; pointer-events:none;opacity:0;transition:opacity .12s; z-index:100;max-width:240px; box-shadow:0 8px 24px -8px rgba(0,0,0,.55); }
@@ -454,13 +452,10 @@ async function carregaCapa(el){
   const poe = src => { 
     const i = new Image(); i.alt = `Capa de ${d.nome}`; i.className = "capa-base";
     i.onload = () => { 
-      el.textContent=""; el.append(i); 
-      if (el.classList.contains("splatter")) {
-         const center = document.createElement("div");
-         center.className = "splatter-center"; center.style.backgroundImage = `url(${src})`;
-         el.append(center);
-      }
-    }; i.src = src; 
+      el.textContent=""; 
+      el.append(i); 
+    }; 
+    i.src = src; 
   };
   if(d.capa) return poe(d.capa);
   try{ const r = await infoAlbum(d); if(r.capa) poe(r.capa); }catch{}
@@ -865,7 +860,7 @@ function desenhaKaraoke(){
     b.className = "evento-item";
     b.classList.add(ev.encerrado ? "encerrado" : "ativo");
     
-    // Alteração aqui: 'abrir fila →' virou 'Ativo'
+    // Legenda 'Ativo' e 'Encerrado'
     b.innerHTML = `<div><b>${esc(fmtDataLonga(ev.data))}</b><small>${ev.encerrado ? 'Encerrado' : 'Ativo'}</small></div><span>→</span>`;
     b.onclick = () => abrirEvento(ev);
     lista.append(b);
