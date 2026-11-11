@@ -160,7 +160,7 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 /* ---------- DIALOG ---------- */
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
 dialog#modal-perfil { width: min(680px, 94vw); }
-dialog#modal-pessoas { width: min(420px, 94vw); } /* Modal de pessoas mais estreito */
+dialog#modal-pessoas { width: min(420px, 94vw); }
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
 .modal{position:relative;padding:1.4rem}
@@ -423,7 +423,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   gap: 0.5rem;
   background-color: var(--card);
   color: var(--ink);
-  border: none; /* Borda removida */
+  border: none;
   text-decoration: none;
   padding: 0.8rem 1.2rem;
   border-radius: 6px;
@@ -449,7 +449,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   text-align: center;
 }
 
-/* ---------- MODAL DE PESSOAS (TOTALMENTE DESACOPLADO) ---------- */
+/* ---------- MODAL DE PESSOAS ---------- */
 .pessoa-item {
   display: flex;
   align-items: center;
@@ -531,7 +531,7 @@ dialog.modal-evento-encerrado .fila-lista li {
   
   <div id="menu-logado" style="display: none;">
     <div class="perfil-drawer">
-      <img src="assets/profiles/pfp/george-pfp.jpg" id="menu-user-avatar" alt="Foto de perfil" class="pfp-drawer">
+      <img src="" id="menu-user-avatar" alt="Foto de perfil" class="pfp-drawer">
       <div class="perfil-info">
         <span class="username" id="menu-user-name">Usuário</span>
         <span class="perfil-sub">Membro</span>
@@ -697,6 +697,9 @@ const LASTFM_KEY = "76a09b3a6c3d66772961d2789ab87e8c";
 const API_URL = "discos.json";
 const DADOS = [];
 
+// AVATAR PADRÃO CASO A PESSOA NÃO TENHA FOTO
+const DEFAULT_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d1d5db'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/></svg>";
+
 const ALFABETO = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","#"];
 
 const CORES_HEX = {
@@ -811,7 +814,8 @@ async function checarUsuario() {
       menuLogado.style.display = "block";
       menuDeslogado.style.display = "none";
       $("menu-user-name").textContent = profile.username;
-      if (profile.avatar_url) $("menu-user-avatar").src = profile.avatar_url;
+      // FALLBACK NEUTRO NO MENU
+      $("menu-user-avatar").src = profile.avatar_url || DEFAULT_AVATAR;
     } else {
       userProfile = null;
       menuLogado.style.display = "none";
@@ -901,12 +905,12 @@ async function abrirPessoas() {
   lista.innerHTML = "";
   
   profiles.forEach(p => {
-    // Criando o botão sem a classe artista-item para não herdar comportamentos errados
     const btn = document.createElement("button");
     btn.className = "pessoa-item";
 
     const img = document.createElement("img");
-    img.src = p.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
+    // FALLBACK NEUTRO NA LISTA DE PESSOAS
+    img.src = p.avatar_url || DEFAULT_AVATAR;
 
     const infoDiv = document.createElement("div");
     infoDiv.className = "pessoa-info";
@@ -918,7 +922,6 @@ async function abrirPessoas() {
     const subSpan = document.createElement("span");
     subSpan.className = "pessoa-musica";
 
-    // Só mostra/tenta carregar música se tiver Last.fm
     if (p.lastfm_username) {
       subSpan.textContent = "♫ Carregando...";
       fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=${encodeURIComponent(p.lastfm_username)}&api_key=${LASTFM_KEY}&format=json&limit=1`)
@@ -935,7 +938,7 @@ async function abrirPessoas() {
           subSpan.textContent = "♫ Erro ao carregar";
         });
     } else {
-      subSpan.style.display = "none"; // Esconde se não tiver Last.fm
+      subSpan.style.display = "none"; 
     }
 
     infoDiv.append(span, subSpan);
@@ -972,7 +975,8 @@ async function abrirPerfil(username) {
 
   const dataObj = new Date(profile.created_at);
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  const avatar = profile.avatar_url || "assets/profiles/pfp/george-pfp.jpg";
+  // FALLBACK NEUTRO NO PERFIL
+  const avatar = profile.avatar_url || DEFAULT_AVATAR;
   
   let capaStyle = "";
   let capaClass = "perfil-capa";
@@ -1092,7 +1096,8 @@ function abrirConfiguracoes(primeiroAcesso = false) {
   
   if (currentUser && window.supabase) {
     window.supabase.from('profiles').select('avatar_url, lastfm_username').eq('id', currentUser.id).single().then(({data}) => {
-      const url = (data && data.avatar_url) ? data.avatar_url : "assets/profiles/pfp/george-pfp.jpg";
+      // FALLBACK NEUTRO NAS CONFIGS
+      const url = (data && data.avatar_url) ? data.avatar_url : DEFAULT_AVATAR;
       document.querySelectorAll('.avatar-option').forEach(img => {
         if(img.getAttribute('data-path') === url) img.classList.add('selecionado');
         else img.classList.remove('selecionado');
@@ -1759,7 +1764,8 @@ function renderizarFila(fila){
     div.style.alignItems = "center";
     div.style.gap = "0.6rem";
     
-    const avatarSrc = item.avatar || "assets/profiles/pfp/george-pfp.jpg";
+    // FALLBACK NEUTRO NO KARAOKÊ
+    const avatarSrc = item.avatar || DEFAULT_AVATAR;
     div.innerHTML = `
       <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc; cursor: pointer;" onclick="abrirPerfil('${esc(item.nome)}')">
       <div>
