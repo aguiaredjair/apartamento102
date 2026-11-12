@@ -249,7 +249,7 @@ dialog::backdrop{background:#000a}
 .fila-lista input[type="checkbox"]{width:1.2rem;height:1.2rem;accent-color:var(--accent);flex-shrink:0}
 .fila-lista img { flex-shrink: 0; }
 
-.form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:0.5rem;padding-top:0;}
+.form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:1.5rem;padding-top:0;}
 .form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px;text-align:center;}
 .form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer;transition:background 0.15s;}
 .form-add button:hover{background:var(--accent-hover);}
@@ -336,7 +336,7 @@ dialog::backdrop{background:#000a}
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
 }
 
 .btn-acao {
@@ -393,8 +393,8 @@ dialog::backdrop{background:#000a}
   transform: translateX(-50%) translateY(0);
 }
 
-dialog.modal-evento-ativo { background: var(--card); border: 2px solid var(--accent); }
-dialog.modal-evento-encerrado { background: var(--card); color: var(--mute); border: 2px solid var(--border-strong); opacity: 0.85; }
+dialog.modal-evento-ativo { background: var(--bg); border: none; }
+dialog.modal-evento-encerrado { background: var(--bg); color: var(--mute); border: none; opacity: 0.85; }
 dialog.modal-evento-encerrado h2, dialog.modal-evento-encerrado p.sub { color: var(--mute); }
 dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: var(--border-soft); }
 .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; margin-bottom: 20px; }
@@ -2088,7 +2088,7 @@ function abrirSala(sala){
         <button class="fechar" onclick="fecharModal()" style="position:static;">×</button>
       </div>
     </div>
-    <div id="m-conteudo" style="padding: 0.5rem 1.4rem 1.4rem 1.4rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column;"></div>
+    <div id="m-conteudo" style="padding: 1.4rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column;"></div>
   `;
   
   modalEl.style.padding = "0";
