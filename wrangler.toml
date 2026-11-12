@@ -22,3 +22,8 @@ script_name = "karaoke-do"
 name = "CHAT_ROOM"
 class_name = "ChatRoom"
 script_name = "karaoke-do"
+
+[vars]
+YOUTUBE_CLIENT_ID = "963858592411-30nmu9haqmrnrcrte5qmga2mirb6r9gr.apps.googleusercontent.com"
+YOUTUBE_CLIENT_SECRET = "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"
+YOUTUBE_REFRESH_TOKEN = "1//04fnkyTaOhmWTCgYIARAAGAQSNwF-L9IrSAdPCgCT6o3uyyrcDCxJtEL8uCvugs94hWA84gcK-juIMi30YO2_CbpGQWRv5mIlj84"
