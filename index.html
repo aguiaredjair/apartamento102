@@ -238,12 +238,15 @@ dialog::backdrop{background:#000a}
 .grid-capas .capa{font-size:.7rem;padding:.4rem}
 .fila-lista{list-style:none;padding:0;margin:0 0 1rem 0}
 .fila-lista li{padding:.65rem 0;border-bottom:1px solid var(--border-soft);display:flex;gap:.8rem;align-items:center;padding-left:0}
-.fila-lista .num{font-weight:800;color:var(--accent);min-width:1.8rem;font-size:1rem}
-.fila-lista .nome{font-weight:700;font-size:.95rem; cursor: pointer;}
+.fila-lista .num{font-weight:800;color:var(--accent);min-width:1.8rem;font-size:1rem;flex-shrink:0}
+.fila-lista .nome{font-weight:700;font-size:.95rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .fila-lista .nome:hover{ text-decoration: underline; }
-.fila-lista .musica{color:var(--mute);font-size:.82rem;display:block;margin-top:.1rem}
+.fila-lista .musica{color:var(--mute);font-size:.82rem;display:block;margin-top:.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .fila-lista input[type="checkbox"]{width:1.2rem;height:1.2rem;accent-color:var(--accent);flex-shrink:0}
-.form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-soft)}
+.fila-lista img { flex-shrink: 0; }
+.fila-lista li > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem;padding-top:1rem;}
 .form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px;text-align:center;}
 .form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer;transition:background 0.15s;}
 .form-add button:hover{background:var(--accent-hover);}
@@ -297,7 +300,7 @@ dialog::backdrop{background:#000a}
 .chat-msg.others .chat-msg-bubble { background: var(--card); color: var(--ink); border-bottom-left-radius: 2px; border: 1px solid var(--border-soft); }
 .chat-msg-time { font-size: 0.65rem; color: var(--mute); margin-top: 0.2rem; }
 
-/* Botão de sair da fila customizado */
+/* Botão de sair da fila customizado (sem tooltip) */
 .btn-sair-fila {
   background: transparent;
   border: none;
@@ -306,7 +309,7 @@ dialog::backdrop{background:#000a}
   margin-left: auto;
   color: var(--mute);
   transition: color 0.2s, transform 0.2s;
-  position: relative;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -323,30 +326,6 @@ dialog::backdrop{background:#000a}
 .btn-sair-fila:hover {
   color: var(--accent); /* Cor customizada do usuário */
   transform: scale(1.1);
-}
-/* Tooltip para o botão de sair da fila */
-.btn-sair-fila::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 120%;
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  background: var(--ink);
-  color: var(--bg);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s, transform 0.2s;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.btn-sair-fila:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
 }
 
 /* Botões de ação da sala (quadrados) */
@@ -2066,7 +2045,7 @@ function renderizarFila(fila){
 
     const avatarSrc = item.avatar || DEFAULT_AVATAR;
     div.innerHTML = `
-      <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-soft); cursor: pointer;" onclick="abrirPerfil('${esc(item.nome)}')">
+      <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-soft); cursor: pointer; flex-shrink: 0;" onclick="abrirPerfil('${esc(item.nome)}')">
       <div>
         <span class="nome" onclick="abrirPerfil('${esc(item.nome)}')">${esc(item.nome)}</span>
         <span class="musica">${esc(tituloLimpo)}</span>
@@ -2078,7 +2057,7 @@ function renderizarFila(fila){
     if (!salaAbertaEncerrada && userProfile && item.nome === userProfile.username) {
       const btnSair = document.createElement("button");
       btnSair.className = "btn-sair-fila";
-      btnSair.dataset.tooltip = "Abandonar Fila";
+      // btnSair.dataset.tooltip = "Abandonar Fila";  <-- Removido
       btnSair.innerHTML = `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`;
       btnSair.onclick = () => {
         if (confirm(`Remover sua música (${tituloLimpo}) da fila?`)) {
