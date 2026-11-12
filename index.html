@@ -188,31 +188,18 @@ dialog::backdrop{background:#000a}
 #chat-video-area { display: none; flex: 1; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 10px; padding: 1rem; background: #111; overflow-y: auto; }
 .video-wrapper { position: relative; flex: 1 1 45%; min-width: 200px; max-width: 48%; aspect-ratio: 4/3; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #333; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;}
 .video-wrapper video { width: 100%; height: 100%; object-fit: contain; }
-
-.video-avatar { 
-  position: absolute; inset: 0; 
-  display: flex; align-items: center; justify-content: center; 
-  background: rgba(213, 171, 9, 0.15); 
-  z-index: 1;
-}
-.video-avatar img {
-  width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
-  border: 3px solid var(--accent);
-}
-
+.video-avatar { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(213, 171, 9, 0.15); z-index: 1; }
+.video-avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); }
 .video-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; z-index: 10;}
 .mic-muted-icon { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; z-index: 10;}
 .mic-muted-icon svg { width: 16px; height: 16px; fill: #c0392b; }
-
 .video-wrapper.focused { flex: 1 1 100%; max-width: 100%; height: 75%; }
 .video-wrapper:not(.focused):has(~ .video-wrapper.focused), .video-wrapper.focused ~ .video-wrapper { flex: 1 1 15%; max-width: 18%; height: 20%; aspect-ratio: auto; }
-
 .video-lobby { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; background: #111; color: #fff; padding: 2rem; text-align: center; }
 .video-lobby h3 { font-size: 1.5rem; margin-bottom: 1rem; }
 .video-lobby p { color: #aaa; margin-bottom: 2rem; }
 .btn-iniciar-chamada { font-size: 1.1rem; padding: 1rem 2rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
 .btn-iniciar-chamada:hover { background: #b89508; }
-
 .video-controls { width: 100%; display: none; justify-content: center; gap: 1.5rem; padding: 1.2rem; background: var(--ink); flex-shrink: 0; align-items: center; border-radius: 0 0 8px 8px; }
 .btn-icon-control { background: transparent; border: none; width: 48px; height: 48px; display: grid; place-items: center; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.4); }
 .btn-icon-control svg { width: 28px; height: 28px; fill: currentColor; }
@@ -220,7 +207,6 @@ dialog::backdrop{background:#000a}
 .btn-icon-control.danger { color: rgba(192,57,43,0.8); }
 .btn-icon-control.danger:hover { color: #c0392b; }
 .btn-icon-control:not(.active):not(.danger):hover { color: rgba(255,255,255,0.8); }
-
 .btn-lixeira { background: transparent; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem; margin-left: auto; transition: transform 0.2s; }
 .btn-lixeira:hover { transform: scale(1.2); }
 .btn-encerrar { background: transparent; color: #c0392b; border: 1px solid #c0392b; border-radius: 6px; padding: 0.6rem; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; transition: background 0.2s, color 0.2s; }
@@ -282,62 +268,22 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .chart-info { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
 .chart-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
 .chart-artist { font-size: 0.75rem; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* FIX: Botões do carrossel com transparência e blur */
-.carousel-btn { 
-  position: absolute; 
-  top: 50%; 
-  transform: translateY(-50%); 
-  background: rgba(243, 241, 236, 0.4); /* Cor do card com 40% de opacidade */
-  backdrop-filter: blur(4px); /* Efeito de vidro */
-  -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(34,32,29,0.1); 
-  border-radius: 50%; 
-  width: 32px; height: 32px; 
-  display: grid; place-items: center; 
-  cursor: pointer; 
-  z-index: 10; 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
-  color: var(--ink); 
-  font-size: 1.2rem; 
-  transition: background 0.15s; 
-}
+.carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(243, 241, 236, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border: 1px solid rgba(34,32,29,0.1); border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.05); color: var(--ink); font-size: 1.2rem; transition: background 0.15s; }
 .carousel-btn:hover { background: var(--card); }
 .carousel-btn.prev { left: 0; }
 .carousel-btn.next { right: 0; }
 .carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 0.5rem; }
 .carousel-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(34,32,29,.2); transition: background 0.2s; }
 .carousel-dots span.active { background: var(--ink); }
-
-/* LAYOUT MOBILE (Slider horizontal com botões) */
 @media (max-width: 767px) {
-  .carousel-track { 
-    overflow-x: auto; 
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
+  .carousel-track { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
   .carousel-track::-webkit-scrollbar { display: none; }
-  .carousel-slide { 
-    flex: 0 0 100%; 
-    width: 100%; 
-    padding: 0;
-  }
-  .carousel-btn { display: grid; } /* Mostra setas no mobile */
+  .carousel-slide { flex: 0 0 100%; width: 100%; padding: 0; }
+  .carousel-btn { display: grid; }
 }
-
-/* LAYOUT DESKTOP (Lado a lado igual) */
 @media (min-width: 768px) {
-  .carousel-track { 
-    display: flex; 
-    flex-direction: row; 
-    overflow: visible; 
-    gap: 1rem; 
-  }
-  .carousel-slide { 
-    flex: 1 1 0; 
-    min-width: 0; 
-  }
+  .carousel-track { display: flex; flex-direction: row; overflow: visible; gap: 1rem; }
+  .carousel-slide { flex: 1 1 0; min-width: 0; }
   .carousel-btn, .carousel-dots { display: none; }
 }
 .pessoa-item { display: flex; align-items: center; justify-content: flex-start; gap: 12px; width: 100%; padding: 12px; background: none; border: 0; border-bottom: 1px solid rgba(34,32,29,.12); text-align: left; cursor: pointer; transition: background 0.15s; }
@@ -627,8 +573,8 @@ let screenStream = null;
 let peerConnections = {};
 let naChamada = false; 
 let chamadaAtivaNoServidor = false; 
-let camAtiva = false; // Inicia desligada
-let micAtivo = false; // Inicia desligado
+let camAtiva = false; 
+let micAtivo = false; 
 const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 // ---- ANIMAÇÃO DE BOAS VINDAS ----
@@ -2453,28 +2399,12 @@ async function abrirPerfil(username) {
 window.abrirPerfil = abrirPerfil;
 window.abrirPessoas = abrirPessoas;
 
-// FIX: Navegação Circular do Carrossel
 window.moveCarousel = function(direction, event) {
   if (event) event.stopPropagation();
   const track = document.getElementById('stats-carousel');
   if (!track) return;
-  
-  const slides = track.querySelectorAll('.carousel-slide');
-  if (slides.length === 0) return;
-  
   const slideWidth = track.clientWidth;
-  const currentIndex = Math.round(track.scrollLeft / slideWidth);
-  
-  let newIndex = currentIndex + direction;
-  
-  // Lógica do Loop
-  if (newIndex < 0) {
-    newIndex = slides.length - 1; // Volta para a última
-  } else if (newIndex >= slides.length) {
-    newIndex = 0; // Vai para a primeira
-  }
-  
-  track.scrollTo({ left: newIndex * slideWidth, behavior: 'smooth' });
+  track.scrollBy({ left: direction * slideWidth, behavior: 'smooth' });
 };
 
 async function init(){
