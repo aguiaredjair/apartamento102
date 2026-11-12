@@ -307,39 +307,60 @@ dialog::backdrop{background:#000a}
   gap: 1rem;
   margin-top: 1rem;
 }
+
 .btn-acao {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 10px;
-  background: transparent;
+  border-radius: 10px; /* Igual ao border-radius das capas */
+  background: transparent; /* Fundo transparente para não esconder o ícone */
+  border: 1px solid var(--border-soft); /* Borda sutil */
+  color: var(--mute); /* Cor padrão cinza */
+  opacity: 0.5; /* Baixa opacidade */
   cursor: pointer;
   transition: all 0.2s;
+  position: relative; /* Para o tooltip */
 }
+
 .btn-acao svg {
   width: 22px;
   height: 22px;
+  fill: none;
+  stroke: currentColor; /* A cor do SVG segue a cor do botão */
 }
-.btn-acao-encerrar {
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-.btn-acao-encerrar:hover {
-  background: var(--danger);
-  color: #fff;
-}
-.btn-acao-deletar {
-  color: var(--mute);
-  border: 1px solid var(--border-soft);
-  opacity: 0.5;
-}
-.btn-acao-deletar:hover {
+
+.btn-acao:hover {
   opacity: 1;
-  color: var(--danger);
+  color: var(--danger); /* Fica vermelho igual ao lixeiro */
   border-color: var(--danger);
-  background: var(--danger);
+}
+
+/* Tooltip nativo via CSS */
+.btn-acao::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-acao:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 dialog.modal-evento-ativo { background: var(--card); border: 2px solid var(--accent); }
@@ -2101,8 +2122,8 @@ function abrirSala(sala){
     acoesContainer.className = "sala-acoes";
 
     const btnEncerrar = document.createElement("button");
-    btnEncerrar.className = "btn-acao btn-acao-encerrar";
-    btnEncerrar.title = "Encerrar Sala";
+    btnEncerrar.className = "btn-acao";
+    btnEncerrar.dataset.tooltip = "Encerrar Sala";
     btnEncerrar.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
     btnEncerrar.onclick = () => {
       if (confirm("Tem certeza que deseja encerrar esta sala? Ninguém mais poderá entrar na fila.")) {
@@ -2113,8 +2134,8 @@ function abrirSala(sala){
     };
     
     const btnDeletar = document.createElement("button");
-    btnDeletar.className = "btn-acao btn-acao-deletar";
-    btnDeletar.title = "Deletar Sala";
+    btnDeletar.className = "btn-acao";
+    btnDeletar.dataset.tooltip = "Deletar Sala";
     btnDeletar.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
     btnDeletar.onclick = () => {
       if (confirm("Tem certeza que deseja DELETAR esta sala permanentemente? A playlist no YouTube não será apagada, mas a sala sumirá do app.")) {
@@ -2131,8 +2152,8 @@ function abrirSala(sala){
     acoesContainer.className = "sala-acoes";
 
     const btnDeletar = document.createElement("button");
-    btnDeletar.className = "btn-acao btn-acao-deletar";
-    btnDeletar.title = "Deletar Sala";
+    btnDeletar.className = "btn-acao";
+    btnDeletar.dataset.tooltip = "Deletar Sala";
     btnDeletar.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
     btnDeletar.onclick = () => {
       if (confirm("Tem certeza que deseja DELETAR esta sala permanentemente? A playlist no YouTube não será apagada, mas a sala sumirá do app.")) {
