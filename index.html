@@ -10,9 +10,10 @@
     try {
       const t = localStorage.getItem('apt102_theme');
       const a = localStorage.getItem('apt102_accent');
-      const accentValidos = ['yellow','red','orange','blue','green','pink','purple','gray'];
-      document.documentElement.dataset.theme = (t === 'dark' || t === 'light') ? t : 'light';
-      document.documentElement.dataset.accent = accentValidos.includes(a) ? a : 'yellow';
+      const themesValidos = ['light', 'dark', 'auto'];
+      const accentsValidos = ['yellow','red','orange','blue','green','pink','purple','gray'];
+      document.documentElement.dataset.theme = themesValidos.includes(t) ? t : 'light';
+      document.documentElement.dataset.accent = accentsValidos.includes(a) ? a : 'yellow';
     } catch(e) {
       document.documentElement.dataset.theme = 'light';
       document.documentElement.dataset.accent = 'yellow';
@@ -58,6 +59,17 @@
   color-scheme: dark;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"]{
+    --bg: #1e1c18;
+    --ink: #f0ece2;
+    --mute: #a39e92;
+    --card: #2a2722;
+    --danger: #e74c3c;
+    color-scheme: dark;
+  }
+}
+
 :root[data-accent="yellow"] { --accent: #d5ab09; }
 :root[data-accent="red"]    { --accent: #c8443c; }
 :root[data-accent="orange"] { --accent: #d17a1a; }
@@ -96,12 +108,13 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .drawer-conteudo h2 { margin: 0; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--mute); }
 .drawer-item { font-size: 1rem; font-weight: 600; color: var(--ink); text-decoration: none; cursor: pointer; transition: color .15s; }
 .drawer-item:hover { color: var(--accent); }
-.drawer-aparencia { margin-top: auto; padding-top: 1.5rem; border-top: 2px solid var(--border-soft); gap: 1rem; }
+
+/* Appearance controls (now inside modal-config) */
 .theme-toggle-row { display: flex; gap: 0.4rem; }
-.theme-option { flex: 1; font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.55rem 0.6rem; background: transparent; color: var(--ink); border: 1.5px solid var(--ink); border-radius: 6px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.theme-option { flex: 1; font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.55rem 0.4rem; background: transparent; color: var(--ink); border: 1.5px solid var(--ink); border-radius: 6px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; white-space: nowrap; }
 .theme-option[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
 .accent-picker { display: flex; flex-direction: column; gap: 0.5rem; }
-.accent-label { font-size: 0.75rem; font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em; }
+.accent-label { font-size: 0.75rem; font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
 .accent-swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
 .accent-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; transition: transform 0.15s, border-color 0.15s; -webkit-tap-highlight-color: transparent; }
 .accent-swatch:hover { transform: scale(1.08); }
@@ -353,6 +366,7 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: var(--border
   .filtro-discos .letra-btn{font-size:.8rem}
   .painel-filtros{padding:.9rem .5rem}
   dialog#modal-chat { height: 88vh; max-height: 88vh; }
+  .theme-option { font-size: 0.75rem; padding: 0.5rem 0.2rem; }
 }
 </style>
 </head>
@@ -392,27 +406,6 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: var(--border
         <button type="submit" style="padding: 0.6rem; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Entrar</button>
       </form>
       <p id="login-msg" style="font-size: 0.8rem; color: var(--mute); text-align: center; margin-top: 0.5rem;"></p>
-    </div>
-  </div>
-
-  <div class="drawer-conteudo drawer-aparencia">
-    <h2>Aparência</h2>
-    <div class="theme-toggle-row">
-      <button class="theme-option" data-theme="light" aria-pressed="false">☀ Claro</button>
-      <button class="theme-option" data-theme="dark" aria-pressed="false">🌙 Escuro</button>
-    </div>
-    <div class="accent-picker">
-      <div class="accent-label">Cor principal</div>
-      <div class="accent-swatches">
-        <button class="accent-swatch" data-accent="yellow" style="background:#d5ab09" title="Amarelo" aria-pressed="false"></button>
-        <button class="accent-swatch" data-accent="red"    style="background:#c8443c" title="Vermelho" aria-pressed="false"></button>
-        <button class="accent-swatch" data-accent="orange" style="background:#d17a1a" title="Laranja" aria-pressed="false"></button>
-        <button class="accent-swatch" data-accent="blue"   style="background:#2c7fb8" title="Azul" aria-pressed="false"></button>
-        <button class="accent-swatch" data-accent="green"  style="background:#2d8f4f" title="Verde" aria-pressed="false"></button>
-        <button class="accent-swatch" data-accent="pink"   style="background:#c94a7d" title="Rosa" aria-pressed="false"></button>
-        <button class="accent-swatch" data-accent="purple" style="background:#7d3fa0" title="Roxo" aria-pressed="false"></button>
-        <button class="accent-swatch" data-accent="gray"   style="background:#6b7375" title="Cinza" aria-pressed="false"></button>
-      </div>
     </div>
   </div>
 </div>
@@ -519,6 +512,30 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: var(--border
     <div style="border-top: 1px solid var(--border-medium); margin: 0.5rem 0 1rem;"></div>
     <label style="font-weight: bold; margin-bottom: 5px;">Username do Last.fm (opcional):</label>
     <input type="text" id="config-lastfm" placeholder="Ex: demonio_digital" style="padding: 0.6rem; border: 1.5px solid var(--ink); border-radius: 6px; font-family: inherit; margin-bottom: 1rem; background: var(--bg); color: var(--ink);">
+
+    <div style="border-top: 1px solid var(--border-medium); margin: 0.5rem 0 1rem;"></div>
+
+    <!-- APARÊNCIA -->
+    <label style="font-weight: bold; margin-bottom: 8px; display: block;">Aparência</label>
+    <div class="theme-toggle-row" style="margin-bottom: 1rem;">
+      <button type="button" class="theme-option" data-theme="light" aria-pressed="false">☀ Claro</button>
+      <button type="button" class="theme-option" data-theme="dark" aria-pressed="false">🌙 Escuro</button>
+      <button type="button" class="theme-option" data-theme="auto" aria-pressed="false">💻 Automático</button>
+    </div>
+    <div class="accent-picker" style="margin-bottom: 1rem;">
+      <div class="accent-label">Cor principal</div>
+      <div class="accent-swatches">
+        <button type="button" class="accent-swatch" data-accent="yellow" style="background:#d5ab09" title="Amarelo" aria-pressed="false"></button>
+        <button type="button" class="accent-swatch" data-accent="red"    style="background:#c8443c" title="Vermelho" aria-pressed="false"></button>
+        <button type="button" class="accent-swatch" data-accent="orange" style="background:#d17a1a" title="Laranja" aria-pressed="false"></button>
+        <button type="button" class="accent-swatch" data-accent="blue"   style="background:#2c7fb8" title="Azul" aria-pressed="false"></button>
+        <button type="button" class="accent-swatch" data-accent="green"  style="background:#2d8f4f" title="Verde" aria-pressed="false"></button>
+        <button type="button" class="accent-swatch" data-accent="pink"   style="background:#c94a7d" title="Rosa" aria-pressed="false"></button>
+        <button type="button" class="accent-swatch" data-accent="purple" style="background:#7d3fa0" title="Roxo" aria-pressed="false"></button>
+        <button type="button" class="accent-swatch" data-accent="gray"   style="background:#6b7375" title="Cinza" aria-pressed="false"></button>
+      </div>
+    </div>
+
     <div style="border-top: 1px solid var(--border-medium); margin: 0.5rem 0 1rem;"></div>
     <button type="button" id="toggle-senha" class="btn-toggle-senha">Desejo mudar minha senha</button>
     <div id="campos-senha" class="campos-senha" hidden>
@@ -589,35 +606,68 @@ let letraFiltroDisco = null;
 // ---- TEMA E COR ----
 const THEME_KEY = "apt102_theme";
 const ACCENT_KEY = "apt102_accent";
+const THEMES_VALIDOS = ["light", "dark", "auto"];
 const ACCENTS_VALIDOS = ["yellow","red","orange","blue","green","pink","purple","gray"];
 
-function aplicarTema(theme, accent) {
-  if (theme !== 'dark' && theme !== 'light') theme = 'light';
+function atualizarBotoesAparencia() {
+  const t = document.documentElement.dataset.theme || 'light';
+  const a = document.documentElement.dataset.accent || 'yellow';
+  document.querySelectorAll('.theme-option').forEach(b => {
+    b.setAttribute('aria-pressed', b.dataset.theme === t ? 'true' : 'false');
+  });
+  document.querySelectorAll('.accent-swatch').forEach(b => {
+    b.setAttribute('aria-pressed', b.dataset.accent === a ? 'true' : 'false');
+  });
+}
+
+// Aplica visualmente + salva no localStorage. Se persistToDb=true e houver
+// usuário logado, também salva no Supabase (best-effort, fire-and-forget).
+function aplicarTema(theme, accent, { persistToDb = false } = {}) {
+  if (!THEMES_VALIDOS.includes(theme)) theme = 'light';
   if (!ACCENTS_VALIDOS.includes(accent)) accent = 'yellow';
+
   document.documentElement.dataset.theme = theme;
   document.documentElement.dataset.accent = accent;
+
   try {
     localStorage.setItem(THEME_KEY, theme);
     localStorage.setItem(ACCENT_KEY, accent);
   } catch {}
-  document.querySelectorAll('.theme-option').forEach(b => {
-    b.setAttribute('aria-pressed', b.dataset.theme === theme ? 'true' : 'false');
-  });
-  document.querySelectorAll('.accent-swatch').forEach(b => {
-    b.setAttribute('aria-pressed', b.dataset.accent === accent ? 'true' : 'false');
-  });
+
+  atualizarBotoesAparencia();
+
+  if (persistToDb && userProfile && window.supabase) {
+    (async () => {
+      try {
+        const { error } = await window.supabase
+          .from('profiles')
+          .update({ theme, accent })
+          .eq('id', userProfile.id);
+        if (error) {
+          console.warn('[tema] Falha ao salvar no perfil:', error.message);
+        } else {
+          userProfile.theme = theme;
+          userProfile.accent = accent;
+        }
+      } catch (e) { console.warn('[tema] Erro ao salvar:', e); }
+    })();
+  }
 }
 
-function inicializarTema() {
-  const theme = document.documentElement.dataset.theme || 'light';
-  const accent = document.documentElement.dataset.accent || 'yellow';
-  aplicarTema(theme, accent);
+function inicializarBotoesAparencia() {
   document.querySelectorAll('.theme-option').forEach(b => {
-    b.onclick = () => aplicarTema(b.dataset.theme, document.documentElement.dataset.accent || 'yellow');
+    b.onclick = () => {
+      const accentAtual = document.documentElement.dataset.accent || 'yellow';
+      aplicarTema(b.dataset.theme, accentAtual, { persistToDb: true });
+    };
   });
   document.querySelectorAll('.accent-swatch').forEach(b => {
-    b.onclick = () => aplicarTema(document.documentElement.dataset.theme || 'light', b.dataset.accent);
+    b.onclick = () => {
+      const themeAtual = document.documentElement.dataset.theme || 'light';
+      aplicarTema(themeAtual, b.dataset.accent, { persistToDb: true });
+    };
   });
+  atualizarBotoesAparencia();
 }
 
 // ---- MENU LATERAL (GAVETA) ----
@@ -714,6 +764,12 @@ async function checarUsuario() {
       menuDeslogado.style.display = "none";
       $("menu-user-name").textContent = profile.username;
       $("menu-user-avatar").src = profile.avatar_url || DEFAULT_AVATAR;
+
+      // Aplica aparência do perfil (se houver preferência salva)
+      if (profile.theme || profile.accent) {
+        aplicarTema(profile.theme || 'light', profile.accent || 'yellow');
+      }
+
       conectarHub();
     } else {
       userProfile = null;
@@ -938,9 +994,6 @@ function abrirChatSala(sala) {
 
         if (msg.tipo === "nova_mensagem") renderizarMensagemChat(msg.mensagem);
 
-        // Chamada de vídeo foi removida — os eventos webrtc/chamada que o
-        // servidor ainda envia são simplesmente ignorados aqui.
-
       } catch (e) { console.error(e); }
     };
 
@@ -1087,8 +1140,6 @@ async function abrirPessoas() {
     infoDiv.append(span, subSpan);
     btn.append(imgContainer, infoDiv);
 
-    // FIX: NÃO fecha o modal de Pessoas — o dialog de perfil abre por cima
-    // e, ao fechá-lo, Pessoas continua aberto para o "stalk" continuar.
     btn.onclick = () => {
       abrirPerfil(p.username);
     };
@@ -1098,7 +1149,10 @@ async function abrirPessoas() {
 
 function abrirConfiguracoes(primeiroAcesso = false) {
   const modalConfig = $("modal-config");
-  modalConfig.showModal();
+  if (!modalConfig.open) modalConfig.showModal();
+
+  // Garante que os botões de aparência reflitam o estado atual
+  atualizarBotoesAparencia();
 
   const camposSenha = $("campos-senha");
   const toggleSenha = $("toggle-senha");
@@ -1207,14 +1261,25 @@ $("form-config").onsubmit = async (e) => {
   }
 
   if (currentUser) {
+    const themeAtual = document.documentElement.dataset.theme || 'light';
+    const accentAtual = document.documentElement.dataset.accent || 'yellow';
+
     const { error: dbError } = await window.supabase.from('profiles').update({
       avatar_url: finalAvatarUrl,
       cover_url: finalCoverUrl,
       lastfm_username: lastfmUser || null,
-      password_changed: true
+      password_changed: true,
+      theme: themeAtual,
+      accent: accentAtual
     }).eq('id', currentUser.id);
 
     if (dbError) { msg.textContent = "Erro ao salvar perfil: " + dbError.message; msg.style.color = "#c0392b"; return; }
+
+    // Mantém userProfile em sincronia
+    if (userProfile) {
+      userProfile.theme = themeAtual;
+      userProfile.accent = accentAtual;
+    }
   }
 
   msg.textContent = "Configurações salvas!";
@@ -2134,8 +2199,9 @@ async function init(){
   ativarTab(inicial);
 }
 
-// Inicializa tema (botões + aria-pressed) e depois o resto
-inicializarTema();
+// Aparência: wire handlers + sync UI state
+inicializarBotoesAparencia();
+
 init();
 setupAuth();
 </script>
