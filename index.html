@@ -300,6 +300,28 @@ dialog::backdrop{background:#000a}
 .btn-lixeira:hover { transform: scale(1.2); }
 .btn-encerrar { background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; padding: 0.6rem; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; transition: background 0.2s, color 0.2s; }
 .btn-encerrar:hover { background: var(--danger); color: #fff; }
+
+/* NOVO: Botão de deletar discreto */
+.btn-deletar {
+  background: transparent;
+  color: var(--mute);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  width: 100%;
+  opacity: 0.5;
+  font-size: 0.85rem;
+  transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+}
+.btn-deletar:hover {
+  opacity: 1;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
 dialog.modal-evento-ativo { background: var(--card); border: 2px solid var(--accent); }
 dialog.modal-evento-encerrado { background: var(--card); color: var(--mute); border: 2px solid var(--border-strong); opacity: 0.85; }
 dialog.modal-evento-encerrado h2, dialog.modal-evento-encerrado p.sub { color: var(--mute); }
@@ -1121,14 +1143,17 @@ function formatarTituloMusica(tituloBruto) {
   // 1. Remove tudo que vem depois de um pipe "|" (ex: "| KaraFun", "| Video Oficial")
   let limpo = tituloBruto.split('|')[0].trim();
   
-  // Remove lixos comuns entre parênteses ou colchetes
-  const lixos = /[\(\[]?(karaok[eê]|karaoke version|version|instrumental|playback|cover|official video|clipe oficial|legendado|ao vivo|live)[\)\]]?/gi;
+  // 2. Remove lixos comuns entre parênteses ou colchetes
+  const lixos = /[\(\[]\s*(karaok[eê]|karaoke|version|instrumental|playback|cover|official video|clipe oficial|legendado|ao vivo|live|lyrics?|letra)\s*[\)\]]/gi;
   limpo = limpo.replace(lixos, '').trim();
+  
+  // Remove parênteses ou colchetes que ficaram vazios (ou com apenas espaços)
+  limpo = limpo.replace(/[\(\[]\s*[\)\]]/g, '').trim();
   
   // Remove hífens soltos no final ou no começo
   limpo = limpo.replace(/^[\-\s]+|[\-\s]+$/g, '');
 
-  // 2. Tenta separar Música e Artista pelo hífen.
+  // 3. Tenta separar Música e Artista pelo hífen.
   // Padrão comum: "Artista - Música". Vamos inverter para "Música - Artista".
   if (limpo.includes(' - ')) {
     const partes = limpo.split(' - ');
@@ -1746,7 +1771,7 @@ let wsKaraoke = null;
 let filaAtual = [];
 let salaAbertaId = null;
 let salaAbertaEncerrada = false;
-let salaParaAbrirId = null; // NOVO: Guarda o ID da sala recém-criada
+let salaParaAbrirId = null; // Guarda o ID da sala recém-criada
 
 function conectarSalas(){
   if (wsSalas && (wsSalas.readyState === WebSocket.OPEN || wsSalas.readyState === WebSocket.CONNECTING)) return;
@@ -1769,13 +1794,19 @@ function conectarSalas(){
         salasRemotas = msg.salas || [];
         desenhaSalas();
 
-        // NOVO: Verifica se a sala recém-criada já está na lista
+        // Abre a sala recém-criada
         if (salaParaAbrirId) {
           const novaSala = salasRemotas.find(s => s.id === salaParaAbrirId);
           if (novaSala) {
-            salaParaAbrirId = null; // Limpa a flag
-            abrirSala(novaSala);    // Abre automaticamente
+            salaParaAbrirId = null;
+            abrirSala(novaSala);
           }
+        }
+
+        // Fecha o modal se a sala atual foi deletada
+        if (salaAbertaId && !salasRemotas.find(s => s.id === salaAbertaId)) {
+          fecharModal();
+          return;
         }
 
         if (msg.tipo === "salas_atualizadas" && salaAbertaId) {
@@ -1790,6 +1821,8 @@ function conectarSalas(){
             if (form) form.remove();
             const btnEnc = cont.querySelector(".btn-encerrar");
             if (btnEnc) btnEnc.remove();
+            const btnDel = cont.querySelector(".btn-deletar"); // Remove o de deletar tbm
+            if (btnDel) btnDel.remove();
 
             $("m-info").textContent = "Sala Encerrada";
             modalEl.classList.remove("modal-evento-ativo");
@@ -1855,7 +1888,7 @@ function novaSala(){
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos."); return;
   }
 
-  salaParaAbrirId = id; // NOVO: Guarda o ID da sala que estamos criando
+  salaParaAbrirId = id;
 
   wsSalas.send(JSON.stringify({ 
     tipo: "criar_sala", 
@@ -1899,7 +1932,6 @@ function renderizarFila(fila){
   const ol = document.querySelector("#m-conteudo .fila-lista");
   if (!ol) return;
   
-  // Remove o spinner se ele existir (pois a resposta chegou)
   const spinner = document.getElementById("loading-fila");
   if (spinner) spinner.remove();
 
@@ -2007,7 +2039,6 @@ function abrirSala(sala){
       }
       form.reset();
       
-      // Adiciona o indicador de carregamento na tela
       const ol = document.querySelector("#m-conteudo .fila-lista");
       if (ol && !document.getElementById("loading-fila")) {
         const liLoading = document.createElement("li");
@@ -2030,9 +2061,33 @@ function abrirSala(sala){
       }
     };
     cont.append(btnEncerrar);
+
+    const btnDeletar = document.createElement("button");
+    btnDeletar.className = "btn-deletar";
+    btnDeletar.textContent = "Deletar Sala";
+    btnDeletar.onclick = () => {
+      if (confirm("Tem certeza que deseja DELETAR esta sala permanentemente? A playlist no YouTube não será apagada, mas a sala sumirá do app.")) {
+        if (wsSalas && wsSalas.readyState === WebSocket.OPEN) {
+          wsSalas.send(JSON.stringify({ tipo: "remover_sala", id: salaAbertaId }));
+        }
+      }
+    };
+    cont.append(btnDeletar);
   } else {
     modalEl.classList.add("modal-evento-encerrado");
     $("m-info").textContent = `${sala.data} · Encerrada`;
+
+    const btnDeletar = document.createElement("button");
+    btnDeletar.className = "btn-deletar";
+    btnDeletar.textContent = "Deletar Sala";
+    btnDeletar.onclick = () => {
+      if (confirm("Tem certeza que deseja DELETAR esta sala permanentemente? A playlist no YouTube não será apagada, mas a sala sumirá do app.")) {
+        if (wsSalas && wsSalas.readyState === WebSocket.OPEN) {
+          wsSalas.send(JSON.stringify({ tipo: "remover_sala", id: salaAbertaId }));
+        }
+      }
+    };
+    cont.append(btnDeletar);
   }
 
   modalEl.showModal();
