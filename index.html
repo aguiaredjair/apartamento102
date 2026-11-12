@@ -238,8 +238,9 @@ dialog::backdrop{background:#000a}
 .grid-capas .capa{font-size:.7rem;padding:.4rem}
 
 /* Lista da Fila */
-.fila-lista{list-style:none;padding:0;margin:0}
+.fila-lista{list-style:none;padding:0;margin:0; border-top: 1px solid var(--border-soft);}
 .fila-lista li{padding:.65rem 0;border-bottom:1px solid var(--border-soft);display:flex;gap:.8rem;align-items:center;padding-left:0}
+.fila-lista li:last-child{border-bottom:none;}
 .fila-lista .num{font-weight:800;color:var(--accent);min-width:1.8rem;font-size:1rem;flex-shrink:0}
 .fila-lista .fila-item-conteudo { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.6rem; }
 .fila-lista .fila-item-texto { display: flex; flex-direction: column; min-width: 0; flex: 1; }
