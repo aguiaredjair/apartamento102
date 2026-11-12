@@ -282,8 +282,27 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .chart-info { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
 .chart-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
 .chart-artist { font-size: 0.75rem; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: var(--card); border: 1px solid rgba(34,32,29,0.1); border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--ink); font-size: 1.2rem; transition: background 0.15s; }
-.carousel-btn:hover { background: var(--bg); }
+
+/* FIX: Botões do carrossel com transparência e blur */
+.carousel-btn { 
+  position: absolute; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  background: rgba(243, 241, 236, 0.4); /* Cor do card com 40% de opacidade */
+  backdrop-filter: blur(4px); /* Efeito de vidro */
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(34,32,29,0.1); 
+  border-radius: 50%; 
+  width: 32px; height: 32px; 
+  display: grid; place-items: center; 
+  cursor: pointer; 
+  z-index: 10; 
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+  color: var(--ink); 
+  font-size: 1.2rem; 
+  transition: background 0.15s; 
+}
+.carousel-btn:hover { background: var(--card); }
 .carousel-btn.prev { left: 0; }
 .carousel-btn.next { right: 0; }
 .carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 0.5rem; }
@@ -2434,12 +2453,28 @@ async function abrirPerfil(username) {
 window.abrirPerfil = abrirPerfil;
 window.abrirPessoas = abrirPessoas;
 
+// FIX: Navegação Circular do Carrossel
 window.moveCarousel = function(direction, event) {
   if (event) event.stopPropagation();
   const track = document.getElementById('stats-carousel');
   if (!track) return;
+  
+  const slides = track.querySelectorAll('.carousel-slide');
+  if (slides.length === 0) return;
+  
   const slideWidth = track.clientWidth;
-  track.scrollBy({ left: direction * slideWidth, behavior: 'smooth' });
+  const currentIndex = Math.round(track.scrollLeft / slideWidth);
+  
+  let newIndex = currentIndex + direction;
+  
+  // Lógica do Loop
+  if (newIndex < 0) {
+    newIndex = slides.length - 1; // Volta para a última
+  } else if (newIndex >= slides.length) {
+    newIndex = 0; // Vai para a primeira
+  }
+  
+  track.scrollTo({ left: newIndex * slideWidth, behavior: 'smooth' });
 };
 
 async function init(){
