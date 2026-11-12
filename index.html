@@ -321,12 +321,10 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 </head>
 <body>
 
-<!-- MENU HAMBÚRGUER -->
 <button class="menu-hamburguer-btn" id="btn-menu-hamburguer" aria-label="Abrir menu">
   <span></span><span></span><span></span>
 </button>
 
-<!-- GAVETA LATERAL -->
 <div class="drawer-overlay" id="drawer-overlay"></div>
 <div class="drawer" id="drawer-menu">
   <button class="drawer-fechar" id="btn-fechar-menu" aria-label="Fechar menu">×</button>
@@ -437,13 +435,11 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 
 <div id="tooltip" class="tooltip" aria-hidden="true"></div>
 
-<!-- MODAL DE DISCOS E ARTISTAS -->
 <dialog id="modal"><div class="modal">
   <button class="fechar" aria-label="Fechar" onclick="fecharModal()">×</button>
   <h2 id="m-nome"></h2><p class="sub" id="m-info"></p><div id="m-conteudo"></div>
 </div></dialog>
 
-<!-- MODAL DE CONFIGURAÇÕES / PRIMEIRO ACESSO -->
 <dialog id="modal-config"><div class="modal">
   <button class="fechar" aria-label="Fechar" onclick="fecharConfiguracoes()">×</button>
   <h2 id="config-titulo"><span id="welcome-text"></span></h2>
@@ -476,24 +472,19 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
   </form>
 </div></dialog>
 
-<!-- MODAL DE PERFIL PÚBLICO -->
 <dialog id="modal-perfil">
   <button class="fechar" aria-label="Fechar" onclick="document.getElementById('modal-perfil').close()">×</button>
   <div id="perfil-content-wrapper" style="width: 100%; display: flex; flex-direction: column;"></div>
 </dialog>
 
-<!-- MODAL DE PESSOAS -->
 <dialog id="modal-pessoas"><div class="modal">
   <button class="fechar" aria-label="Fechar" onclick="document.getElementById('modal-pessoas').close()">×</button>
   <h2>Pessoas</h2>
   <div id="lista-pessoas" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;"></div>
 </div></dialog>
 
-<!-- MODAL DE CHAT -->
 <dialog id="modal-chat">
-  <div class="chat-container" id="chat-container">
-    <!-- Conteúdo injetado via JS -->
-  </div>
+  <div class="chat-container" id="chat-container"></div>
 </dialog>
 
 <script>
@@ -534,11 +525,30 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 const normBusca = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 // ============================================================
-// UTILITÁRIO CRÍTICO: ID ÚNICO DE PEER
-// Usado por TODOS os handlers de sinalização WebRTC e pelas
-// chaves de peerConnections / IDs de DOM do vídeo.
+// ID ÚNICO DE PEER (sanitização consistente em TODOS os lugares)
 // ============================================================
 const idPeer = u => String(u).replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase();
+
+// ============================================================
+// BUFFER DE ICE CANDIDATES
+// Candidates remotos podem chegar antes do setRemoteDescription
+// terminar (handler async). Sem isso, são descartados e a conexão
+// WebRTC nunca completa.
+// ============================================================
+const iceCandidatesBuffer = {};  // { [peerId]: RTCIceCandidate[] }
+
+async function flushIceBuffer(peerId) {
+  const pc = peerConnections[peerId];
+  const buf = iceCandidatesBuffer[peerId];
+  if (!pc || !buf || buf.length === 0) return;
+  if (!pc.remoteDescription) return;
+  const paraProcessar = buf.slice();
+  iceCandidatesBuffer[peerId] = [];
+  for (const cand of paraProcessar) {
+    try { await pc.addIceCandidate(cand); }
+    catch (e) { console.warn("[ICE flush]", e); }
+  }
+}
 
 let discos = [];
 let letraFiltroArtista = null;
@@ -584,6 +594,11 @@ let camAtiva = false;
 let micAtivo = false;
 const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
+// ---- HEARTBEAT / RECONEXÃO ----
+let wsHeartbeatTimer = null;
+let wsHeartbeatPong = null;
+let wsIntentionalClose = false;
+
 // ---- ANIMAÇÃO DE BOAS VINDAS ----
 const welcomeWords = ["Bem-vindo", "Welcome", "Добро пожаловать", "환영합니다", "ようこそ", "欢迎", "مرحبا", "स्वागतम्", "Καλώς ορίσατε", "Bienvenue", "Willkommen", "Bienvenido", "Benvenuto"];
 let welcomeIndex = 0;
@@ -617,7 +632,6 @@ function fecharConfiguracoes() {
   $("modal-config").close();
 }
 
-// ---- FECHAR MODAIS AO CLICAR FORA ----
 $("modal").addEventListener("click", e => { if (e.target === $("modal")) fecharModal(); });
 $("modal-config").addEventListener("click", e => { if (e.target === $("modal-config")) fecharConfiguracoes(); });
 $("modal-perfil").addEventListener("click", e => { if (e.target === $("modal-perfil")) $("modal-perfil").close(); });
@@ -782,7 +796,39 @@ $("nova-chat-sala").onclick = () => {
   wsHub.send(JSON.stringify({ tipo: "criar_sala", sala: { id, nome, data: new Date().toISOString() } }));
 };
 
+// ============================================================
+// HEARTBEAT (evita WS zumbi e força reconexão)
+// ============================================================
+function iniciarHeartbeat() {
+  pararHeartbeat();
+  wsHeartbeatTimer = setInterval(() => {
+    if (!wsChatRoom || wsChatRoom.readyState !== WebSocket.OPEN) return;
+    try { wsChatRoom.send(JSON.stringify({ tipo: "ping" })); } catch { return; }
+    if (wsHeartbeatPong) clearTimeout(wsHeartbeatPong);
+    wsHeartbeatPong = setTimeout(() => {
+      console.warn("[WS] pong timeout, fechando para reconectar");
+      try { wsChatRoom.close(); } catch {}
+    }, 10000);
+  }, 25000);
+}
+
+function pararHeartbeat() {
+  if (wsHeartbeatTimer) { clearInterval(wsHeartbeatTimer); wsHeartbeatTimer = null; }
+  if (wsHeartbeatPong) { clearTimeout(wsHeartbeatPong); wsHeartbeatPong = null; }
+}
+
+// ============================================================
+// ABRIR SALA DE CHAT (com heartbeat + reconexão + ICE buffer)
+// ============================================================
 function abrirChatSala(sala) {
+  pararHeartbeat();
+  if (wsChatRoom) {
+    wsIntentionalClose = true;
+    try { wsChatRoom.close(); } catch {}
+    wsChatRoom = null;
+  }
+  wsIntentionalClose = false;
+
   salaChatAbertaId = sala.id;
   chatNaoLidas[sala.id] = 0;
   atualizarBadgeGlobal();
@@ -792,6 +838,8 @@ function abrirChatSala(sala) {
   chamadaAtivaNoServidor = false;
   camAtiva = false;
   micAtivo = false;
+  limparMidiaVideo();
+  for (const k of Object.keys(iceCandidatesBuffer)) delete iceCandidatesBuffer[k];
 
   const modal = $("modal-chat");
   modal.classList.remove("maximized");
@@ -847,144 +895,192 @@ function abrirChatSala(sala) {
   modal.showModal();
 
   const protocolo = location.protocol === "https:" ? "wss:" : "ws:";
-  wsChatRoom = new WebSocket(`${protocolo}//${location.host}/api/chat/sala/${sala.id}`);
-  const chatBody = $("chat-body");
+  const urlWs = `${protocolo}//${location.host}/api/chat/sala/${sala.id}`;
 
-  wsChatRoom.onopen = () => {
-    wsChatRoom.send(JSON.stringify({ tipo: "entrar", username: userProfile.username, avatar: userProfile.avatar_url }));
-  };
+  function iniciarWs() {
+    wsChatRoom = new WebSocket(urlWs);
+    const chatBody = $("chat-body");
 
-  wsChatRoom.onmessage = async (event) => {
-    try {
-      const msg = JSON.parse(event.data);
+    wsChatRoom.onopen = () => {
+      wsChatRoom.send(JSON.stringify({ tipo: "entrar", username: userProfile.username, avatar: userProfile.avatar_url }));
+      iniciarHeartbeat();
+      if (naChamada) {
+        wsChatRoom.send(JSON.stringify({ tipo: "entrar_chamada", username: userProfile.username }));
+      }
+    };
 
-      if (msg.tipo === "estado_inicial") {
-        chatBody.innerHTML = "";
-        msg.mensagens.forEach(m => renderizarMensagemChat(m));
+    wsChatRoom.onmessage = async (event) => {
+      try {
+        const msg = JSON.parse(event.data);
 
-        chamadaAtivaNoServidor = msg.chamadaAtiva;
-        if (chamadaAtivaNoServidor) {
-          $("video-lobby-title").textContent = "Chamada em andamento";
-          $("video-lobby-desc").textContent = `${msg.participantesChamada.length} pessoa(s) na chamada.`;
-          $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
-        } else {
-          $("video-lobby-title").textContent = "Nenhuma chamada ativa";
-          $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
-          $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
+        if (msg.tipo === "pong") {
+          if (wsHeartbeatPong) { clearTimeout(wsHeartbeatPong); wsHeartbeatPong = null; }
+          return;
         }
-      }
 
-      if (msg.tipo === "nova_mensagem") renderizarMensagemChat(msg.mensagem);
+        if (msg.tipo === "estado_inicial") {
+          chatBody.innerHTML = "";
+          msg.mensagens.forEach(m => renderizarMensagemChat(m));
 
-      if (msg.tipo === "chamada_iniciada") {
-        chamadaAtivaNoServidor = true;
-        if (!naChamada) {
-          $("video-lobby-title").textContent = "Chamada iniciada por " + msg.por;
-          $("video-lobby-desc").textContent = "Você pode entrar na chamada agora.";
-          $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
-        }
-      }
-
-      if (msg.tipo === "chamada_encerrada") {
-        chamadaAtivaNoServidor = false;
-        if (naChamada) {
-          alert("A chamada foi encerrada porque todos saíram.");
-          sairChamada(true);
-        } else {
-          $("video-lobby-title").textContent = "Nenhuma chamada ativa";
-          $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
-          $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
-        }
-      }
-
-      // ============================================================
-      // WEBRTC — SINALIZAÇÃO
-      // Todas as chaves de peerConnections usam idPeer().
-      // ============================================================
-
-      // O entrante recebe a lista dos que já estão na chamada e
-      // é RESPONSÁVEL por criar as offers para cada um deles.
-      if (msg.tipo === "peers_iniciais") {
-        for (const peer of msg.peers) {
-          const pc = await criarConexao(peer);
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          wsChatRoom.send(JSON.stringify({ tipo: "webrtc_offer", target: peer, sdp: offer }));
-        }
-      }
-
-      // Alguém entrou DEPOIS de mim.
-      // NÃO criamos PC aqui — quem entrou é que vai mandar offer.
-      // Só mostramos o placeholder visual até o ontrack chegar.
-      if (msg.tipo === "peer_joined" && msg.username !== userProfile.username) {
-        criarJanelaVideo(msg.username, null, false);
-      }
-
-      if (msg.tipo === "peer_mic_state") {
-        const el = document.getElementById(`video-${idPeer(msg.username)}`);
-        if (el) {
-          const icon = el.querySelector('.mic-muted-icon');
-          if (msg.muted) {
-            if (!icon) el.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
+          chamadaAtivaNoServidor = msg.chamadaAtiva;
+          if (chamadaAtivaNoServidor) {
+            $("video-lobby-title").textContent = "Chamada em andamento";
+            $("video-lobby-desc").textContent = `${msg.participantesChamada.length} pessoa(s) na chamada.`;
+            $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
           } else {
-            if (icon) icon.remove();
+            $("video-lobby-title").textContent = "Nenhuma chamada ativa";
+            $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
+            $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
           }
         }
-      }
 
-      if (msg.tipo === "webrtc_offer") {
-        const pc = await criarConexao(msg.sender);
-        await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        wsChatRoom.send(JSON.stringify({ tipo: "webrtc_answer", target: msg.sender, sdp: answer }));
-      }
+        if (msg.tipo === "nova_mensagem") renderizarMensagemChat(msg.mensagem);
 
-      if (msg.tipo === "webrtc_answer") {
-        const pc = peerConnections[idPeer(msg.sender)];
-        if (pc) await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-      }
-
-      if (msg.tipo === "webrtc_ice") {
-        const pc = peerConnections[idPeer(msg.sender)];
-        if (pc) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); }
-          catch (e) { console.warn("addIceCandidate falhou:", e); }
+        if (msg.tipo === "estado_chamada") {
+          chamadaAtivaNoServidor = msg.chamadaAtiva;
+          if (!naChamada) {
+            if (msg.chamadaAtiva && msg.participantes.length > 0) {
+              $("video-lobby-title").textContent = "Chamada em andamento";
+              $("video-lobby-desc").textContent = `${msg.participantes.length} pessoa(s) na chamada.`;
+              $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
+            } else {
+              $("video-lobby-title").textContent = "Nenhuma chamada ativa";
+              $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
+              $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
+            }
+          }
         }
-      }
 
-      if (msg.tipo === "peer_left") {
-        const id = idPeer(msg.username);
-        if (peerConnections[id]) {
-          try { peerConnections[id].close(); } catch {}
-          delete peerConnections[id];
+        if (msg.tipo === "chamada_iniciada") {
+          chamadaAtivaNoServidor = true;
+          if (!naChamada) {
+            $("video-lobby-title").textContent = "Chamada iniciada por " + msg.por;
+            $("video-lobby-desc").textContent = "Você pode entrar na chamada agora.";
+            $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
+          }
         }
-        const el = document.getElementById(`video-${id}`);
-        if (el) el.remove();
+
+        if (msg.tipo === "chamada_encerrada") {
+          chamadaAtivaNoServidor = false;
+          if (naChamada) {
+            alert("A chamada foi encerrada porque todos saíram.");
+            sairChamada(true);
+          } else {
+            $("video-lobby-title").textContent = "Nenhuma chamada ativa";
+            $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
+            $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
+          }
+        }
+
+        if (msg.tipo === "peers_iniciais") {
+          for (const peer of msg.peers) {
+            const pc = await criarConexao(peer);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            wsChatRoom.send(JSON.stringify({ tipo: "webrtc_offer", target: peer, sdp: offer }));
+          }
+        }
+
+        if (msg.tipo === "peer_joined" && msg.username !== userProfile.username) {
+          criarJanelaVideo(msg.username, null, false);
+        }
+
+        if (msg.tipo === "peer_mic_state") {
+          const el = document.getElementById(`video-${idPeer(msg.username)}`);
+          if (el) {
+            const icon = el.querySelector('.mic-muted-icon');
+            if (msg.muted) {
+              if (!icon) el.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
+            } else {
+              if (icon) icon.remove();
+            }
+          }
+        }
+
+        if (msg.tipo === "webrtc_offer") {
+          const peerId = idPeer(msg.sender);
+          const pc = await criarConexao(msg.sender);
+          await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          await flushIceBuffer(peerId);
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          wsChatRoom.send(JSON.stringify({ tipo: "webrtc_answer", target: msg.sender, sdp: answer }));
+        }
+
+        if (msg.tipo === "webrtc_answer") {
+          const peerId = idPeer(msg.sender);
+          const pc = peerConnections[peerId];
+          if (pc) {
+            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            await flushIceBuffer(peerId);
+          }
+        }
+
+        if (msg.tipo === "webrtc_ice") {
+          const peerId = idPeer(msg.sender);
+          const pc = peerConnections[peerId];
+          const cand = new RTCIceCandidate(msg.candidate);
+          if (!pc || !pc.remoteDescription) {
+            (iceCandidatesBuffer[peerId] = iceCandidatesBuffer[peerId] || []).push(cand);
+          } else {
+            try { await pc.addIceCandidate(cand); }
+            catch (e) { console.warn("[ICE]", e); }
+          }
+        }
+
+        if (msg.tipo === "peer_left") {
+          const id = idPeer(msg.username);
+          if (peerConnections[id]) {
+            try { peerConnections[id].close(); } catch {}
+            delete peerConnections[id];
+          }
+          delete iceCandidatesBuffer[id];
+          document.getElementById(`video-${id}`)?.remove();
+        }
+
+      } catch (e) { console.error(e); }
+    };
+
+    wsChatRoom.onclose = () => {
+      pararHeartbeat();
+      if (wsIntentionalClose || !salaChatAbertaId) return;
+      console.warn("[WS] caiu, reconectando em 2s…");
+      setTimeout(() => {
+        if (salaChatAbertaId === sala.id && !wsIntentionalClose) {
+          iniciarWs();
+        }
+      }, 2000);
+    };
+
+    wsChatRoom.onerror = (e) => { console.warn("[WS] erro:", e); };
+
+    const input = $("chat-input");
+    const enviar = () => {
+      const text = input.value.trim();
+      if (!text) return;
+      if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
+        wsChatRoom.send(JSON.stringify({ tipo: "mensagem", text }));
+        input.value = "";
       }
+    };
+    $("chat-send").onclick = enviar;
+    input.onkeypress = (e) => { if (e.key === "Enter") enviar(); };
+  }
 
-    } catch (e) { console.error(e); }
-  };
-
-  const input = $("chat-input");
-  const enviar = () => {
-    const text = input.value.trim();
-    if (!text) return;
-    if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
-      wsChatRoom.send(JSON.stringify({ tipo: "mensagem", text }));
-      input.value = "";
-    }
-  };
-
-  $("chat-send").onclick = enviar;
-  input.onkeypress = (e) => { if (e.key === "Enter") enviar(); };
+  iniciarWs();
 
   modal.onclose = () => {
-    if (wsChatRoom) {
-      wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username }));
-      wsChatRoom.close();
-      wsChatRoom = null;
+    wsIntentionalClose = true;
+    pararHeartbeat();
+
+    if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
+      if (naChamada && userProfile) {
+        try { wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username })); } catch {}
+      }
+      try { wsChatRoom.close(); } catch {}
     }
+    wsChatRoom = null;
+    naChamada = false;
     salaChatAbertaId = null;
     container.innerHTML = "";
     limparMidiaVideo();
@@ -1022,8 +1118,8 @@ window.toggleMaximizarChat = () => { $("modal-chat").classList.toggle("maximized
 
 // ============================================================
 // LÓGICA DE CHAMADA
-// Aqui as tracks são mantidas vivas (enabled=false), não removidas.
-// Isso evita ter que renegociar a conexão ao ligar/desligar a câmera.
+// Mantém tracks vivas com enabled=false (sem stop/removeTrack),
+// evitando renegociação ao ligar/desligar câmera.
 // ============================================================
 window.acaoLobbyVideo = async () => {
   if (!wsChatRoom || wsChatRoom.readyState !== WebSocket.OPEN) return;
@@ -1031,8 +1127,6 @@ window.acaoLobbyVideo = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-    // Mantém as tracks MAS desabilitadas. Não faça stop()/removeTrack(),
-    // senão o SDP inicial não terá m=video / m=audio.
     const videoTrack = stream.getVideoTracks()[0];
     if (videoTrack) videoTrack.enabled = false;
     const audioTrack = stream.getAudioTracks()[0];
@@ -1156,11 +1250,9 @@ window.toggleMicrofone = () => {
   }
 };
 
-// Alterna a câmera ligada/desligada sem renegociar a conexão.
 window.iniciarCamera = async () => {
   if (!naChamada) return;
 
-  // Se a track de vídeo já existe, só alterna enabled.
   if (localStream) {
     const vt = localStream.getVideoTracks()[0];
     if (vt) {
@@ -1171,7 +1263,6 @@ window.iniciarCamera = async () => {
     }
   }
 
-  // Se por algum motivo não existia track de vídeo, cria uma agora.
   try {
     const s = await navigator.mediaDevices.getUserMedia({ video: true });
     const t = s.getVideoTracks()[0];
@@ -1180,16 +1271,11 @@ window.iniciarCamera = async () => {
     camAtiva = true;
     atualizarBotoesMidia();
 
-    // Adicionar track NOVA exige renegociação. Envia offer para cada peer.
     for (const [id, pc] of Object.entries(peerConnections)) {
       pc.addTrack(t, localStream);
       try {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        // Descobre o username original a partir do id: usamos o mapa de sessões
-        // para isso — vamos precisar de uma lookup. Como o servidor identifica
-        // peers por username, e o id é a versão sanitizada, o mais seguro é
-        // guardar o username original no próprio wrapper do vídeo.
         const wrapper = document.getElementById(`video-${id}`);
         const originalUsername = wrapper?.dataset?.username;
         if (originalUsername && wsChatRoom?.readyState === WebSocket.OPEN) {
@@ -1216,7 +1302,6 @@ window.toggleCompartilharTela = async () => {
     const telaId = `${idPeer(userProfile.username)}-tela`;
     document.getElementById(`video-${telaId}`)?.remove();
 
-    // Volta a usar a câmera nos senders, se existir
     for (const pc of Object.values(peerConnections)) {
       const senders = pc.getSenders();
       for (const s of senders) {
@@ -1251,7 +1336,6 @@ window.toggleCompartilharTela = async () => {
 
 // ============================================================
 // RENDERIZAÇÃO DE VÍDEO — IDEMPOTENTE
-// Não destrói o <video> existente. Atualiza srcObject se mudou.
 // ============================================================
 function criarJanelaVideo(username, avatarUrl, isLocal, stream = null) {
   const area = $("chat-video-area");
@@ -1291,11 +1375,9 @@ function criarJanelaVideo(username, avatarUrl, isLocal, stream = null) {
       wrapper.insertBefore(video, wrapper.firstChild);
     }
     if (video.srcObject !== stream) video.srcObject = stream;
-    // Remove avatar se ele existir (vídeo chegou)
     const av = wrapper.querySelector('.video-avatar');
     if (av) av.remove();
   } else {
-    // Sem stream: só mostra avatar se ainda não tem vídeo
     if (!wrapper.querySelector('video')) {
       let av = wrapper.querySelector('.video-avatar');
       if (!av) {
@@ -1307,7 +1389,6 @@ function criarJanelaVideo(username, avatarUrl, isLocal, stream = null) {
     }
   }
 
-  // Ícone de mic mutado (só para o próprio local)
   if (isLocal && !micAtivo) {
     if (!wrapper.querySelector('.mic-muted-icon')) {
       wrapper.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
@@ -1321,6 +1402,7 @@ async function criarConexao(username) {
 
   const pc = new RTCPeerConnection(iceServers);
   peerConnections[id] = pc;
+  iceCandidatesBuffer[id] = iceCandidatesBuffer[id] || [];
 
   if (localStream) {
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
@@ -1336,8 +1418,6 @@ async function criarConexao(username) {
   };
 
   pc.ontrack = (event) => {
-    // IMPORTANTE: não usar event.track.muted para decidir avatar.
-    // Tracks remotos começam muted até o primeiro frame.
     if (event.track.kind === 'video' && event.streams[0]) {
       criarJanelaVideo(username, null, false, event.streams[0]);
     }
@@ -1347,9 +1427,7 @@ async function criarConexao(username) {
     console.log(`[PC ${username}] state=${pc.connectionState} ice=${pc.iceConnectionState}`);
     if (pc.connectionState === 'failed') {
       console.warn(`[PC ${username}] falhou. Tentando ICE restart.`);
-      try {
-        pc.restartIce();
-      } catch (e) {}
+      try { pc.restartIce(); } catch (e) {}
     }
   };
 
@@ -2465,6 +2543,17 @@ window.moveCarousel = function(direction, event) {
   const slideWidth = track.clientWidth;
   track.scrollBy({ left: direction * slideWidth, behavior: 'smooth' });
 };
+
+// ============================================================
+// Limpeza ao sair da página
+// ============================================================
+window.addEventListener("beforeunload", () => {
+  if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
+    if (naChamada && userProfile) {
+      try { wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username })); } catch {}
+    }
+  }
+});
 
 async function init(){
   try{
