@@ -1704,6 +1704,14 @@ function conectarSalas(){
   wsSalas.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
+      
+      // NOVO: log detalhado
+      if (msg.tipo === "erro") {
+        console.error("[Karaokê Salas]", msg.mensagem);
+        alert("Aviso: " + msg.mensagem);
+        return;
+      }
+
       if (msg.tipo === "estado_inicial") {
         salasRemotas = msg.salas || [];
         desenhaSalas();
@@ -1788,8 +1796,16 @@ function novaSala(){
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos."); return;
   }
 
-  // Envia o link inicial junto com os outros dados
-  wsSalas.send(JSON.stringify({ tipo: "criar_sala", id, nome, data: dataStr, linkInicial }));
+  // Envia os dados do criador para entrar na fila automaticamente
+  wsSalas.send(JSON.stringify({ 
+    tipo: "criar_sala", 
+    id, 
+    nome, 
+    data: dataStr, 
+    linkInicial,
+    criadorNome: userProfile.username,
+    criadorAvatar: userProfile.avatar_url
+  }));
 }
 
 function conectarKaraoke(id){
@@ -1802,6 +1818,14 @@ function conectarKaraoke(id){
   wsKaraoke.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
+
+      // NOVO: exibe erro na tela
+      if (msg.tipo === "erro") {
+        console.error("[Karaokê Fila]", msg.mensagem);
+        alert("Aviso na fila:\n" + msg.mensagem);
+        return;
+      }
+
       if (msg.tipo === "estado_inicial" || msg.tipo === "fila_atualizada") {
         filaAtual = msg.fila || [];
         renderizarFila(filaAtual);
