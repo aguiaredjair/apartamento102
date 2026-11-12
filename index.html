@@ -330,7 +330,7 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 <div class="drawer-overlay" id="drawer-overlay"></div>
 <div class="drawer" id="drawer-menu">
   <button class="drawer-fechar" id="btn-fechar-menu" aria-label="Fechar menu">×</button>
-  
+
   <div id="menu-logado" style="display: none;">
     <div class="perfil-drawer">
       <img src="" id="menu-user-avatar" alt="Foto de perfil" class="pfp-drawer">
@@ -533,6 +533,13 @@ const semArtigo = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replac
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const normBusca = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
+// ============================================================
+// UTILITÁRIO CRÍTICO: ID ÚNICO DE PEER
+// Usado por TODOS os handlers de sinalização WebRTC e pelas
+// chaves de peerConnections / IDs de DOM do vídeo.
+// ============================================================
+const idPeer = u => String(u).replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase();
+
 let discos = [];
 let letraFiltroArtista = null;
 let letraFiltroDisco = null;
@@ -571,10 +578,10 @@ let salaChatAbertaId = null;
 let localStream = null;
 let screenStream = null;
 let peerConnections = {};
-let naChamada = false; 
-let chamadaAtivaNoServidor = false; 
-let camAtiva = false; 
-let micAtivo = false; 
+let naChamada = false;
+let chamadaAtivaNoServidor = false;
+let camAtiva = false;
+let micAtivo = false;
 const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 // ---- ANIMAÇÃO DE BOAS VINDAS ----
@@ -591,7 +598,7 @@ function iniciarAnimacaoBoasVindas() {
   welcomeInterval = setInterval(() => {
     welcomeIndex = (welcomeIndex + 1) % welcomeWords.length;
     span.textContent = welcomeWords[welcomeIndex];
-    
+
     span.classList.remove("welcome-animating");
     void span.offsetWidth;
     span.classList.add("welcome-animating");
@@ -619,9 +626,9 @@ $("modal-chat").addEventListener("click", e => { if (e.target === $("modal-chat"
 
 async function checarUsuario() {
   if (!window.supabase) return;
-  
+
   const { data: { session } } = await window.supabase.auth.getSession();
-  
+
   if (session) {
     currentUser = session.user;
     const { data: profile } = await window.supabase
@@ -715,7 +722,7 @@ function conectarHub() {
   wsHub.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
-      
+
       if (msg.tipo === "status_online") {
         usuariosOnline = msg.usuarios || [];
         if ($("modal-pessoas").open) abrirPessoas();
@@ -735,7 +742,7 @@ function desenhaChatSalas() {
   const contagem = $("contagem-chat-salas");
   const lista = $("lista-chat-salas");
   if (!lista) return;
-  
+
   contagem.textContent = `Mostrando ${salasChat.length} ${salasChat.length === 1 ? "sala" : "salas"}`;
   lista.innerHTML = "";
 
@@ -747,7 +754,7 @@ function desenhaChatSalas() {
   salasChat.forEach(sala => {
     const b = document.createElement("button");
     b.className = "chat-sala-item";
-    
+
     const naoLidas = chatNaoLidas[sala.id] || 0;
     const badge = naoLidas > 0 ? `<span style="background:#c0392b; color:white; border-radius:10px; padding:2px 8px; font-size:0.75rem;">${naoLidas} nova(s)</span>` : '';
 
@@ -770,17 +777,17 @@ $("nova-chat-sala").onclick = () => {
   }
   const nome = prompt("Qual o nome da conversa?");
   if (!nome) return;
-  
+
   const id = "chat_" + Date.now();
   wsHub.send(JSON.stringify({ tipo: "criar_sala", sala: { id, nome, data: new Date().toISOString() } }));
 };
 
 function abrirChatSala(sala) {
   salaChatAbertaId = sala.id;
-  chatNaoLidas[sala.id] = 0; 
+  chatNaoLidas[sala.id] = 0;
   atualizarBadgeGlobal();
   desenhaChatSalas();
-  
+
   naChamada = false;
   chamadaAtivaNoServidor = false;
   camAtiva = false;
@@ -789,7 +796,7 @@ function abrirChatSala(sala) {
   const modal = $("modal-chat");
   modal.classList.remove("maximized");
   const container = $("chat-container");
-  
+
   container.innerHTML = `
     <div class="chat-header">
       <h2 style="padding:0; margin:0; text-transform:none;">${esc(sala.nome)}</h2>
@@ -802,7 +809,7 @@ function abrirChatSala(sala) {
       <button class="chat-tab active" onclick="mudarAbaChat('texto', this)">Texto</button>
       <button class="chat-tab" onclick="mudarAbaChat('video', this)">Vídeo</button>
     </div>
-    
+
     <div class="chat-body" id="chat-body" style="display:flex;"></div>
     <div class="chat-footer" id="chat-footer" style="display:flex;">
       <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
@@ -818,7 +825,7 @@ function abrirChatSala(sala) {
     </div>
 
     <div id="chat-video-area"></div>
-    
+
     <div class="video-controls" id="video-controls" style="display:none;">
       <button class="btn-icon-control" id="btn-toggle-mic" onclick="toggleMicrofone()" title="Microfone">
         <svg viewBox="0 0 24 24" id="icone-mic-on" style="display:none;"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
@@ -850,11 +857,11 @@ function abrirChatSala(sala) {
   wsChatRoom.onmessage = async (event) => {
     try {
       const msg = JSON.parse(event.data);
-      
+
       if (msg.tipo === "estado_inicial") {
         chatBody.innerHTML = "";
         msg.mensagens.forEach(m => renderizarMensagemChat(m));
-        
+
         chamadaAtivaNoServidor = msg.chamadaAtiva;
         if (chamadaAtivaNoServidor) {
           $("video-lobby-title").textContent = "Chamada em andamento";
@@ -890,7 +897,13 @@ function abrirChatSala(sala) {
         }
       }
 
-      // --- WebRTC Signaling ---
+      // ============================================================
+      // WEBRTC — SINALIZAÇÃO
+      // Todas as chaves de peerConnections usam idPeer().
+      // ============================================================
+
+      // O entrante recebe a lista dos que já estão na chamada e
+      // é RESPONSÁVEL por criar as offers para cada um deles.
       if (msg.tipo === "peers_iniciais") {
         for (const peer of msg.peers) {
           const pc = await criarConexao(peer);
@@ -900,21 +913,27 @@ function abrirChatSala(sala) {
         }
       }
 
+      // Alguém entrou DEPOIS de mim.
+      // NÃO criamos PC aqui — quem entrou é que vai mandar offer.
+      // Só mostramos o placeholder visual até o ontrack chegar.
       if (msg.tipo === "peer_joined" && msg.username !== userProfile.username) {
-        await criarConexao(msg.username);
+        criarJanelaVideo(msg.username, null, false);
       }
 
       if (msg.tipo === "peer_mic_state") {
-        const el = document.getElementById(`video-${msg.username.replace(/\s+/g, '-').toLowerCase()}`);
+        const el = document.getElementById(`video-${idPeer(msg.username)}`);
         if (el) {
           const icon = el.querySelector('.mic-muted-icon');
-          if (msg.muted) { if(!icon) el.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`); } 
-          else { if(icon) icon.remove(); }
+          if (msg.muted) {
+            if (!icon) el.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
+          } else {
+            if (icon) icon.remove();
+          }
         }
       }
 
       if (msg.tipo === "webrtc_offer") {
-        const pc = peerConnections[msg.sender] || await criarConexao(msg.sender);
+        const pc = await criarConexao(msg.sender);
         await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -922,22 +941,25 @@ function abrirChatSala(sala) {
       }
 
       if (msg.tipo === "webrtc_answer") {
-        const pc = peerConnections[msg.sender];
+        const pc = peerConnections[idPeer(msg.sender)];
         if (pc) await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
       }
 
       if (msg.tipo === "webrtc_ice") {
-        const pc = peerConnections[msg.sender];
-        if (pc) await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+        const pc = peerConnections[idPeer(msg.sender)];
+        if (pc) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); }
+          catch (e) { console.warn("addIceCandidate falhou:", e); }
+        }
       }
 
       if (msg.tipo === "peer_left") {
-        const idSeguro = msg.username.replace(/\s+/g, '-').toLowerCase();
-        if (peerConnections[idSeguro]) {
-          peerConnections[idSeguro].close();
-          delete peerConnections[idSeguro];
+        const id = idPeer(msg.username);
+        if (peerConnections[id]) {
+          try { peerConnections[id].close(); } catch {}
+          delete peerConnections[id];
         }
-        const el = document.getElementById(`video-${idSeguro}`);
+        const el = document.getElementById(`video-${id}`);
         if (el) el.remove();
       }
 
@@ -958,13 +980,13 @@ function abrirChatSala(sala) {
   input.onkeypress = (e) => { if (e.key === "Enter") enviar(); };
 
   modal.onclose = () => {
-    if (wsChatRoom) { 
+    if (wsChatRoom) {
       wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username }));
-      wsChatRoom.close(); 
-      wsChatRoom = null; 
+      wsChatRoom.close();
+      wsChatRoom = null;
     }
     salaChatAbertaId = null;
-    container.innerHTML = ""; 
+    container.innerHTML = "";
     limparMidiaVideo();
     desenhaChatSalas();
   };
@@ -983,7 +1005,7 @@ window.mudarAbaChat = (aba, btn) => {
   } else {
     $("chat-body").style.display = "none";
     $("chat-footer").style.display = "none";
-    
+
     if (naChamada) {
       $("chat-video-area").style.display = "flex";
       $("video-controls").style.display = "flex";
@@ -998,22 +1020,28 @@ window.mudarAbaChat = (aba, btn) => {
 
 window.toggleMaximizarChat = () => { $("modal-chat").classList.toggle("maximized"); };
 
-// ---- LÓGICA DE CHAMADA ----
+// ============================================================
+// LÓGICA DE CHAMADA
+// Aqui as tracks são mantidas vivas (enabled=false), não removidas.
+// Isso evita ter que renegociar a conexão ao ligar/desligar a câmera.
+// ============================================================
 window.acaoLobbyVideo = async () => {
   if (!wsChatRoom || wsChatRoom.readyState !== WebSocket.OPEN) return;
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    
+
+    // Mantém as tracks MAS desabilitadas. Não faça stop()/removeTrack(),
+    // senão o SDP inicial não terá m=video / m=audio.
     const videoTrack = stream.getVideoTracks()[0];
-    if (videoTrack) { videoTrack.stop(); stream.removeTrack(videoTrack); }
+    if (videoTrack) videoTrack.enabled = false;
     const audioTrack = stream.getAudioTracks()[0];
-    if (audioTrack) { audioTrack.enabled = false; }
-    
+    if (audioTrack) audioTrack.enabled = false;
+
     localStream = stream;
     camAtiva = false;
     micAtivo = false;
-    
+
     atualizarBotoesMidia();
 
     if (chamadaAtivaNoServidor) {
@@ -1021,17 +1049,18 @@ window.acaoLobbyVideo = async () => {
     } else {
       wsChatRoom.send(JSON.stringify({ tipo: "iniciar_chamada", username: userProfile.username }));
     }
-    
+
     wsChatRoom.send(JSON.stringify({ tipo: "peer_mic_state", username: userProfile.username, muted: true }));
-    
+
     naChamada = true;
     $("video-lobby").style.display = "none";
     $("chat-video-area").style.display = "flex";
     $("video-controls").style.display = "flex";
-    
-    criarJanelaVideo(userProfile.username, userProfile.avatar_url, true);
+
+    criarJanelaVideo(userProfile.username, userProfile.avatar_url, true, localStream);
 
   } catch (err) {
+    console.error(err);
     alert("Não foi possível acessar a câmera/microfone.");
   }
 };
@@ -1042,14 +1071,14 @@ window.sairChamada = (forcado = false) => {
   if (!forcado && wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
     wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username }));
   }
-  
+
   naChamada = false;
   limparMidiaVideo();
 
   $("chat-video-area").style.display = "none";
   $("video-controls").style.display = "none";
   $("video-lobby").style.display = "flex";
-  
+
   $("video-lobby-title").textContent = "Nenhuma chamada ativa";
   $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
   $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
@@ -1058,10 +1087,13 @@ window.sairChamada = (forcado = false) => {
 function limparMidiaVideo() {
   if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
   if (screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
-  for (const pc of Object.values(peerConnections)) pc.close();
+  for (const pc of Object.values(peerConnections)) {
+    try { pc.close(); } catch {}
+  }
   peerConnections = {};
-  $("chat-video-area").innerHTML = "";
-  
+  const area = $("chat-video-area");
+  if (area) area.innerHTML = "";
+
   camAtiva = false;
   micAtivo = false;
   atualizarBotoesMidia();
@@ -1106,99 +1138,102 @@ window.toggleMicrofone = () => {
 
   audioTrack.enabled = !audioTrack.enabled;
   micAtivo = audioTrack.enabled;
-  
+
   atualizarBotoesMidia();
-  
+
   if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
     wsChatRoom.send(JSON.stringify({ tipo: "peer_mic_state", username: userProfile.username, muted: !micAtivo }));
   }
 
-  const elLocal = document.getElementById(`video-${userProfile.username.replace(/\s+/g, '-').toLowerCase()}`);
+  const elLocal = document.getElementById(`video-${idPeer(userProfile.username)}`);
   if (elLocal) {
     const icon = elLocal.querySelector('.mic-muted-icon');
-    if (!micAtivo) { 
-      if(!icon) elLocal.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`); 
-    } 
-    else { if(icon) icon.remove(); }
+    if (!micAtivo) {
+      if (!icon) elLocal.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
+    } else {
+      if (icon) icon.remove();
+    }
   }
 };
 
+// Alterna a câmera ligada/desligada sem renegociar a conexão.
 window.iniciarCamera = async () => {
   if (!naChamada) return;
-  const idLocal = userProfile.username.replace(/\s+/g, '-').toLowerCase();
 
-  if (camAtiva) {
-    camAtiva = false;
-    
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
-      if (videoTrack) { videoTrack.stop(); localStream.removeTrack(videoTrack); }
-    }
-    
-    for (const pc of Object.values(peerConnections)) {
-      const senders = pc.getSenders();
-      senders.forEach(s => { if(s.track && s.track.kind === 'video') pc.removeTrack(s); });
-    }
-    
-    atualizarBotoesMidia();
-    criarJanelaVideo(userProfile.username, userProfile.avatar_url, true);
-  } else {
-    try {
-      const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      const videoTrack = newStream.getVideoTracks()[0];
-      
-      if (localStream) localStream.addTrack(videoTrack);
-      else localStream = newStream;
-      
-      camAtiva = true;
+  // Se a track de vídeo já existe, só alterna enabled.
+  if (localStream) {
+    const vt = localStream.getVideoTracks()[0];
+    if (vt) {
+      vt.enabled = !vt.enabled;
+      camAtiva = vt.enabled;
       atualizarBotoesMidia();
-      
-      for (const pc of Object.values(peerConnections)) {
-        pc.addTrack(videoTrack, localStream);
-      }
-      
-      criarJanelaVideo(userProfile.username, userProfile.avatar_url, true, localStream);
-    } catch (err) {
-      alert("Não foi possível acessar a câmera.");
+      return;
     }
+  }
+
+  // Se por algum motivo não existia track de vídeo, cria uma agora.
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ video: true });
+    const t = s.getVideoTracks()[0];
+    if (localStream) localStream.addTrack(t);
+    else localStream = s;
+    camAtiva = true;
+    atualizarBotoesMidia();
+
+    // Adicionar track NOVA exige renegociação. Envia offer para cada peer.
+    for (const [id, pc] of Object.entries(peerConnections)) {
+      pc.addTrack(t, localStream);
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        // Descobre o username original a partir do id: usamos o mapa de sessões
+        // para isso — vamos precisar de uma lookup. Como o servidor identifica
+        // peers por username, e o id é a versão sanitizada, o mais seguro é
+        // guardar o username original no próprio wrapper do vídeo.
+        const wrapper = document.getElementById(`video-${id}`);
+        const originalUsername = wrapper?.dataset?.username;
+        if (originalUsername && wsChatRoom?.readyState === WebSocket.OPEN) {
+          wsChatRoom.send(JSON.stringify({ tipo: "webrtc_offer", target: originalUsername, sdp: offer }));
+        }
+      } catch (e) { console.warn(e); }
+    }
+
+    criarJanelaVideo(userProfile.username, userProfile.avatar_url, true, localStream);
+  } catch (err) {
+    alert("Não foi possível acessar a câmera.");
   }
 };
 
 window.toggleCompartilharTela = async () => {
   if (!naChamada) return;
   const btn = $("btn-share-screen");
-  const idLocal = userProfile.username.replace(/\s+/g, '-').toLowerCase();
 
   if (screenStream) {
     screenStream.getTracks().forEach(t => t.stop());
     screenStream = null;
     btn.classList.remove("active");
-    
-    if (camAtiva && localStream) {
-      criarJanelaVideo(userProfile.username, userProfile.avatar_url, true, localStream);
-    } else {
-      criarJanelaVideo(userProfile.username, userProfile.avatar_url, true);
-    }
-    
+
+    const telaId = `${idPeer(userProfile.username)}-tela`;
+    document.getElementById(`video-${telaId}`)?.remove();
+
+    // Volta a usar a câmera nos senders, se existir
     for (const pc of Object.values(peerConnections)) {
       const senders = pc.getSenders();
-      senders.forEach(s => { 
-        if(s.track && s.track.kind === 'video') {
-           if (camAtiva && localStream) {
-             const camTrack = localStream.getVideoTracks()[0];
-             if(camTrack) s.replaceTrack(camTrack);
-           } else {
-             pc.removeTrack(s);
-           }
-        } 
-      });
+      for (const s of senders) {
+        if (s.track && s.track.kind === 'video') {
+          if (camAtiva && localStream) {
+            const camTrack = localStream.getVideoTracks()[0];
+            if (camTrack) s.replaceTrack(camTrack);
+          }
+        }
+      }
     }
   } else {
     try {
       screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       const screenTrack = screenStream.getVideoTracks()[0];
       btn.classList.add("active");
-      
+
       criarJanelaVideo(userProfile.username + " (Tela)", userProfile.avatar_url, true, screenStream);
 
       for (const pc of Object.values(peerConnections)) {
@@ -1214,56 +1249,78 @@ window.toggleCompartilharTela = async () => {
   }
 };
 
+// ============================================================
+// RENDERIZAÇÃO DE VÍDEO — IDEMPOTENTE
+// Não destrói o <video> existente. Atualiza srcObject se mudou.
+// ============================================================
 function criarJanelaVideo(username, avatarUrl, isLocal, stream = null) {
   const area = $("chat-video-area");
   if (!area) return;
-  
-  let idSeguro = username.replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase();
-  
-  if (username.includes("(Tela)")) {
-      idSeguro = userProfile.username.replace(/\s+/g, '-').toLowerCase() + "-tela";
-  }
 
-  let wrapper = document.getElementById(`video-${idSeguro}`);
-  
+  const isTela = /\(Tela\)/i.test(username);
+  const baseUser = isTela ? username.replace(/\s*\(Tela\)\s*$/i, '') : username;
+  const id = isTela ? `${idPeer(baseUser)}-tela` : idPeer(baseUser);
+  const wrapperId = `video-${id}`;
+
+  let wrapper = document.getElementById(wrapperId);
   if (!wrapper) {
     wrapper = document.createElement("div");
     wrapper.className = "video-wrapper";
-    wrapper.id = `video-${idSeguro}`;
+    wrapper.id = wrapperId;
+    wrapper.dataset.username = baseUser;
+    wrapper.dataset.isTela = isTela ? "1" : "0";
     wrapper.onclick = () => {
       document.querySelectorAll('.video-wrapper').forEach(w => w.classList.remove('focused'));
       wrapper.classList.add('focused');
     };
     area.appendChild(wrapper);
+
+    const label = document.createElement("div");
+    label.className = "video-label";
+    label.textContent = username;
+    wrapper.appendChild(label);
   }
-  
-  wrapper.innerHTML = '';
 
   if (stream) {
-    const video = document.createElement("video");
-    video.autoplay = true; video.playsInline = true; video.muted = isLocal;
-    video.srcObject = stream;
-    wrapper.appendChild(video);
+    let video = wrapper.querySelector('video');
+    if (!video) {
+      video = document.createElement('video');
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = isLocal;
+      wrapper.insertBefore(video, wrapper.firstChild);
+    }
+    if (video.srcObject !== stream) video.srcObject = stream;
+    // Remove avatar se ele existir (vídeo chegou)
+    const av = wrapper.querySelector('.video-avatar');
+    if (av) av.remove();
   } else {
-    wrapper.innerHTML = `<div class="video-avatar"><img src="${avatarUrl || DEFAULT_AVATAR}"></div>`;
+    // Sem stream: só mostra avatar se ainda não tem vídeo
+    if (!wrapper.querySelector('video')) {
+      let av = wrapper.querySelector('.video-avatar');
+      if (!av) {
+        av = document.createElement('div');
+        av.className = 'video-avatar';
+        wrapper.insertBefore(av, wrapper.firstChild);
+      }
+      av.innerHTML = `<img src="${avatarUrl || DEFAULT_AVATAR}">`;
+    }
   }
 
-  const label = document.createElement("div");
-  label.className = "video-label";
-  label.textContent = username;
-  wrapper.appendChild(label);
-
+  // Ícone de mic mutado (só para o próprio local)
   if (isLocal && !micAtivo) {
-    wrapper.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
+    if (!wrapper.querySelector('.mic-muted-icon')) {
+      wrapper.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
+    }
   }
 }
 
 async function criarConexao(username) {
-  const idSeguro = username.replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase();
-  if (peerConnections[idSeguro]) return peerConnections[idSeguro];
+  const id = idPeer(username);
+  if (peerConnections[id]) return peerConnections[id];
 
   const pc = new RTCPeerConnection(iceServers);
-  peerConnections[idSeguro] = pc;
+  peerConnections[id] = pc;
 
   if (localStream) {
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
@@ -1273,26 +1330,28 @@ async function criarConexao(username) {
   }
 
   pc.onicecandidate = (event) => {
-    if (event.candidate) {
+    if (event.candidate && wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
       wsChatRoom.send(JSON.stringify({ tipo: "webrtc_ice", target: username, candidate: event.candidate }));
     }
   };
 
   pc.ontrack = (event) => {
-    if (event.track.kind === 'video') {
-        if (event.track.readyState === 'ended' || event.track.muted) {
-            criarJanelaVideo(username, null, false); 
-        } else {
-            criarJanelaVideo(username, null, false, event.streams[0]);
-        }
+    // IMPORTANTE: não usar event.track.muted para decidir avatar.
+    // Tracks remotos começam muted até o primeiro frame.
+    if (event.track.kind === 'video' && event.streams[0]) {
+      criarJanelaVideo(username, null, false, event.streams[0]);
     }
   };
 
-  setTimeout(() => {
-      if (!document.getElementById(`video-${idSeguro}`)) {
-          criarJanelaVideo(username, null, false);
-      }
-  }, 1000);
+  pc.onconnectionstatechange = () => {
+    console.log(`[PC ${username}] state=${pc.connectionState} ice=${pc.iceConnectionState}`);
+    if (pc.connectionState === 'failed') {
+      console.warn(`[PC ${username}] falhou. Tentando ICE restart.`);
+      try {
+        pc.restartIce();
+      } catch (e) {}
+    }
+  };
 
   return pc;
 }
@@ -1306,7 +1365,7 @@ function renderizarMensagemChat(msg) {
 
   const div = document.createElement("div");
   div.className = `chat-msg ${isMine ? 'mine' : 'others'}`;
-  
+
   div.innerHTML = `
     ${!isMine ? `<img src="${msg.avatar || DEFAULT_AVATAR}" class="chat-msg-avatar">` : ''}
     <div class="chat-msg-content">
@@ -1315,7 +1374,7 @@ function renderizarMensagemChat(msg) {
       <div class="chat-msg-time">${hora}</div>
     </div>
   `;
-  
+
   chatBody.appendChild(div);
   chatBody.scrollTop = chatBody.scrollHeight;
 }
@@ -1336,7 +1395,7 @@ async function abrirPessoas() {
   const modal = $("modal-pessoas");
   const lista = $("lista-pessoas");
   modal.showModal();
-  
+
   lista.innerHTML = "<p>Carregando...</p>";
 
   if (!window.supabase) return;
@@ -1352,7 +1411,7 @@ async function abrirPessoas() {
   }
 
   lista.innerHTML = "";
-  
+
   profiles.forEach(p => {
     const btn = document.createElement("button");
     btn.className = "pessoa-item";
@@ -1390,12 +1449,12 @@ async function abrirPessoas() {
         })
         .catch(() => { subSpan.textContent = "♫ Erro ao carregar"; });
     } else {
-      subSpan.style.display = "none"; 
+      subSpan.style.display = "none";
     }
 
     infoDiv.append(span, subSpan);
     btn.append(imgContainer, infoDiv);
-    
+
     btn.onclick = () => {
       modal.close();
       abrirPerfil(p.username);
@@ -1407,7 +1466,7 @@ async function abrirPessoas() {
 function abrirConfiguracoes(primeiroAcesso = false) {
   const modalConfig = $("modal-config");
   modalConfig.showModal();
-  
+
   const camposSenha = $("campos-senha");
   const toggleSenha = $("toggle-senha");
   const senhaInput = $("config-senha");
@@ -1434,7 +1493,7 @@ function abrirConfiguracoes(primeiroAcesso = false) {
     senhaInput.required = false;
     senhaInput.value = "";
   }
-  
+
   if (currentUser && window.supabase) {
     window.supabase.from('profiles').select('avatar_url, lastfm_username').eq('id', currentUser.id).single().then(({data}) => {
       const url = (data && data.avatar_url) ? data.avatar_url : DEFAULT_AVATAR;
@@ -1443,7 +1502,7 @@ function abrirConfiguracoes(primeiroAcesso = false) {
         else img.classList.remove('selecionado');
       });
       avatarSelecionado = url;
-      
+
       if (data && data.lastfm_username) {
         $("config-lastfm").value = data.lastfm_username;
       } else {
@@ -1464,7 +1523,7 @@ function selecionarAvatar(el) {
   document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selecionado'));
   el.classList.add('selecionado');
   avatarSelecionado = el.getAttribute('data-path');
-  $("config-file-avatar").value = ""; 
+  $("config-file-avatar").value = "";
 }
 
 $("form-config").onsubmit = async (e) => {
@@ -1474,7 +1533,7 @@ $("form-config").onsubmit = async (e) => {
   const fileAvatar = $("config-file-avatar");
   const fileCover = $("config-file-cover");
   const msg = $("config-msg");
-  
+
   msg.textContent = "Salvando...";
   msg.style.color = "var(--mute)";
 
@@ -1515,19 +1574,19 @@ $("form-config").onsubmit = async (e) => {
   }
 
   if (currentUser) {
-    const { error: dbError } = await window.supabase.from('profiles').update({ 
-      avatar_url: finalAvatarUrl, 
+    const { error: dbError } = await window.supabase.from('profiles').update({
+      avatar_url: finalAvatarUrl,
       cover_url: finalCoverUrl,
       lastfm_username: lastfmUser || null,
-      password_changed: true 
+      password_changed: true
     }).eq('id', currentUser.id);
-      
+
     if (dbError) { msg.textContent = "Erro ao salvar perfil: " + dbError.message; msg.style.color = "#c0392b"; return; }
   }
 
   msg.textContent = "Configurações salvas!";
   msg.style.color = "var(--accent)";
-  
+
   setTimeout(() => {
     fecharConfiguracoes();
     $("config-senha").value = "";
@@ -1553,7 +1612,7 @@ function ativarTab(nome){
     el.setAttribute("aria-selected", on);
     view.classList.toggle("ativa", on);
   });
-  
+
   document.querySelectorAll('dialog').forEach(d => d.close());
 
   if (nome === "artistas") desenhaArtistas();
@@ -1614,10 +1673,10 @@ const obs = new IntersectionObserver(es => es.forEach(e => {
 
 async function carregaCapa(el){
   const d = el._disco;
-  const poe = src => { 
+  const poe = src => {
     const i = new Image(); i.alt = `Capa de ${d.nome}`; i.className = "capa-base";
-    i.onload = () => { el.textContent=""; el.append(i); }; 
-    i.src = src; 
+    i.onload = () => { el.textContent=""; el.append(i); };
+    i.src = src;
   };
   if(d.capa) return poe(d.capa);
   try{ const r = await infoAlbum(d); if(r.capa) poe(r.capa); }catch{}
@@ -1743,13 +1802,13 @@ async function abreDisco(d){
 
     if(faixas && faixas.length > 0){
       const ol = document.createElement("ol");
-      ol.className = "tracklist-modal"; 
+      ol.className = "tracklist-modal";
       faixas.forEach(f => {
         const li = document.createElement("li");
-        const spanNome = document.createElement("span"); spanNome.textContent = f.n; 
+        const spanNome = document.createElement("span"); spanNome.textContent = f.n;
         li.append(spanNome);
-        if(f.s){ 
-          const s = document.createElement("small"); s.textContent = fmt(f.s); li.append(s); 
+        if(f.s){
+          const s = document.createElement("small"); s.textContent = fmt(f.s); li.append(s);
         }
         ol.append(li);
       });
@@ -1828,7 +1887,7 @@ function desenhaDiscos(){
     if(corNome.includes("zoetrope")) c.classList.add("zoetrope");
     if(corNome.includes("splatter")) c.classList.add("splatter");
     if(corNome.includes("picture disc")) c.classList.add("picture-disc");
-    
+
     b.append(c);
     b.onclick = () => abreDisco(d);
     b.addEventListener("mouseenter", e => mostraTooltip(e, d));
@@ -1941,20 +2000,20 @@ function conectarSalas(){
       } else if (msg.tipo === "salas_atualizadas") {
         salasRemotas = msg.salas || [];
         desenhaSalas();
-        
+
         if (salaAbertaId) {
           const sAtual = salasRemotas.find(e => e.id === salaAbertaId);
           const estaEncerrada = sAtual ? sAtual.encerrado : false;
-          
+
           if (estaEncerrada && !salaAbertaEncerrada) {
             salaAbertaEncerrada = true;
             const cont = $("m-conteudo");
-            
+
             const form = cont.querySelector(".form-add");
             if (form) form.remove();
             const btnEnc = cont.querySelector(".btn-encerrar");
             if (btnEnc) btnEnc.remove();
-            
+
             $("m-info").textContent = "Sala Encerrada";
             modalEl.classList.remove("modal-evento-ativo");
             modalEl.classList.add("modal-evento-encerrado");
@@ -1973,10 +2032,10 @@ function desenhaSalas(){
     $("lista-salas").innerHTML = '<p class="aviso">Conectando ao servidor…</p>';
     return;
   }
-  
+
   const salas = [...salasRemotas];
   salas.sort((a,b) => a.id < b.id ? 1 : -1);
-  
+
   $("contagem-salas").textContent = `Mostrando ${salas.length} ${salas.length===1?"sala":"salas"}`;
   const lista = $("lista-salas"); lista.textContent = "";
   if(!salas.length){
@@ -1987,7 +2046,7 @@ function desenhaSalas(){
     const b = document.createElement("button");
     b.className = "evento-item";
     b.classList.add(sala.encerrado ? "encerrado" : "ativo");
-    
+
     const legenda = `${sala.data} · ${sala.encerrado ? 'Encerrado' : 'Ativo'}`;
     b.innerHTML = `
       <div>
@@ -2004,7 +2063,7 @@ function desenhaSalas(){
 function novaSala(){
   const nome = prompt("Qual o nome da sala?");
   if(!nome) return;
-  
+
   const agora = new Date();
   const dataStr = agora.toLocaleDateString('pt-BR');
   const id = "sala_" + Date.now();
@@ -2012,7 +2071,7 @@ function novaSala(){
   if (!wsSalas || wsSalas.readyState !== WebSocket.OPEN) {
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos."); return;
   }
-  
+
   wsSalas.send(JSON.stringify({ tipo: "criar_sala", id, nome, data: dataStr }));
 }
 
@@ -2046,12 +2105,12 @@ function renderizarFila(fila){
     li.textContent = "Ninguém na fila ainda. Seja o primeiro!";
     ol.append(li); return;
   }
-  
+
   fila.forEach((item, i) => {
     const li = document.createElement("li");
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox"; checkbox.checked = !!item.cantou;
-    
+
     if (salaAbertaEncerrada) {
       checkbox.disabled = true;
     } else {
@@ -2063,12 +2122,12 @@ function renderizarFila(fila){
     }
 
     const num = document.createElement("span"); num.className = "num"; num.textContent = `${i+1}.`;
-    
+
     const div = document.createElement("div");
     div.style.display = "flex";
     div.style.alignItems = "center";
     div.style.gap = "0.6rem";
-    
+
     const avatarSrc = item.avatar || DEFAULT_AVATAR;
     div.innerHTML = `
       <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc; cursor: pointer;" onclick="abrirPerfil('${esc(item.nome)}')">
@@ -2077,7 +2136,7 @@ function renderizarFila(fila){
         <span class="musica">${esc(item.musica)}</span>
       </div>
     `;
-    
+
     li.append(checkbox, num, div);
 
     if (!salaAbertaEncerrada && userProfile && item.nome === userProfile.username) {
@@ -2104,18 +2163,18 @@ function abrirSala(sala){
   escondeTooltip();
   salaAbertaId = sala.id;
   salaAbertaEncerrada = sala.encerrado;
-  
+
   $("m-nome").textContent = sala.nome;
   $("m-info").textContent = sala.data;
   const cont = $("m-conteudo"); cont.textContent = "";
-  
+
   modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
 
   const ol = document.createElement("ol"); ol.className = "fila-lista"; cont.append(ol);
 
   if (!salaAbertaEncerrada) {
     modalEl.classList.add("modal-evento-ativo");
-    
+
     const form = document.createElement("form"); form.className = "form-add";
     form.innerHTML = `
       <input type="text" placeholder="Música que vai cantar" required maxlength="100">
@@ -2124,19 +2183,19 @@ function abrirSala(sala){
     form.onsubmit = (e) => {
       e.preventDefault();
       const musica = form.querySelector("input").value.trim();
-      
+
       if(!musica) return;
       if(!userProfile) {
         alert("Você precisa estar logado para entrar na fila.");
         return;
       }
-      
+
       if(wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN){
-        wsKaraoke.send(JSON.stringify({ 
-          tipo: "entrar_na_fila", 
+        wsKaraoke.send(JSON.stringify({
+          tipo: "entrar_na_fila",
           nome: userProfile.username,
           avatar: userProfile.avatar_url,
-          musica: musica 
+          musica: musica
         }));
       }
       form.reset();
@@ -2188,7 +2247,7 @@ async function abrirPerfil(username) {
   const dataObj = new Date(profile.created_at);
   const dataFormatada = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const avatar = profile.avatar_url || DEFAULT_AVATAR;
-  
+
   let capaStyle = "";
   let capaClass = "perfil-capa";
   if (profile.cover_url) {
@@ -2211,18 +2270,18 @@ async function abrirPerfil(username) {
   if (profile.lastfm_username) {
     flipContainerId = "id='flip-card'";
     dicaFlipHtml = `<div class="dica-flip">Clique no cartão para ver as estatísticas</div>`;
-    
+
     card2Html = `
       <div class="flip-card-back">
         <div class="top-charts-wrapper">
           <div class="top-charts-header">
             <h3>Mais ouvidos da semana</h3>
           </div>
-          
+
           <div class="carousel-container">
             <button class="carousel-btn prev" onclick="moveCarousel(-1, event)">‹</button>
             <div class="carousel-track" id="stats-carousel">
-              
+
               <div class="carousel-slide">
                 <div class="top-charts-col">
                   <h4>Músicas</h4>
@@ -2253,7 +2312,7 @@ async function abrirPerfil(username) {
             </div>
             <button class="carousel-btn next" onclick="moveCarousel(1, event)">›</button>
           </div>
-          
+
           <div class="carousel-dots" id="carousel-dots">
             <span class="active"></span>
             <span></span>
@@ -2269,7 +2328,7 @@ async function abrirPerfil(username) {
   wrapper.innerHTML = `
     <div class="flip-card-container" ${flipContainerId}>
       <div class="flip-card-inner">
-        
+
         <div class="flip-card-front">
           ${headerHtml}
           <div class="perfil-corpo">
@@ -2281,7 +2340,7 @@ async function abrirPerfil(username) {
         </div>
 
         ${card2Html}
-        
+
       </div>
     </div>
   `;
@@ -2435,7 +2494,7 @@ async function init(){
     if (tabs.includes(daHash)) inicial = daHash;
     else if (tabs.includes(doStorage)) inicial = doStorage;
   } catch {}
-  
+
   if ((inicial === "karaoke" || inicial === "chat") && !currentUser) {
     inicial = "discos";
   }
