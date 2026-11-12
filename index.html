@@ -297,8 +297,57 @@ dialog::backdrop{background:#000a}
 .chat-msg.others .chat-msg-bubble { background: var(--card); color: var(--ink); border-bottom-left-radius: 2px; border: 1px solid var(--border-soft); }
 .chat-msg-time { font-size: 0.65rem; color: var(--mute); margin-top: 0.2rem; }
 
-.btn-lixeira { background: transparent; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem; margin-left: auto; transition: transform 0.2s; }
-.btn-lixeira:hover { transform: scale(1.2); }
+/* Botão de sair da fila customizado */
+.btn-sair-fila {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  margin-left: auto;
+  color: var(--mute);
+  transition: color 0.2s, transform 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-sair-fila svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.btn-sair-fila:hover {
+  color: var(--accent); /* Cor customizada do usuário */
+  transform: scale(1.1);
+}
+/* Tooltip para o botão de sair da fila */
+.btn-sair-fila::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.btn-sair-fila:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
 /* Botões de ação da sala (quadrados) */
 .sala-acoes {
@@ -314,30 +363,29 @@ dialog::backdrop{background:#000a}
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 10px; /* Igual ao border-radius das capas */
-  background: transparent; /* Fundo transparente para não esconder o ícone */
-  border: 1px solid var(--border-soft); /* Borda sutil */
-  color: var(--mute); /* Cor padrão cinza */
-  opacity: 0.5; /* Baixa opacidade */
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--mute);
+  opacity: 0.5;
   cursor: pointer;
   transition: all 0.2s;
-  position: relative; /* Para o tooltip */
+  position: relative;
 }
 
 .btn-acao svg {
   width: 22px;
   height: 22px;
   fill: none;
-  stroke: currentColor; /* A cor do SVG segue a cor do botão */
+  stroke: currentColor;
 }
 
 .btn-acao:hover {
   opacity: 1;
-  color: var(--danger); /* Fica vermelho igual ao lixeiro */
+  color: var(--danger);
   border-color: var(--danger);
 }
 
-/* Tooltip nativo via CSS */
 .btn-acao::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -2028,18 +2076,18 @@ function renderizarFila(fila){
     li.append(checkbox, num, div);
 
     if (!salaAbertaEncerrada && userProfile && item.nome === userProfile.username) {
-      const btnLixeira = document.createElement("button");
-      btnLixeira.className = "btn-lixeira";
-      btnLixeira.innerHTML = "🗑️";
-      btnLixeira.title = "Sair da fila";
-      btnLixeira.onclick = () => {
+      const btnSair = document.createElement("button");
+      btnSair.className = "btn-sair-fila";
+      btnSair.dataset.tooltip = "Abandonar Fila";
+      btnSair.innerHTML = `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`;
+      btnSair.onclick = () => {
         if (confirm(`Remover sua música (${tituloLimpo}) da fila?`)) {
           if (wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN) {
             wsKaraoke.send(JSON.stringify({ tipo: "sair_da_fila", index: i }));
           }
         }
       };
-      li.append(btnLixeira);
+      li.append(btnSair);
     }
 
     if (item.cantou) li.style.opacity = "0.5";
