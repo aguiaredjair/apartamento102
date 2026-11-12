@@ -1746,6 +1746,7 @@ let wsKaraoke = null;
 let filaAtual = [];
 let salaAbertaId = null;
 let salaAbertaEncerrada = false;
+let salaParaAbrirId = null; // NOVO: Guarda o ID da sala recém-criada
 
 function conectarSalas(){
   if (wsSalas && (wsSalas.readyState === WebSocket.OPEN || wsSalas.readyState === WebSocket.CONNECTING)) return;
@@ -1764,14 +1765,20 @@ function conectarSalas(){
         return;
       }
 
-      if (msg.tipo === "estado_inicial") {
-        salasRemotas = msg.salas || [];
-        desenhaSalas();
-      } else if (msg.tipo === "salas_atualizadas") {
+      if (msg.tipo === "estado_inicial" || msg.tipo === "salas_atualizadas") {
         salasRemotas = msg.salas || [];
         desenhaSalas();
 
-        if (salaAbertaId) {
+        // NOVO: Verifica se a sala recém-criada já está na lista
+        if (salaParaAbrirId) {
+          const novaSala = salasRemotas.find(s => s.id === salaParaAbrirId);
+          if (novaSala) {
+            salaParaAbrirId = null; // Limpa a flag
+            abrirSala(novaSala);    // Abre automaticamente
+          }
+        }
+
+        if (msg.tipo === "salas_atualizadas" && salaAbertaId) {
           const sAtual = salasRemotas.find(e => e.id === salaAbertaId);
           const estaEncerrada = sAtual ? sAtual.encerrado : false;
 
@@ -1847,6 +1854,8 @@ function novaSala(){
   if (!wsSalas || wsSalas.readyState !== WebSocket.OPEN) {
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos."); return;
   }
+
+  salaParaAbrirId = id; // NOVO: Guarda o ID da sala que estamos criando
 
   wsSalas.send(JSON.stringify({ 
     tipo: "criar_sala", 
