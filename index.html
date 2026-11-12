@@ -809,7 +809,8 @@ function resetModalHTML() {
   modalEl.style.padding = "";
   modalEl.style.display = "";
   modalEl.style.flexDirection = "";
-  modalEl.style.overflow = "";
+  modalEl.style.height = ""; // Limpa a altura
+  modalEl.style.overflow = ""; // Limpa o overflow
 }
 
 $("modal").addEventListener("click", e => { if (e.target === $("modal")) fecharModal(); });
@@ -2025,9 +2026,12 @@ function abrirSala(sala){
     </div>
     <div id="m-conteudo" style="padding: 1.4rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column;"></div>
   `;
+  
   modalEl.style.padding = "0";
   modalEl.style.display = "flex";
   modalEl.style.flexDirection = "column";
+  modalEl.style.height = "min(600px, 85vh)"; // Correção do bug de altura
+  modalEl.style.overflow = "hidden"; // Evita que o dialog em si role
 
   const cont = $("m-conteudo");
   modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
