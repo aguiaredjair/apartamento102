@@ -248,6 +248,31 @@ dialog::backdrop{background:#000a}
 .form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--ink);color:var(--bg);border-radius:6px;cursor:pointer}
 .aviso{grid-column:1/-1;color:var(--mute);text-align:center;padding:1rem}
 
+/* Spinner de Carregamento */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid var(--border-soft);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: girar-spinner 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes girar-spinner {
+  to { transform: rotate(360deg); }
+}
+.spinner-na-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--mute);
+  padding: 0.65rem 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .chat-container { display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg); overflow: hidden;}
 .chat-header { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; background: var(--card); flex-shrink: 0;}
 .chat-header h2 { margin: 0; font-size: 1.2rem; padding: 0; }
@@ -1089,6 +1114,34 @@ function atualizarBadgeGlobal() {
   }
 }
 
+// ---- FUNÇÃO DE LIMPEZA DO TÍTULO DO YOUTUBE ----
+function formatarTituloMusica(tituloBruto) {
+  if (!tituloBruto) return "Música do YouTube";
+  
+  // 1. Remove tudo que vem depois de um pipe "|" (ex: "| KaraFun", "| Video Oficial")
+  let limpo = tituloBruto.split('|')[0].trim();
+  
+  // Remove lixos comuns entre parênteses ou colchetes
+  const lixos = /[\(\[]?(karaok[eê]|karaoke version|version|instrumental|playback|cover|official video|clipe oficial|legendado|ao vivo|live)[\)\]]?/gi;
+  limpo = limpo.replace(lixos, '').trim();
+  
+  // Remove hífens soltos no final ou no começo
+  limpo = limpo.replace(/^[\-\s]+|[\-\s]+$/g, '');
+
+  // 2. Tenta separar Música e Artista pelo hífen.
+  // Padrão comum: "Artista - Música". Vamos inverter para "Música - Artista".
+  if (limpo.includes(' - ')) {
+    const partes = limpo.split(' - ');
+    if (partes.length >= 2) {
+      const p1 = partes[0].trim();
+      const p2 = partes[1].trim();
+      return `${p2} - ${p1}`; 
+    }
+  }
+
+  return limpo;
+}
+
 async function abrirPessoas() {
   fecharMenu();
   const modal = $("modal-pessoas");
@@ -1705,7 +1758,6 @@ function conectarSalas(){
     try {
       const msg = JSON.parse(event.data);
       
-      // NOVO: log detalhado
       if (msg.tipo === "erro") {
         console.error("[Karaokê Salas]", msg.mensagem);
         alert("Aviso: " + msg.mensagem);
@@ -1796,7 +1848,6 @@ function novaSala(){
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos."); return;
   }
 
-  // Envia os dados do criador para entrar na fila automaticamente
   wsSalas.send(JSON.stringify({ 
     tipo: "criar_sala", 
     id, 
@@ -1819,7 +1870,6 @@ function conectarKaraoke(id){
     try {
       const msg = JSON.parse(event.data);
 
-      // NOVO: exibe erro na tela
       if (msg.tipo === "erro") {
         console.error("[Karaokê Fila]", msg.mensagem);
         alert("Aviso na fila:\n" + msg.mensagem);
@@ -1839,6 +1889,11 @@ function conectarKaraoke(id){
 function renderizarFila(fila){
   const ol = document.querySelector("#m-conteudo .fila-lista");
   if (!ol) return;
+  
+  // Remove o spinner se ele existir (pois a resposta chegou)
+  const spinner = document.getElementById("loading-fila");
+  if (spinner) spinner.remove();
+
   ol.innerHTML = "";
   if (!fila.length) {
     const li = document.createElement("li");
@@ -1869,12 +1924,14 @@ function renderizarFila(fila){
     div.style.alignItems = "center";
     div.style.gap = "0.6rem";
 
+    const tituloLimpo = formatarTituloMusica(item.musica);
+
     const avatarSrc = item.avatar || DEFAULT_AVATAR;
     div.innerHTML = `
       <img src="${avatarSrc}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-soft); cursor: pointer;" onclick="abrirPerfil('${esc(item.nome)}')">
       <div>
         <span class="nome" onclick="abrirPerfil('${esc(item.nome)}')">${esc(item.nome)}</span>
-        <span class="musica">${esc(item.musica)}</span>
+        <span class="musica">${esc(tituloLimpo)}</span>
       </div>
     `;
 
@@ -1886,7 +1943,7 @@ function renderizarFila(fila){
       btnLixeira.innerHTML = "🗑️";
       btnLixeira.title = "Sair da fila";
       btnLixeira.onclick = () => {
-        if (confirm(`Remover sua música (${item.musica}) da fila?`)) {
+        if (confirm(`Remover sua música (${tituloLimpo}) da fila?`)) {
           if (wsKaraoke && wsKaraoke.readyState === WebSocket.OPEN) {
             wsKaraoke.send(JSON.stringify({ tipo: "sair_da_fila", index: i }));
           }
@@ -1940,6 +1997,16 @@ function abrirSala(sala){
         }));
       }
       form.reset();
+      
+      // Adiciona o indicador de carregamento na tela
+      const ol = document.querySelector("#m-conteudo .fila-lista");
+      if (ol && !document.getElementById("loading-fila")) {
+        const liLoading = document.createElement("li");
+        liLoading.id = "loading-fila";
+        liLoading.className = "spinner-na-fila";
+        liLoading.innerHTML = `<div class="spinner"></div> Buscando informações no YouTube...`;
+        ol.append(liLoading);
+      }
     };
     cont.append(form);
 
