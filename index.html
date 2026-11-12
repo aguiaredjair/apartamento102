@@ -26,7 +26,6 @@
 body{margin:0;background:var(--bg);color:var(--ink)}
 header{position:relative;padding:2.2rem 1.25rem 1rem;max-width:1200px;margin:auto}
 h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;letter-spacing:-.03em;text-align:center;color:var(--ink)}
-/* FIX: flex-wrap para não quebrar o layout no mobile */
 .tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:.5rem;padding:0 1.25rem 1rem;max-width:1200px;margin:auto}
 .tab{font:inherit;font-weight:700;padding:.55rem 1.1rem;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:6px;letter-spacing:.05em;font-size:.85rem;cursor:pointer;position:relative;}
 .tab[aria-selected="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -35,18 +34,7 @@ h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1;margin:0;font-weight:800;lette
 main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 
 /* Badge de Não Lidas */
-.badge-nao-lida {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #c0392b;
-  color: white;
-  font-size: 0.65rem;
-  font-weight: bold;
-  border-radius: 10px;
-  padding: 2px 6px;
-  display: none;
-}
+.badge-nao-lida { position: absolute; top: -6px; right: -6px; background: #c0392b; color: white; font-size: 0.65rem; font-weight: bold; border-radius: 10px; padding: 2px 6px; display: none; }
 
 /* ---------- MENU HAMBÚRGUER (GAVETA) ---------- */
 .menu-hamburguer-btn { position: absolute; top: 1rem; left: 1.25rem; width: 44px; height: 44px; border: none; background: transparent; color: var(--ink); display: grid; place-content: center; gap: 5px; z-index: 10; }
@@ -161,7 +149,7 @@ button.limpar{ background:var(--ink); color:var(--bg); font-weight:700; align-se
 dialog{border:0;border-radius:8px;padding:0;width:min(520px,94vw);max-height:88vh;background:var(--card);color:var(--ink);overflow:auto}
 dialog#modal-perfil { width: min(680px, 94vw); min-height: min(520px, 80vh); padding: 0; background: transparent; border: none; overflow: visible;}
 dialog#modal-pessoas { width: min(420px, 94vw); }
-dialog#modal-chat { width: min(600px, 94vw); height: 80vh; max-height: 800px; display: flex; flex-direction: column; }
+dialog#modal-chat { width: min(600px, 94vw); height: 80vh; max-height: 800px; display: flex; flex-direction: column; padding: 0; }
 dialog.grande{width:min(820px,94vw)}
 dialog::backdrop{background:#000a}
 .modal{position:relative;padding:1.4rem}
@@ -174,11 +162,12 @@ dialog::backdrop{background:#000a}
 .info-modal .artista-modal{margin:0 0 .3rem;font-size:.95rem;color:var(--ink);font-weight:600}
 .info-modal .detalhes-modal{margin:0;font-size:.82rem;color:var(--mute)}
 
-/* FIX: Alinhamento da tracklist */
-ol{padding-left:1.5rem;margin:.4rem 0}
-li{display:flex; justify-content:space-between; align-items:baseline; gap:1rem; padding:.4rem 0;border-bottom:1px solid #0002}
-li span { word-break: break-word; }
-li small{color:var(--mute); font-weight: 600; flex-shrink: 0;}
+/* FIX: Tracklist do Álbum (Não afeta Karaokê) */
+.tracklist-modal { list-style: none; padding: 0; margin: .4rem 0; }
+.tracklist-modal li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+.tracklist-modal li span { flex: 1; word-break: break-word; }
+.tracklist-modal li small { color: var(--mute); font-weight: 600; flex-shrink: 0; }
+.tracklist-modal li:last-child { border-bottom: none; }
 
 .grid-capas{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:1rem;margin-top:1rem}
 .grid-capas .capa{font-size:.7rem;padding:.4rem}
@@ -195,27 +184,43 @@ li small{color:var(--mute); font-weight: 600; flex-shrink: 0;}
 .aviso{grid-column:1/-1;color:var(--mute);text-align:center;padding:1rem}
 
 /* ---------- INTERFACE DE CHAT ---------- */
-.chat-container { display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg); }
-.chat-header { padding: 1rem 1.4rem; border-bottom: 1px solid rgba(34,32,29,.1); display: flex; justify-content: space-between; align-items: center; background: var(--card); border-radius: 8px 8px 0 0;}
+.chat-container { display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg); border-radius: 8px; overflow: hidden;}
+.chat-header { padding: 1rem 1.4rem; border-bottom: 1px solid rgba(34,32,29,.1); display: flex; justify-content: space-between; align-items: center; background: var(--card); }
 .chat-header h2 { margin: 0; font-size: 1.2rem; padding: 0; }
 .chat-tabs { display: flex; gap: 1rem; background: var(--card); padding: 0 1.4rem; border-bottom: 1px solid rgba(34,32,29,.1); }
 .chat-tab { background: none; border: none; padding: 1rem 0; font-weight: bold; color: var(--mute); cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.95rem; }
 .chat-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
 .chat-body { flex: 1; overflow-y: auto; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
-.chat-footer { padding: 1rem; background: var(--card); border-top: 1px solid rgba(34,32,29,.1); display: flex; gap: 0.5rem; border-radius: 0 0 8px 8px;}
+.chat-footer { padding: 1rem; background: var(--card); border-top: 1px solid rgba(34,32,29,.1); display: flex; gap: 0.5rem; }
 .chat-footer input { flex: 1; padding: 0.8rem 1rem; border: 1.5px solid var(--ink); border-radius: 20px; font-family: inherit; background: var(--bg); color: var(--ink); outline: none; }
 .chat-footer button { padding: 0 1.2rem; border-radius: 20px; border: none; background: var(--accent); color: #fff; font-weight: bold; cursor: pointer; transition: background 0.15s; }
 .chat-footer button:hover { background: #b89508; }
-.chat-msg { display: flex; flex-direction: column; max-width: 80%; }
-.chat-msg.mine { align-self: flex-end; align-items: flex-end; }
-.chat-msg.others { align-self: flex-start; align-items: flex-start; }
-.chat-msg-user { font-size: 0.75rem; color: var(--mute); margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.4rem; }
-.chat-msg-user img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+
+/* FIX: Chat UI (Estilo WhatsApp) */
+.chat-msg { display: flex; gap: 0.6rem; max-width: 85%; align-items: flex-end; margin-bottom: 0.5rem;}
+.chat-msg.mine { align-self: flex-end; flex-direction: row-reverse; }
+.chat-msg.others { align-self: flex-start; }
+.chat-msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; margin-bottom: 18px; }
+.chat-msg-content { display: flex; flex-direction: column; }
+.chat-msg.mine .chat-msg-content { align-items: flex-end; }
+.chat-msg.others .chat-msg-content { align-items: flex-start; }
+.chat-msg-user { font-size: 0.75rem; color: var(--mute); margin-bottom: 0.2rem; font-weight: 600; }
 .chat-msg-bubble { padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
 .chat-msg.mine .chat-msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 2px; }
 .chat-msg.others .chat-msg-bubble { background: var(--card); color: var(--ink); border-bottom-left-radius: 2px; border: 1px solid rgba(34,32,29,.1); }
 .chat-msg-time { font-size: 0.65rem; color: var(--mute); margin-top: 0.2rem; }
 
+/* FIX: Área de Vídeo */
+#chat-video-area { display: none; flex: 1; flex-wrap: wrap; align-content: flex-start; gap: 10px; padding: 1rem; background: #111; overflow-y: auto; }
+.video-wrapper { position: relative; flex: 1 1 45%; min-width: 200px; max-width: 48%; aspect-ratio: 4/3; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid #333;}
+.video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+.video-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+.video-controls { width: 100%; display: flex; justify-content: center; gap: 1rem; padding: 1rem; background: var(--card); border-top: 1px solid rgba(34,32,29,.1); }
+.btn-video { background: var(--ink); color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; }
+.btn-video:hover { background: #444; }
+.btn-video.danger { background: #c0392b; }
+
+/* ... (Mantenha o CSS do Karaokê, Perfil, Lixeira, etc.) ... */
 .btn-lixeira { background: transparent; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem; margin-left: auto; transition: transform 0.2s; }
 .btn-lixeira:hover { transform: scale(1.2); }
 .btn-encerrar { background: transparent; color: #c0392b; border: 1px solid #c0392b; border-radius: 6px; padding: 0.6rem; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; transition: background 0.2s, color 0.2s; }
@@ -226,20 +231,18 @@ dialog.modal-evento-encerrado { background: #e8e8e8; color: #666; border: 2px so
 dialog.modal-evento-encerrado h2, dialog.modal-evento-encerrado p.sub { color: #666; }
 dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 
+/* Configurações, Avatar, Flip Card, Pessoas (Mantidos) */
 .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; margin-bottom: 20px; }
 .avatar-option { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s, border-color 0.2s; }
 .avatar-option:hover { transform: scale(1.05); }
 .avatar-option.selecionado { border-color: var(--accent); }
-
 .campos-senha { display: flex; flex-direction: column; }
 .campos-senha[hidden] { display: none; }
 .btn-toggle-senha { background: none; border: none; color: var(--mute); font-family: inherit; font-size: 0.9rem; font-weight: 700; text-align: left; padding: 0; margin: 1rem 0 1rem; cursor: pointer; text-decoration: underline; transition: color 0.15s; }
 .btn-toggle-senha:hover { color: var(--accent); }
-
 #config-titulo { text-align: center; min-height: 40px; display: flex; justify-content: center; align-items: center; }
 @keyframes welcomeAnim { 0% { opacity: 0; transform: translateY(10px) scale(0.95); } 15% { opacity: 1; transform: translateY(0) scale(1); } 85% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-10px) scale(0.95); } }
 .welcome-animating { animation: welcomeAnim 1.2s forwards; display: inline-block; }
-
 .flip-card-container { perspective: 1200px; width: 100%; height: min(500px, 80vh); cursor: pointer; position: relative; }
 .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
 .flip-card-container.flipped .flip-card-inner { transform: rotateY(180deg); }
@@ -247,7 +250,6 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .flip-card-front::-webkit-scrollbar, .flip-card-back::-webkit-scrollbar { display: none; }
 .flip-card-front { z-index: 2; }
 .flip-card-back { transform: rotateY(180deg); z-index: 1; }
-
 .perfil-capa { width: 100%; padding: 1.5rem 1.4rem 1rem 1.4rem; display: flex; flex-direction: column; align-items: center; text-align: center; background-color: #e0e0e0; background-size: cover; background-position: center; position: relative; border-radius: 8px 8px 0 0; }
 .perfil-capa.com-imagem::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)); z-index: 1; }
 .perfil-capa > * { position: relative; z-index: 2; }
@@ -256,7 +258,6 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .perfil-capa p { color: var(--mute); font-size: 0.85rem; margin: 0; }
 .perfil-capa.com-imagem h3, .perfil-capa.com-imagem p { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
 .perfil-corpo { padding: 1rem 1.4rem; width: 100%; display: flex; flex-direction: column; align-items: center; flex: 1; }
-
 .faixas-recentes-container { margin-top: 0.5rem; width: 100%; text-align: left; }
 .faixas-recentes-titulo { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--ink); }
 .faixa-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(34,32,29,.12); }
@@ -267,7 +268,6 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .link-lastfm:hover { background-color: #e8e5dc; }
 .link-lastfm span { font-size: 1rem; line-height: 1; }
 .dica-flip { text-align: center; font-size: 0.8rem; color: var(--mute); font-style: italic; margin-top: auto; margin-bottom: auto; padding: 1rem 0; }
-
 .top-charts-wrapper { padding: 1.5rem; display: flex; flex-direction: column; height: 100%; background: var(--card); }
 .top-charts-header { text-align: center; margin-bottom: 1rem; }
 .top-charts-header h3 { margin: 0; font-size: 1.4rem; font-weight: 800; }
@@ -292,13 +292,11 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 0.5rem; }
 .carousel-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(34,32,29,.2); transition: background 0.2s; }
 .carousel-dots span.active { background: var(--ink); }
-
 @media (min-width: 768px) {
   .carousel-track { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; overflow: visible; padding: 0; }
   .carousel-slide { flex: auto; padding: 0; }
   .carousel-btn, .carousel-dots { display: none; }
 }
-
 .pessoa-item { display: flex; align-items: center; justify-content: flex-start; gap: 12px; width: 100%; padding: 12px; background: none; border: 0; border-bottom: 1px solid rgba(34,32,29,.12); text-align: left; cursor: pointer; transition: background 0.15s; }
 .pessoa-item:hover { background: rgba(213,171,9,.1); }
 .pessoa-avatar-container { position: relative; width: 40px; height: 40px; flex-shrink: 0; }
@@ -309,19 +307,16 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .pessoa-info { display: flex; flex-direction: column; text-align: left; flex: 1; min-width: 0; }
 .pessoa-nome { font-size: 1rem; font-weight: 700; line-height: 1.2; color: var(--ink); }
 .pessoa-musica { font-size: 0.75rem; color: var(--mute); font-weight: 600; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
 @media(max-width:500px) {
   .faixa-item { gap: 0.6rem; padding: 0.5rem 0; }
   .faixa-cover { width: 32px; height: 32px; }
   .faixa-track { font-size: 0.8rem; flex: 1.5; }
   .faixa-artist { font-size: 0.75rem; flex: 1; }
 }
-
 @media(max-width:768px) {
   header { padding-top: 4.5rem; padding-bottom: 0.5rem; }
   .tabs { padding-top: 0.5rem; padding-bottom: 1.5rem; }
 }
-
 @media(max-width:480px){
   .tabs{gap:.3rem}
   .tab{padding:.5rem .8rem;font-size:.78rem}
@@ -576,13 +571,17 @@ let currentUser = null;
 let userProfile = null;
 let avatarSelecionado = DEFAULT_AVATAR;
 
-// ---- VARIÁVEIS DO CHAT ----
+// ---- VARIÁVEIS DO CHAT E WEBRTC ----
 let wsHub = null;
 let wsChatRoom = null;
 let salasChat = [];
 let usuariosOnline = [];
 let chatNaoLidas = {};
 let salaChatAbertaId = null;
+
+let localStream = null;
+let peerConnections = {};
+const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 // Variáveis da Animação de Boas-Vindas
 const welcomeWords = ["Bem-vindo", "Welcome", "Добро пожаловать", "환영합니다", "ようこそ", "欢迎", "مرحبا", "स्वागतम्", "Καλώς ορίσατε", "Bienvenue", "Willkommen", "Bienvenido", "Benvenuto"];
@@ -774,11 +773,9 @@ function desenhaChatSalas() {
     b.innerHTML = `
       <div>
         <b>${esc(sala.nome)}</b>
-        <small>Criada em ${new Date(sala.data).toLocaleDateString('pt-BR')}</small>
       </div>
       <div style="display:flex; align-items:center; gap:0.5rem;">
         ${badge}
-        <button class="btn-lixeira" onclick="deletarSalaChat(event, '${sala.id}')" title="Excluir">🗑️</button>
         <span>→</span>
       </div>
     `;
@@ -799,16 +796,7 @@ $("nova-chat-sala").onclick = () => {
   wsHub.send(JSON.stringify({ tipo: "criar_sala", sala: { id, nome, data: new Date().toISOString() } }));
 };
 
-window.deletarSalaChat = (event, id) => {
-  event.stopPropagation();
-  if (confirm("Tem certeza que deseja excluir esta conversa? O histórico será perdido.")) {
-    if (wsHub && wsHub.readyState === WebSocket.OPEN) {
-      wsHub.send(JSON.stringify({ tipo: "excluir_sala", id }));
-    }
-  }
-};
-
-// ---- ABRIR SALA DE CHAT (Texto) ----
+// ---- ABRIR SALA DE CHAT (Texto e Vídeo) ----
 function abrirChatSala(sala) {
   salaChatAbertaId = sala.id;
   chatNaoLidas[sala.id] = 0; 
@@ -832,8 +820,10 @@ function abrirChatSala(sala) {
       <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
       <button id="chat-send">Enviar</button>
     </div>
-    <div id="chat-video-area" style="display:none; flex:1; padding:1rem; background:#000; color:#fff; text-align:center;">
-      <p>Carregando vídeo...</p>
+    <div id="chat-video-area"></div>
+    <div class="video-controls" id="video-controls" style="display:none;">
+      <button class="btn-video" id="btn-start-cam" onclick="iniciarCamera()">📷 Ligar Câmera</button>
+      <button class="btn-video" id="btn-share-screen" onclick="compartilharTela()">🖥️ Compartilhar Tela</button>
     </div>
   `;
 
@@ -851,7 +841,7 @@ function abrirChatSala(sala) {
     }));
   };
 
-  wsChatRoom.onmessage = (event) => {
+  wsChatRoom.onmessage = async (event) => {
     try {
       const msg = JSON.parse(event.data);
       
@@ -864,7 +854,48 @@ function abrirChatSala(sala) {
         renderizarMensagemChat(msg.mensagem);
       }
 
-    } catch (e) {}
+      // --- WebRTC Signaling ---
+      if (msg.tipo === "peers_iniciais") {
+        for (const peer of msg.peers) {
+          const pc = await criarConexao(peer);
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          wsChatRoom.send(JSON.stringify({ tipo: "webrtc_offer", target: peer, sdp: offer }));
+        }
+      }
+
+      if (msg.tipo === "peer_joined" && msg.username !== userProfile.username) {
+        await criarConexao(msg.username);
+      }
+
+      if (msg.tipo === "webrtc_offer") {
+        const pc = peerConnections[msg.sender] || await criarConexao(msg.sender);
+        await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        wsChatRoom.send(JSON.stringify({ tipo: "webrtc_answer", target: msg.sender, sdp: answer }));
+      }
+
+      if (msg.tipo === "webrtc_answer") {
+        const pc = peerConnections[msg.sender];
+        if (pc) await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+      }
+
+      if (msg.tipo === "webrtc_ice") {
+        const pc = peerConnections[msg.sender];
+        if (pc) await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+      }
+
+      if (msg.tipo === "peer_left") {
+        if (peerConnections[msg.username]) {
+          peerConnections[msg.username].close();
+          delete peerConnections[msg.username];
+        }
+        const el = document.getElementById(`video-${msg.username}`);
+        if (el) el.remove();
+      }
+
+    } catch (e) { console.error(e); }
   };
 
   const input = $("chat-input");
@@ -872,12 +903,7 @@ function abrirChatSala(sala) {
     const text = input.value.trim();
     if (!text) return;
     if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
-      wsChatRoom.send(JSON.stringify({ 
-        tipo: "mensagem", 
-        text, 
-        user: userProfile.username,
-        avatar: userProfile.avatar_url 
-      }));
+      wsChatRoom.send(JSON.stringify({ tipo: "mensagem", text }));
       input.value = "";
     }
   };
@@ -888,6 +914,15 @@ function abrirChatSala(sala) {
   modal.onclose = () => {
     if (wsChatRoom) { wsChatRoom.close(); wsChatRoom = null; }
     salaChatAbertaId = null;
+    
+    // Limpa WebRTC ao fechar
+    if (localStream) {
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;
+    }
+    for (const pc of Object.values(peerConnections)) pc.close();
+    peerConnections = {};
+
     desenhaChatSalas();
   };
 }
@@ -903,12 +938,12 @@ function renderizarMensagemChat(msg) {
   div.className = `chat-msg ${isMine ? 'mine' : 'others'}`;
   
   div.innerHTML = `
-    <div class="chat-msg-user">
-      ${!isMine ? `<img src="${msg.avatar || DEFAULT_AVATAR}">` : ''}
-      <span>${isMine ? 'Você' : esc(msg.user)}</span>
+    ${!isMine ? `<img src="${msg.avatar || DEFAULT_AVATAR}" class="chat-msg-avatar">` : ''}
+    <div class="chat-msg-content">
+      ${!isMine ? `<span class="chat-msg-user">${esc(msg.user)}</span>` : ''}
+      <div class="chat-msg-bubble">${esc(msg.text)}</div>
+      <div class="chat-msg-time">${hora}</div>
     </div>
-    <div class="chat-msg-bubble">${esc(msg.text)}</div>
-    <div class="chat-msg-time">${hora}</div>
   `;
   
   chatBody.appendChild(div);
@@ -934,12 +969,121 @@ window.mudarAbaChat = (aba, btn) => {
     $("chat-body").style.display = "flex";
     $("chat-footer").style.display = "flex";
     $("chat-video-area").style.display = "none";
+    $("video-controls").style.display = "none";
   } else {
     $("chat-body").style.display = "none";
     $("chat-footer").style.display = "none";
     $("chat-video-area").style.display = "flex";
+    $("video-controls").style.display = "flex";
   }
 };
+
+// ---- LÓGICA DE VÍDEO WEBRTC ----
+async function iniciarCamera() {
+  if (localStream) {
+    // Desligar câmera
+    localStream.getTracks().forEach(t => t.stop());
+    localStream = null;
+    const el = document.getElementById(`video-${userProfile.username}`);
+    if (el) el.remove();
+    
+    for (const pc of Object.values(peerConnections)) {
+      const senders = pc.getSenders();
+      senders.forEach(s => { if(s.track && s.track.kind === 'video') pc.removeTrack(s); });
+    }
+    $("btn-start-cam").textContent = "📷 Ligar Câmera";
+    $("btn-start-cam").classList.remove("danger");
+    return;
+  }
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    adicionarVideo(localStream, userProfile.username, true);
+    
+    $("btn-start-cam").textContent = "🛑 Desligar Câmera";
+    $("btn-start-cam").classList.add("danger");
+
+    // Adiciona as tracks nas conexões existentes
+    for (const pc of Object.values(peerConnections)) {
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+  } catch (err) {
+    alert("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+  }
+}
+
+async function compartilharTela() {
+  try {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    const screenTrack = screenStream.getVideoTracks()[0];
+    
+    // Substitui a track de vídeo da câmera pela da tela em todas as conexões
+    for (const pc of Object.values(peerConnections)) {
+      const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+      if (sender) sender.replaceTrack(screenTrack);
+    }
+    
+    adicionarVideo(screenStream, userProfile.username + " (Tela)", true);
+
+    screenTrack.onended = () => {
+      if (localStream) {
+        const camTrack = localStream.getVideoTracks()[0];
+        for (const pc of Object.values(peerConnections)) {
+          const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+          if (sender) sender.replaceTrack(camTrack);
+        }
+        adicionarVideo(localStream, userProfile.username, true);
+      } else {
+        const el = document.getElementById(`video-${userProfile.username} (Tela)`);
+        if (el) el.remove();
+      }
+    };
+  } catch (err) {
+    alert("Não foi possível compartilhar a tela.");
+  }
+}
+
+function adicionarVideo(stream, username, isLocal) {
+  const area = $("chat-video-area");
+  if (!area) return;
+  
+  const idSeguro = username.replace(/\s+/g, '-').toLowerCase();
+  let wrapper = document.getElementById(`video-${idSeguro}`);
+  
+  if (!wrapper) {
+    wrapper = document.createElement("div");
+    wrapper.className = "video-wrapper";
+    wrapper.id = `video-${idSeguro}`;
+    wrapper.innerHTML = `<video autoplay playsinline ${isLocal ? 'muted' : ''}></video><div class="video-label">${username}</div>`;
+    area.appendChild(wrapper);
+  }
+  const video = wrapper.querySelector("video");
+  video.srcObject = stream;
+}
+
+async function criarConexao(username) {
+  const idSeguro = username.replace(/\s+/g, '-').toLowerCase();
+  if (peerConnections[idSeguro]) return peerConnections[idSeguro];
+
+  const pc = new RTCPeerConnection(iceServers);
+  peerConnections[idSeguro] = pc;
+
+  if (localStream) {
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+  }
+
+  pc.onicecandidate = (event) => {
+    if (event.candidate) {
+      wsChatRoom.send(JSON.stringify({ tipo: "webrtc_ice", target: username, candidate: event.candidate }));
+    }
+  };
+
+  pc.ontrack = (event) => {
+    adicionarVideo(event.streams[0], username, false);
+  };
+
+  return pc;
+}
 
 // ---- LISTA DE PESSOAS (COM STATUS ONLINE) ----
 async function abrirPessoas() {
@@ -1167,6 +1311,10 @@ function ativarTab(nome){
     el.setAttribute("aria-selected", on);
     view.classList.toggle("ativa", on);
   });
+  
+  // Fecha todos os modais ao trocar de aba para evitar persistência na tela
+  document.querySelectorAll('dialog').forEach(d => d.close());
+
   if (nome === "artistas") desenhaArtistas();
   if (nome === "karaoke") { conectarSalas(); desenhaSalas(); }
   if (nome === "chat") { desenhaChatSalas(); }
@@ -1361,6 +1509,7 @@ async function abreDisco(d){
 
     if(faixas && faixas.length > 0){
       const ol = document.createElement("ol");
+      ol.className = "tracklist-modal"; // FIX: Classe para não afetar o Karaokê
       faixas.forEach(f => {
         const li = document.createElement("li");
         const spanNome = document.createElement("span"); spanNome.textContent = f.n; 
@@ -1845,7 +1994,6 @@ async function abrirPerfil(username) {
             <button class="carousel-btn prev" onclick="moveCarousel(-1, event)">‹</button>
             <div class="carousel-track" id="stats-carousel">
               
-              <!-- Músicas -->
               <div class="carousel-slide">
                 <div class="top-charts-col">
                   <h4>Músicas</h4>
@@ -1855,7 +2003,6 @@ async function abrirPerfil(username) {
                 </div>
               </div>
 
-              <!-- Álbuns -->
               <div class="carousel-slide">
                 <div class="top-charts-col">
                   <h4>Álbuns</h4>
@@ -1865,7 +2012,6 @@ async function abrirPerfil(username) {
                 </div>
               </div>
 
-              <!-- Artistas -->
               <div class="carousel-slide">
                 <div class="top-charts-col">
                   <h4>Artistas</h4>
