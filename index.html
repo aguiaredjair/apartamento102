@@ -164,9 +164,6 @@ dialog::backdrop{background:#000a}
 .chat-header h2 { margin: 0; font-size: 1.2rem; padding: 0; }
 .chat-header-controls { display: flex; gap: 1rem; align-items: center; }
 .btn-maximize { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--ink); }
-.chat-tabs { display: flex; gap: 1rem; background: var(--card); padding: 0 1.4rem; border-bottom: 1px solid rgba(34,32,29,.1); flex-shrink: 0;}
-.chat-tab { background: none; border: none; padding: 1rem 0; font-weight: bold; color: var(--mute); cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.95rem; }
-.chat-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
 .chat-body { flex: 1; overflow-y: auto; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
 .chat-footer { padding: 1rem; background: var(--card); border-top: 1px solid rgba(34,32,29,.1); display: flex; gap: 0.5rem; flex-shrink: 0;}
 .chat-footer input { flex: 1; padding: 0.8rem 1rem; border: 1.5px solid var(--ink); border-radius: 20px; font-family: inherit; background: var(--bg); color: var(--ink); outline: none; }
@@ -185,28 +182,6 @@ dialog::backdrop{background:#000a}
 .chat-msg.others .chat-msg-bubble { background: var(--card); color: var(--ink); border-bottom-left-radius: 2px; border: 1px solid rgba(34,32,29,.1); }
 .chat-msg-time { font-size: 0.65rem; color: var(--mute); margin-top: 0.2rem; }
 
-#chat-video-area { display: none; flex: 1; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 10px; padding: 1rem; background: #111; overflow-y: auto; }
-.video-wrapper { position: relative; flex: 1 1 45%; min-width: 200px; max-width: 48%; aspect-ratio: 4/3; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #333; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;}
-.video-wrapper video { width: 100%; height: 100%; object-fit: contain; }
-.video-avatar { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(213, 171, 9, 0.15); z-index: 1; }
-.video-avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); }
-.video-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; z-index: 10;}
-.mic-muted-icon { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; z-index: 10;}
-.mic-muted-icon svg { width: 16px; height: 16px; fill: #c0392b; }
-.video-wrapper.focused { flex: 1 1 100%; max-width: 100%; height: 75%; }
-.video-wrapper:not(.focused):has(~ .video-wrapper.focused), .video-wrapper.focused ~ .video-wrapper { flex: 1 1 15%; max-width: 18%; height: 20%; aspect-ratio: auto; }
-.video-lobby { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; background: #111; color: #fff; padding: 2rem; text-align: center; }
-.video-lobby h3 { font-size: 1.5rem; margin-bottom: 1rem; }
-.video-lobby p { color: #aaa; margin-bottom: 2rem; }
-.btn-iniciar-chamada { font-size: 1.1rem; padding: 1rem 2rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
-.btn-iniciar-chamada:hover { background: #b89508; }
-.video-controls { width: 100%; display: none; justify-content: center; gap: 1.5rem; padding: 1.2rem; background: var(--ink); flex-shrink: 0; align-items: center; border-radius: 0 0 8px 8px; }
-.btn-icon-control { background: transparent; border: none; width: 48px; height: 48px; display: grid; place-items: center; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.4); }
-.btn-icon-control svg { width: 28px; height: 28px; fill: currentColor; }
-.btn-icon-control.active { color: var(--accent); }
-.btn-icon-control.danger { color: rgba(192,57,43,0.8); }
-.btn-icon-control.danger:hover { color: #c0392b; }
-.btn-icon-control:not(.active):not(.danger):hover { color: rgba(255,255,255,0.8); }
 .btn-lixeira { background: transparent; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem; margin-left: auto; transition: transform 0.2s; }
 .btn-lixeira:hover { transform: scale(1.2); }
 .btn-encerrar { background: transparent; color: #c0392b; border: 1px solid #c0392b; border-radius: 6px; padding: 0.6rem; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; transition: background 0.2s, color 0.2s; }
@@ -524,32 +499,6 @@ const semArtigo = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replac
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const normBusca = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-// ============================================================
-// ID ÚNICO DE PEER (sanitização consistente em TODOS os lugares)
-// ============================================================
-const idPeer = u => String(u).replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase();
-
-// ============================================================
-// BUFFER DE ICE CANDIDATES
-// Candidates remotos podem chegar antes do setRemoteDescription
-// terminar (handler async). Sem isso, são descartados e a conexão
-// WebRTC nunca completa.
-// ============================================================
-const iceCandidatesBuffer = {};  // { [peerId]: RTCIceCandidate[] }
-
-async function flushIceBuffer(peerId) {
-  const pc = peerConnections[peerId];
-  const buf = iceCandidatesBuffer[peerId];
-  if (!pc || !buf || buf.length === 0) return;
-  if (!pc.remoteDescription) return;
-  const paraProcessar = buf.slice();
-  iceCandidatesBuffer[peerId] = [];
-  for (const cand of paraProcessar) {
-    try { await pc.addIceCandidate(cand); }
-    catch (e) { console.warn("[ICE flush]", e); }
-  }
-}
-
 let discos = [];
 let letraFiltroArtista = null;
 let letraFiltroDisco = null;
@@ -577,22 +526,13 @@ let currentUser = null;
 let userProfile = null;
 let avatarSelecionado = DEFAULT_AVATAR;
 
-// ---- VARIÁVEIS DO CHAT E WEBRTC ----
+// ---- VARIÁVEIS DO CHAT ----
 let wsHub = null;
 let wsChatRoom = null;
 let salasChat = [];
 let usuariosOnline = [];
 let chatNaoLidas = {};
 let salaChatAbertaId = null;
-
-let localStream = null;
-let screenStream = null;
-let peerConnections = {};
-let naChamada = false;
-let chamadaAtivaNoServidor = false;
-let camAtiva = false;
-let micAtivo = false;
-const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 // ---- HEARTBEAT / RECONEXÃO ----
 let wsHeartbeatTimer = null;
@@ -796,9 +736,7 @@ $("nova-chat-sala").onclick = () => {
   wsHub.send(JSON.stringify({ tipo: "criar_sala", sala: { id, nome, data: new Date().toISOString() } }));
 };
 
-// ============================================================
-// HEARTBEAT (evita WS zumbi e força reconexão)
-// ============================================================
+// ---- Heartbeat ----
 function iniciarHeartbeat() {
   pararHeartbeat();
   wsHeartbeatTimer = setInterval(() => {
@@ -818,7 +756,7 @@ function pararHeartbeat() {
 }
 
 // ============================================================
-// ABRIR SALA DE CHAT (com heartbeat + reconexão + ICE buffer)
+// ABRIR SALA DE CHAT (só texto)
 // ============================================================
 function abrirChatSala(sala) {
   pararHeartbeat();
@@ -834,13 +772,6 @@ function abrirChatSala(sala) {
   atualizarBadgeGlobal();
   desenhaChatSalas();
 
-  naChamada = false;
-  chamadaAtivaNoServidor = false;
-  camAtiva = false;
-  micAtivo = false;
-  limparMidiaVideo();
-  for (const k of Object.keys(iceCandidatesBuffer)) delete iceCandidatesBuffer[k];
-
   const modal = $("modal-chat");
   modal.classList.remove("maximized");
   const container = $("chat-container");
@@ -853,42 +784,10 @@ function abrirChatSala(sala) {
         <button class="fechar" onclick="document.getElementById('modal-chat').close()" style="position:static;">×</button>
       </div>
     </div>
-    <div class="chat-tabs">
-      <button class="chat-tab active" onclick="mudarAbaChat('texto', this)">Texto</button>
-      <button class="chat-tab" onclick="mudarAbaChat('video', this)">Vídeo</button>
-    </div>
-
-    <div class="chat-body" id="chat-body" style="display:flex;"></div>
-    <div class="chat-footer" id="chat-footer" style="display:flex;">
+    <div class="chat-body" id="chat-body"></div>
+    <div class="chat-footer" id="chat-footer">
       <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
       <button id="chat-send">Enviar</button>
-    </div>
-
-    <div class="video-lobby" id="video-lobby" style="display:none;">
-      <h3 id="video-lobby-title">Nenhuma chamada ativa</h3>
-      <p id="video-lobby-desc">Inicie uma chamada de vídeo para os participantes da sala.</p>
-      <button class="btn-iniciar-chamada" id="btn-lobby-action" onclick="acaoLobbyVideo()">
-        📹 Iniciar Chamada
-      </button>
-    </div>
-
-    <div id="chat-video-area"></div>
-
-    <div class="video-controls" id="video-controls" style="display:none;">
-      <button class="btn-icon-control" id="btn-toggle-mic" onclick="toggleMicrofone()" title="Microfone">
-        <svg viewBox="0 0 24 24" id="icone-mic-on" style="display:none;"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
-        <svg viewBox="0 0 24 24" id="icone-mic-off"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>
-      </button>
-      <button class="btn-icon-control" id="btn-start-cam" onclick="iniciarCamera()" title="Câmera">
-        <svg viewBox="0 0 24 24" id="icone-cam-on" style="display:none;"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-        <svg viewBox="0 0 24 24" id="icone-cam-off"><path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></svg>
-      </button>
-      <button class="btn-icon-control" id="btn-share-screen" onclick="toggleCompartilharTela()" title="Compartilhar Tela">
-        <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7v2H8v2h8v-2h-2v-2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
-      </button>
-      <button class="btn-icon-control danger" onclick="sairChamada()" title="Sair da Chamada">
-        <svg viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.7l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.1-.7-.28-.79-.74-1.68-1.36-2.66-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
-      </button>
     </div>
   `;
 
@@ -904,9 +803,6 @@ function abrirChatSala(sala) {
     wsChatRoom.onopen = () => {
       wsChatRoom.send(JSON.stringify({ tipo: "entrar", username: userProfile.username, avatar: userProfile.avatar_url }));
       iniciarHeartbeat();
-      if (naChamada) {
-        wsChatRoom.send(JSON.stringify({ tipo: "entrar_chamada", username: userProfile.username }));
-      }
     };
 
     wsChatRoom.onmessage = async (event) => {
@@ -921,122 +817,11 @@ function abrirChatSala(sala) {
         if (msg.tipo === "estado_inicial") {
           chatBody.innerHTML = "";
           msg.mensagens.forEach(m => renderizarMensagemChat(m));
-
-          chamadaAtivaNoServidor = msg.chamadaAtiva;
-          if (chamadaAtivaNoServidor) {
-            $("video-lobby-title").textContent = "Chamada em andamento";
-            $("video-lobby-desc").textContent = `${msg.participantesChamada.length} pessoa(s) na chamada.`;
-            $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
-          } else {
-            $("video-lobby-title").textContent = "Nenhuma chamada ativa";
-            $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
-            $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
-          }
         }
 
         if (msg.tipo === "nova_mensagem") renderizarMensagemChat(msg.mensagem);
 
-        if (msg.tipo === "estado_chamada") {
-          chamadaAtivaNoServidor = msg.chamadaAtiva;
-          if (!naChamada) {
-            if (msg.chamadaAtiva && msg.participantes.length > 0) {
-              $("video-lobby-title").textContent = "Chamada em andamento";
-              $("video-lobby-desc").textContent = `${msg.participantes.length} pessoa(s) na chamada.`;
-              $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
-            } else {
-              $("video-lobby-title").textContent = "Nenhuma chamada ativa";
-              $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
-              $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
-            }
-          }
-        }
-
-        if (msg.tipo === "chamada_iniciada") {
-          chamadaAtivaNoServidor = true;
-          if (!naChamada) {
-            $("video-lobby-title").textContent = "Chamada iniciada por " + msg.por;
-            $("video-lobby-desc").textContent = "Você pode entrar na chamada agora.";
-            $("btn-lobby-action").textContent = "📹 Entrar na Chamada";
-          }
-        }
-
-        if (msg.tipo === "chamada_encerrada") {
-          chamadaAtivaNoServidor = false;
-          if (naChamada) {
-            alert("A chamada foi encerrada porque todos saíram.");
-            sairChamada(true);
-          } else {
-            $("video-lobby-title").textContent = "Nenhuma chamada ativa";
-            $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
-            $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
-          }
-        }
-
-        if (msg.tipo === "peers_iniciais") {
-          for (const peer of msg.peers) {
-            const pc = await criarConexao(peer);
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            wsChatRoom.send(JSON.stringify({ tipo: "webrtc_offer", target: peer, sdp: offer }));
-          }
-        }
-
-        if (msg.tipo === "peer_joined" && msg.username !== userProfile.username) {
-          criarJanelaVideo(msg.username, null, false);
-        }
-
-        if (msg.tipo === "peer_mic_state") {
-          const el = document.getElementById(`video-${idPeer(msg.username)}`);
-          if (el) {
-            const icon = el.querySelector('.mic-muted-icon');
-            if (msg.muted) {
-              if (!icon) el.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
-            } else {
-              if (icon) icon.remove();
-            }
-          }
-        }
-
-        if (msg.tipo === "webrtc_offer") {
-          const peerId = idPeer(msg.sender);
-          const pc = await criarConexao(msg.sender);
-          await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-          await flushIceBuffer(peerId);
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          wsChatRoom.send(JSON.stringify({ tipo: "webrtc_answer", target: msg.sender, sdp: answer }));
-        }
-
-        if (msg.tipo === "webrtc_answer") {
-          const peerId = idPeer(msg.sender);
-          const pc = peerConnections[peerId];
-          if (pc) {
-            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-            await flushIceBuffer(peerId);
-          }
-        }
-
-        if (msg.tipo === "webrtc_ice") {
-          const peerId = idPeer(msg.sender);
-          const pc = peerConnections[peerId];
-          const cand = new RTCIceCandidate(msg.candidate);
-          if (!pc || !pc.remoteDescription) {
-            (iceCandidatesBuffer[peerId] = iceCandidatesBuffer[peerId] || []).push(cand);
-          } else {
-            try { await pc.addIceCandidate(cand); }
-            catch (e) { console.warn("[ICE]", e); }
-          }
-        }
-
-        if (msg.tipo === "peer_left") {
-          const id = idPeer(msg.username);
-          if (peerConnections[id]) {
-            try { peerConnections[id].close(); } catch {}
-            delete peerConnections[id];
-          }
-          delete iceCandidatesBuffer[id];
-          document.getElementById(`video-${id}`)?.remove();
-        }
+        // Outros tipos (chamada, webrtc) são ignorados — features desativadas.
 
       } catch (e) { console.error(e); }
     };
@@ -1073,366 +858,17 @@ function abrirChatSala(sala) {
     wsIntentionalClose = true;
     pararHeartbeat();
 
-    if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
-      if (naChamada && userProfile) {
-        try { wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username })); } catch {}
-      }
+    if (wsChatRoom) {
       try { wsChatRoom.close(); } catch {}
     }
     wsChatRoom = null;
-    naChamada = false;
     salaChatAbertaId = null;
     container.innerHTML = "";
-    limparMidiaVideo();
     desenhaChatSalas();
   };
 }
 
-window.mudarAbaChat = (aba, btn) => {
-  document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-
-  if (aba === 'texto') {
-    $("chat-body").style.display = "flex";
-    $("chat-footer").style.display = "flex";
-    $("chat-video-area").style.display = "none";
-    $("video-lobby").style.display = "none";
-    $("video-controls").style.display = "none";
-  } else {
-    $("chat-body").style.display = "none";
-    $("chat-footer").style.display = "none";
-
-    if (naChamada) {
-      $("chat-video-area").style.display = "flex";
-      $("video-controls").style.display = "flex";
-      $("video-lobby").style.display = "none";
-    } else {
-      $("chat-video-area").style.display = "none";
-      $("video-controls").style.display = "none";
-      $("video-lobby").style.display = "flex";
-    }
-  }
-};
-
 window.toggleMaximizarChat = () => { $("modal-chat").classList.toggle("maximized"); };
-
-// ============================================================
-// LÓGICA DE CHAMADA
-// Mantém tracks vivas com enabled=false (sem stop/removeTrack),
-// evitando renegociação ao ligar/desligar câmera.
-// ============================================================
-window.acaoLobbyVideo = async () => {
-  if (!wsChatRoom || wsChatRoom.readyState !== WebSocket.OPEN) return;
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-
-    const videoTrack = stream.getVideoTracks()[0];
-    if (videoTrack) videoTrack.enabled = false;
-    const audioTrack = stream.getAudioTracks()[0];
-    if (audioTrack) audioTrack.enabled = false;
-
-    localStream = stream;
-    camAtiva = false;
-    micAtivo = false;
-
-    atualizarBotoesMidia();
-
-    if (chamadaAtivaNoServidor) {
-      wsChatRoom.send(JSON.stringify({ tipo: "entrar_chamada", username: userProfile.username }));
-    } else {
-      wsChatRoom.send(JSON.stringify({ tipo: "iniciar_chamada", username: userProfile.username }));
-    }
-
-    wsChatRoom.send(JSON.stringify({ tipo: "peer_mic_state", username: userProfile.username, muted: true }));
-
-    naChamada = true;
-    $("video-lobby").style.display = "none";
-    $("chat-video-area").style.display = "flex";
-    $("video-controls").style.display = "flex";
-
-    criarJanelaVideo(userProfile.username, userProfile.avatar_url, true, localStream);
-
-  } catch (err) {
-    console.error(err);
-    alert("Não foi possível acessar a câmera/microfone.");
-  }
-};
-
-window.sairChamada = (forcado = false) => {
-  if (!naChamada) return;
-
-  if (!forcado && wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
-    wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username }));
-  }
-
-  naChamada = false;
-  limparMidiaVideo();
-
-  $("chat-video-area").style.display = "none";
-  $("video-controls").style.display = "none";
-  $("video-lobby").style.display = "flex";
-
-  $("video-lobby-title").textContent = "Nenhuma chamada ativa";
-  $("video-lobby-desc").textContent = "Inicie uma chamada de vídeo para os participantes da sala.";
-  $("btn-lobby-action").textContent = "📹 Iniciar Chamada";
-};
-
-function limparMidiaVideo() {
-  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-  if (screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
-  for (const pc of Object.values(peerConnections)) {
-    try { pc.close(); } catch {}
-  }
-  peerConnections = {};
-  const area = $("chat-video-area");
-  if (area) area.innerHTML = "";
-
-  camAtiva = false;
-  micAtivo = false;
-  atualizarBotoesMidia();
-}
-
-function atualizarBotoesMidia() {
-  const btnMic = $("btn-toggle-mic");
-  if (btnMic) {
-    const iconeOn = btnMic.querySelector("#icone-mic-on");
-    const iconeOff = btnMic.querySelector("#icone-mic-off");
-    if (micAtivo) {
-      btnMic.classList.add("active");
-      if (iconeOn) iconeOn.style.display = "block";
-      if (iconeOff) iconeOff.style.display = "none";
-    } else {
-      btnMic.classList.remove("active");
-      if (iconeOn) iconeOn.style.display = "none";
-      if (iconeOff) iconeOff.style.display = "block";
-    }
-  }
-
-  const btnCam = $("btn-start-cam");
-  if (btnCam) {
-    const iconeOn = btnCam.querySelector("#icone-cam-on");
-    const iconeOff = btnCam.querySelector("#icone-cam-off");
-    if (camAtiva) {
-      btnCam.classList.add("active");
-      if (iconeOn) iconeOn.style.display = "block";
-      if (iconeOff) iconeOff.style.display = "none";
-    } else {
-      btnCam.classList.remove("active");
-      if (iconeOn) iconeOn.style.display = "none";
-      if (iconeOff) iconeOff.style.display = "block";
-    }
-  }
-}
-
-window.toggleMicrofone = () => {
-  if (!localStream) return;
-  const audioTrack = localStream.getAudioTracks()[0];
-  if (!audioTrack) return;
-
-  audioTrack.enabled = !audioTrack.enabled;
-  micAtivo = audioTrack.enabled;
-
-  atualizarBotoesMidia();
-
-  if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
-    wsChatRoom.send(JSON.stringify({ tipo: "peer_mic_state", username: userProfile.username, muted: !micAtivo }));
-  }
-
-  const elLocal = document.getElementById(`video-${idPeer(userProfile.username)}`);
-  if (elLocal) {
-    const icon = elLocal.querySelector('.mic-muted-icon');
-    if (!micAtivo) {
-      if (!icon) elLocal.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
-    } else {
-      if (icon) icon.remove();
-    }
-  }
-};
-
-window.iniciarCamera = async () => {
-  if (!naChamada) return;
-
-  if (localStream) {
-    const vt = localStream.getVideoTracks()[0];
-    if (vt) {
-      vt.enabled = !vt.enabled;
-      camAtiva = vt.enabled;
-      atualizarBotoesMidia();
-      return;
-    }
-  }
-
-  try {
-    const s = await navigator.mediaDevices.getUserMedia({ video: true });
-    const t = s.getVideoTracks()[0];
-    if (localStream) localStream.addTrack(t);
-    else localStream = s;
-    camAtiva = true;
-    atualizarBotoesMidia();
-
-    for (const [id, pc] of Object.entries(peerConnections)) {
-      pc.addTrack(t, localStream);
-      try {
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        const wrapper = document.getElementById(`video-${id}`);
-        const originalUsername = wrapper?.dataset?.username;
-        if (originalUsername && wsChatRoom?.readyState === WebSocket.OPEN) {
-          wsChatRoom.send(JSON.stringify({ tipo: "webrtc_offer", target: originalUsername, sdp: offer }));
-        }
-      } catch (e) { console.warn(e); }
-    }
-
-    criarJanelaVideo(userProfile.username, userProfile.avatar_url, true, localStream);
-  } catch (err) {
-    alert("Não foi possível acessar a câmera.");
-  }
-};
-
-window.toggleCompartilharTela = async () => {
-  if (!naChamada) return;
-  const btn = $("btn-share-screen");
-
-  if (screenStream) {
-    screenStream.getTracks().forEach(t => t.stop());
-    screenStream = null;
-    btn.classList.remove("active");
-
-    const telaId = `${idPeer(userProfile.username)}-tela`;
-    document.getElementById(`video-${telaId}`)?.remove();
-
-    for (const pc of Object.values(peerConnections)) {
-      const senders = pc.getSenders();
-      for (const s of senders) {
-        if (s.track && s.track.kind === 'video') {
-          if (camAtiva && localStream) {
-            const camTrack = localStream.getVideoTracks()[0];
-            if (camTrack) s.replaceTrack(camTrack);
-          }
-        }
-      }
-    }
-  } else {
-    try {
-      screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      const screenTrack = screenStream.getVideoTracks()[0];
-      btn.classList.add("active");
-
-      criarJanelaVideo(userProfile.username + " (Tela)", userProfile.avatar_url, true, screenStream);
-
-      for (const pc of Object.values(peerConnections)) {
-        const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
-        if (sender) sender.replaceTrack(screenTrack);
-        else pc.addTrack(screenTrack, screenStream);
-      }
-
-      screenTrack.onended = () => { toggleCompartilharTela(); };
-    } catch (err) {
-      alert("Não foi possível compartilhar a tela.");
-    }
-  }
-};
-
-// ============================================================
-// RENDERIZAÇÃO DE VÍDEO — IDEMPOTENTE
-// ============================================================
-function criarJanelaVideo(username, avatarUrl, isLocal, stream = null) {
-  const area = $("chat-video-area");
-  if (!area) return;
-
-  const isTela = /\(Tela\)/i.test(username);
-  const baseUser = isTela ? username.replace(/\s*\(Tela\)\s*$/i, '') : username;
-  const id = isTela ? `${idPeer(baseUser)}-tela` : idPeer(baseUser);
-  const wrapperId = `video-${id}`;
-
-  let wrapper = document.getElementById(wrapperId);
-  if (!wrapper) {
-    wrapper = document.createElement("div");
-    wrapper.className = "video-wrapper";
-    wrapper.id = wrapperId;
-    wrapper.dataset.username = baseUser;
-    wrapper.dataset.isTela = isTela ? "1" : "0";
-    wrapper.onclick = () => {
-      document.querySelectorAll('.video-wrapper').forEach(w => w.classList.remove('focused'));
-      wrapper.classList.add('focused');
-    };
-    area.appendChild(wrapper);
-
-    const label = document.createElement("div");
-    label.className = "video-label";
-    label.textContent = username;
-    wrapper.appendChild(label);
-  }
-
-  if (stream) {
-    let video = wrapper.querySelector('video');
-    if (!video) {
-      video = document.createElement('video');
-      video.autoplay = true;
-      video.playsInline = true;
-      video.muted = isLocal;
-      wrapper.insertBefore(video, wrapper.firstChild);
-    }
-    if (video.srcObject !== stream) video.srcObject = stream;
-    const av = wrapper.querySelector('.video-avatar');
-    if (av) av.remove();
-  } else {
-    if (!wrapper.querySelector('video')) {
-      let av = wrapper.querySelector('.video-avatar');
-      if (!av) {
-        av = document.createElement('div');
-        av.className = 'video-avatar';
-        wrapper.insertBefore(av, wrapper.firstChild);
-      }
-      av.innerHTML = `<img src="${avatarUrl || DEFAULT_AVATAR}">`;
-    }
-  }
-
-  if (isLocal && !micAtivo) {
-    if (!wrapper.querySelector('.mic-muted-icon')) {
-      wrapper.insertAdjacentHTML('beforeend', `<div class="mic-muted-icon"><svg viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg></div>`);
-    }
-  }
-}
-
-async function criarConexao(username) {
-  const id = idPeer(username);
-  if (peerConnections[id]) return peerConnections[id];
-
-  const pc = new RTCPeerConnection(iceServers);
-  peerConnections[id] = pc;
-  iceCandidatesBuffer[id] = iceCandidatesBuffer[id] || [];
-
-  if (localStream) {
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-  }
-  if (screenStream) {
-    screenStream.getTracks().forEach(track => pc.addTrack(track, screenStream));
-  }
-
-  pc.onicecandidate = (event) => {
-    if (event.candidate && wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
-      wsChatRoom.send(JSON.stringify({ tipo: "webrtc_ice", target: username, candidate: event.candidate }));
-    }
-  };
-
-  pc.ontrack = (event) => {
-    if (event.track.kind === 'video' && event.streams[0]) {
-      criarJanelaVideo(username, null, false, event.streams[0]);
-    }
-  };
-
-  pc.onconnectionstatechange = () => {
-    console.log(`[PC ${username}] state=${pc.connectionState} ice=${pc.iceConnectionState}`);
-    if (pc.connectionState === 'failed') {
-      console.warn(`[PC ${username}] falhou. Tentando ICE restart.`);
-      try { pc.restartIce(); } catch (e) {}
-    }
-  };
-
-  return pc;
-}
 
 function renderizarMensagemChat(msg) {
   const chatBody = $("chat-body");
@@ -2543,17 +1979,6 @@ window.moveCarousel = function(direction, event) {
   const slideWidth = track.clientWidth;
   track.scrollBy({ left: direction * slideWidth, behavior: 'smooth' });
 };
-
-// ============================================================
-// Limpeza ao sair da página
-// ============================================================
-window.addEventListener("beforeunload", () => {
-  if (wsChatRoom && wsChatRoom.readyState === WebSocket.OPEN) {
-    if (naChamada && userProfile) {
-      try { wsChatRoom.send(JSON.stringify({ tipo: "sair_chamada", username: userProfile.username })); } catch {}
-    }
-  }
-});
 
 async function init(){
   try{
