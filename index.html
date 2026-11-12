@@ -109,7 +109,6 @@ main{max-width:1200px;margin:auto;padding:.5rem 1.25rem 4rem}
 .drawer-item { font-size: 1rem; font-weight: 600; color: var(--ink); text-decoration: none; cursor: pointer; transition: color .15s; }
 .drawer-item:hover { color: var(--accent); }
 
-/* Appearance controls (now inside modal-config) */
 .theme-toggle-row { display: flex; gap: 0.4rem; }
 .theme-option { flex: 1; font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.55rem 0.4rem; background: transparent; color: var(--ink); border: 1.5px solid var(--ink); border-radius: 6px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; white-space: nowrap; }
 .theme-option[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -638,8 +637,6 @@ function atualizarBotoesAparencia() {
   });
 }
 
-// Aplica visualmente + salva no localStorage. Se persistToDb=true e houver
-// usuário logado, também salva no Supabase (best-effort, fire-and-forget).
 function aplicarTema(theme, accent, { persistToDb = false } = {}) {
   if (!THEMES_VALIDOS.includes(theme)) theme = 'light';
   if (!ACCENTS_VALIDOS.includes(accent)) accent = 'yellow';
@@ -783,7 +780,6 @@ async function checarUsuario() {
       $("menu-user-name").textContent = profile.username;
       $("menu-user-avatar").src = profile.avatar_url || DEFAULT_AVATAR;
 
-      // Aplica aparência do perfil (se houver preferência salva)
       if (profile.theme || profile.accent) {
         aplicarTema(profile.theme || 'light', profile.accent || 'yellow');
       }
@@ -1169,7 +1165,6 @@ function abrirConfiguracoes(primeiroAcesso = false) {
   const modalConfig = $("modal-config");
   if (!modalConfig.open) modalConfig.showModal();
 
-  // Garante que os botões de aparência reflitam o estado atual
   atualizarBotoesAparencia();
 
   const camposSenha = $("campos-senha");
@@ -1293,7 +1288,6 @@ $("form-config").onsubmit = async (e) => {
 
     if (dbError) { msg.textContent = "Erro ao salvar perfil: " + dbError.message; msg.style.color = "#c0392b"; return; }
 
-    // Mantém userProfile em sincronia
     if (userProfile) {
       userProfile.theme = themeAtual;
       userProfile.accent = accentAtual;
@@ -1780,6 +1774,12 @@ function novaSala(){
   const nome = prompt("Qual o nome da sala?");
   if(!nome) return;
 
+  const linkInicial = prompt("Cole o link do YouTube da primeira música:");
+  if(!linkInicial) {
+    alert("O link da primeira música é obrigatório para criar a playlist.");
+    return;
+  }
+
   const agora = new Date();
   const dataStr = agora.toLocaleDateString('pt-BR');
   const id = "sala_" + Date.now();
@@ -1788,7 +1788,8 @@ function novaSala(){
     alert("Sem conexão com o servidor. Tente de novo em alguns segundos."); return;
   }
 
-  wsSalas.send(JSON.stringify({ tipo: "criar_sala", id, nome, data: dataStr }));
+  // Envia o link inicial junto com os outros dados
+  wsSalas.send(JSON.stringify({ tipo: "criar_sala", id, nome, data: dataStr, linkInicial }));
 }
 
 function conectarKaraoke(id){
@@ -1893,7 +1894,7 @@ function abrirSala(sala){
 
     const form = document.createElement("form"); form.className = "form-add";
     form.innerHTML = `
-      <input type="text" placeholder="Música que vai cantar" required maxlength="100">
+      <input type="url" placeholder="Link da música no YouTube" required>
       <button type="submit">Entrar na fila</button>
     `;
     form.onsubmit = (e) => {
@@ -2217,7 +2218,6 @@ async function init(){
   ativarTab(inicial);
 }
 
-// Aparência: wire handlers + sync UI state
 inicializarBotoesAparencia();
 
 init();
