@@ -298,23 +298,10 @@ dialog::backdrop{background:#000a}
 
 .btn-lixeira { background: transparent; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem; margin-left: auto; transition: transform 0.2s; }
 .btn-lixeira:hover { transform: scale(1.2); }
-.btn-encerrar {
-  background: transparent;
-  color: var(--danger);
-  border: 1px solid var(--danger);
-  border-radius: 6px;
-  padding: 0.6rem;
-  font: inherit; /* Garante o mesmo tamanho de fonte */
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 1rem;
-  width: 100%;
-  transition: background 0.2s, color 0.2s;
-}
+.btn-encerrar { background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; padding: 0.6rem; font: inherit; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; transition: background 0.2s, color 0.2s; }
 .btn-encerrar:hover { background: var(--danger); color: #fff; }
 
 /* NOVO: Botão de deletar discreto */
-/* Botão de deletar discreto */
 .btn-deletar {
   background: transparent;
   color: var(--mute);
@@ -1064,6 +1051,7 @@ function abrirChatSala(sala) {
         if (msg.tipo === "estado_inicial") {
           chatBody.innerHTML = "";
           msg.mensagens.forEach(m => renderizarMensagemChat(m));
+          chatBody.scrollTop = chatBody.scrollHeight; // Força descer ao carregar histórico
         }
 
         if (msg.tipo === "nova_mensagem") renderizarMensagemChat(msg.mensagem);
@@ -1119,6 +1107,9 @@ function renderizarMensagemChat(msg) {
   const chatBody = $("chat-body");
   if (!chatBody) return;
 
+  // Verifica se o usuário já estava no final (com margem de 150px) antes da nova mensagem
+  const estavaNoFim = (chatBody.scrollHeight - chatBody.clientHeight) <= (chatBody.scrollTop + 150);
+
   const isMine = msg.user === userProfile.username;
   const hora = new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
@@ -1135,7 +1126,11 @@ function renderizarMensagemChat(msg) {
   `;
 
   chatBody.appendChild(div);
-  chatBody.scrollTop = chatBody.scrollHeight;
+
+  // Só rola para baixo se for minha mensagem ou se eu já estava no final lendo
+  if (isMine || estavaNoFim) {
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
 }
 
 function atualizarBadgeGlobal() {
@@ -1153,21 +1148,14 @@ function atualizarBadgeGlobal() {
 function formatarTituloMusica(tituloBruto) {
   if (!tituloBruto) return "Música do YouTube";
   
-  // 1. Remove tudo que vem depois de um pipe "|" (ex: "| KaraFun", "| Video Oficial")
   let limpo = tituloBruto.split('|')[0].trim();
   
-  // 2. Remove lixos comuns entre parênteses ou colchetes
   const lixos = /[\(\[]\s*(karaok[eê]|karaoke|version|instrumental|playback|cover|official video|clipe oficial|legendado|ao vivo|live|lyrics?|letra)\s*[\)\]]/gi;
   limpo = limpo.replace(lixos, '').trim();
   
-  // Remove parênteses ou colchetes que ficaram vazios (ou com apenas espaços)
   limpo = limpo.replace(/[\(\[]\s*[\)\]]/g, '').trim();
-  
-  // Remove hífens soltos no final ou no começo
   limpo = limpo.replace(/^[\-\s]+|[\-\s]+$/g, '');
 
-  // 3. Tenta separar Música e Artista pelo hífen.
-  // Padrão comum: "Artista - Música". Vamos inverter para "Música - Artista".
   if (limpo.includes(' - ')) {
     const partes = limpo.split(' - ');
     if (partes.length >= 2) {
@@ -1784,7 +1772,7 @@ let wsKaraoke = null;
 let filaAtual = [];
 let salaAbertaId = null;
 let salaAbertaEncerrada = false;
-let salaParaAbrirId = null; // Guarda o ID da sala recém-criada
+let salaParaAbrirId = null;
 
 function conectarSalas(){
   if (wsSalas && (wsSalas.readyState === WebSocket.OPEN || wsSalas.readyState === WebSocket.CONNECTING)) return;
@@ -1807,7 +1795,6 @@ function conectarSalas(){
         salasRemotas = msg.salas || [];
         desenhaSalas();
 
-        // Abre a sala recém-criada
         if (salaParaAbrirId) {
           const novaSala = salasRemotas.find(s => s.id === salaParaAbrirId);
           if (novaSala) {
@@ -1816,7 +1803,6 @@ function conectarSalas(){
           }
         }
 
-        // Fecha o modal se a sala atual foi deletada
         if (salaAbertaId && !salasRemotas.find(s => s.id === salaAbertaId)) {
           fecharModal();
           return;
@@ -1834,7 +1820,7 @@ function conectarSalas(){
             if (form) form.remove();
             const btnEnc = cont.querySelector(".btn-encerrar");
             if (btnEnc) btnEnc.remove();
-            const btnDel = cont.querySelector(".btn-deletar"); // Remove o de deletar tbm
+            const btnDel = cont.querySelector(".btn-deletar");
             if (btnDel) btnDel.remove();
 
             $("m-info").textContent = "Sala Encerrada";
@@ -1920,7 +1906,11 @@ function conectarKaraoke(id){
   const url = `${protocolo}//${location.host}/api/karaoke/${encodeURIComponent(id)}`;
   wsKaraoke = new WebSocket(url);
 
-  wsKaraoke.onopen = () => { $("m-info").textContent = salaAbertaEncerrada ? "Sala Encerrada" : "Conectado. Adicione seu nome à fila."; };
+  // Legenda removida
+  wsKaraoke.onopen = () => { 
+    $("m-info").textContent = salaAbertaEncerrada ? "Sala Encerrada" : ""; 
+  };
+  
   wsKaraoke.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
@@ -2017,7 +2007,7 @@ function abrirSala(sala){
   salaAbertaEncerrada = sala.encerrado;
 
   $("m-nome").textContent = sala.nome;
-  $("m-info").textContent = sala.data;
+  $("m-info").textContent = sala.data || ""; // Legenda "Conectado" removida daqui também
   const cont = $("m-conteudo"); cont.textContent = "";
 
   modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
@@ -2088,7 +2078,7 @@ function abrirSala(sala){
     cont.append(btnDeletar);
   } else {
     modalEl.classList.add("modal-evento-encerrado");
-    $("m-info").textContent = `${sala.data} · Encerrada`;
+    $("m-info").textContent = `${sala.data || ""} · Encerrada`;
 
     const btnDeletar = document.createElement("button");
     btnDeletar.className = "btn-deletar";
