@@ -244,8 +244,9 @@ dialog::backdrop{background:#000a}
 .fila-lista .musica{color:var(--mute);font-size:.82rem;display:block;margin-top:.1rem}
 .fila-lista input[type="checkbox"]{width:1.2rem;height:1.2rem;accent-color:var(--accent);flex-shrink:0}
 .form-add{display:flex;flex-direction:column;gap:.5rem;margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid var(--border-soft)}
-.form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px}
-.form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--ink);color:var(--bg);border-radius:6px;cursor:pointer}
+.form-add input{font:inherit;padding:.6rem .7rem;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:6px;text-align:center;}
+.form-add button{font:inherit;font-weight:700;padding:.6rem 1rem;border:0;background:var(--accent);color:#fff;border-radius:6px;cursor:pointer;transition:background 0.15s;}
+.form-add button:hover{background:var(--accent-hover);}
 .aviso{grid-column:1/-1;color:var(--mute);text-align:center;padding:1rem}
 
 /* Spinner de Carregamento */
@@ -298,17 +299,17 @@ dialog::backdrop{background:#000a}
 
 .btn-lixeira { background: transparent; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem; margin-left: auto; transition: transform 0.2s; }
 .btn-lixeira:hover { transform: scale(1.2); }
-.btn-encerrar { background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; padding: 0.6rem; font: inherit; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; transition: background 0.2s, color 0.2s; }
+.btn-encerrar { background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; padding: 0.6rem; font-family: inherit; font-size: 0.85rem; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; transition: background 0.2s, color 0.2s; }
 .btn-encerrar:hover { background: var(--danger); color: #fff; }
 
-/* NOVO: Botão de deletar discreto */
 .btn-deletar {
   background: transparent;
   color: var(--mute);
   border: 1px solid var(--border-soft);
   border-radius: 6px;
   padding: 0.6rem;
-  font: inherit; /* Puxa a fonte exata do app, igualando ao botão de encerrar */
+  font-family: inherit;
+  font-size: 0.85rem;
   font-weight: bold;
   cursor: pointer;
   margin-top: 0.5rem;
@@ -550,10 +551,7 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: var(--border
 
 <div id="tooltip" class="tooltip" aria-hidden="true"></div>
 
-<dialog id="modal"><div class="modal">
-  <button class="fechar" aria-label="Fechar" onclick="fecharModal()">×</button>
-  <h2 id="m-nome"></h2><p class="sub" id="m-info"></p><div id="m-conteudo"></div>
-</div></dialog>
+<dialog id="modal"></dialog>
 
 <dialog id="modal-config"><div class="modal">
   <button class="fechar" aria-label="Fechar" onclick="fecharConfiguracoes()">×</button>
@@ -799,6 +797,19 @@ function pararAnimacaoBoasVindas() {
 function fecharConfiguracoes() {
   pararAnimacaoBoasVindas();
   $("modal-config").close();
+}
+
+function resetModalHTML() {
+  modalEl.innerHTML = `
+    <div class="modal">
+      <button class="fechar" aria-label="Fechar" onclick="fecharModal()">×</button>
+      <h2 id="m-nome"></h2><p class="sub" id="m-info"></p><div id="m-conteudo"></div>
+    </div>
+  `;
+  modalEl.style.padding = "";
+  modalEl.style.display = "";
+  modalEl.style.flexDirection = "";
+  modalEl.style.overflow = "";
 }
 
 $("modal").addEventListener("click", e => { if (e.target === $("modal")) fecharModal(); });
@@ -1051,7 +1062,7 @@ function abrirChatSala(sala) {
         if (msg.tipo === "estado_inicial") {
           chatBody.innerHTML = "";
           msg.mensagens.forEach(m => renderizarMensagemChat(m));
-          chatBody.scrollTop = chatBody.scrollHeight; // Força descer ao carregar histórico
+          chatBody.scrollTop = chatBody.scrollHeight;
         }
 
         if (msg.tipo === "nova_mensagem") renderizarMensagemChat(msg.mensagem);
@@ -1107,7 +1118,6 @@ function renderizarMensagemChat(msg) {
   const chatBody = $("chat-body");
   if (!chatBody) return;
 
-  // Verifica se o usuário já estava no final (com margem de 150px) antes da nova mensagem
   const estavaNoFim = (chatBody.scrollHeight - chatBody.clientHeight) <= (chatBody.scrollTop + 150);
 
   const isMine = msg.user === userProfile.username;
@@ -1127,7 +1137,6 @@ function renderizarMensagemChat(msg) {
 
   chatBody.appendChild(div);
 
-  // Só rola para baixo se for minha mensagem ou se eu já estava no final lendo
   if (isMine || estavaNoFim) {
     chatBody.scrollTop = chatBody.scrollHeight;
   }
@@ -1565,6 +1574,7 @@ window.fecharModal = () => {
   if (wsKaraoke) { try { wsKaraoke.close(); } catch {} wsKaraoke = null; }
   salaAbertaId = null; salaAbertaEncerrada = false;
   modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
+  resetModalHTML();
   modalEl.close();
 };
 modalEl.addEventListener("click", e => { if (e.target === modalEl) fecharModal(); });
@@ -1572,6 +1582,7 @@ modalEl.addEventListener("click", e => { if (e.target === modalEl) fecharModal()
 const fmt = s => s ? Math.floor(s/60)+":"+String(s%60).padStart(2,"0") : "";
 
 async function abreDisco(d){
+  resetModalHTML();
   escondeTooltip(); $("m-nome").textContent = ""; $("m-info").textContent = "";
   const cont = $("m-conteudo"); cont.textContent = "Buscando tracklist…";
   modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
@@ -1745,6 +1756,7 @@ function desenhaArtistas(){
 }
 
 async function abreArtista(nome){
+  resetModalHTML();
   const discs = ordena(discos.filter(d => d.artista === nome));
   $("m-nome").textContent = nome;
   $("m-info").textContent = `${discs.length} ${discs.length===1?"disco":"discos"} na coleção`;
@@ -1906,11 +1918,6 @@ function conectarKaraoke(id){
   const url = `${protocolo}//${location.host}/api/karaoke/${encodeURIComponent(id)}`;
   wsKaraoke = new WebSocket(url);
 
-  // Legenda removida
-  wsKaraoke.onopen = () => { 
-    $("m-info").textContent = salaAbertaEncerrada ? "Sala Encerrada" : ""; 
-  };
-  
   wsKaraoke.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
@@ -1927,7 +1934,7 @@ function conectarKaraoke(id){
       }
     } catch (e) { console.warn("Msg inválida (fila):", e); }
   };
-  wsKaraoke.onerror = () => { $("m-info").textContent = "Erro de conexão. Recarregue a página."; };
+  wsKaraoke.onerror = () => { console.warn("Erro de conexão. Recarregue a página."); };
   wsKaraoke.onclose = () => {};
 }
 
@@ -2006,20 +2013,37 @@ function abrirSala(sala){
   salaAbertaId = sala.id;
   salaAbertaEncerrada = sala.encerrado;
 
-  $("m-nome").textContent = sala.nome;
-  $("m-info").textContent = sala.data || ""; // Legenda "Conectado" removida daqui também
-  const cont = $("m-conteudo"); cont.textContent = "";
+  modalEl.innerHTML = `
+    <div class="chat-header" style="border-radius: 6px 6px 0 0;">
+      <div>
+        <h2 style="padding:0; margin:0; text-transform:none;">${esc(sala.nome)}</h2>
+        <p id="m-info" style="margin: 0.2rem 0 0 0; font-size: 0.8rem; color: var(--mute); font-weight: 600;">${sala.encerrado ? 'Encerrada' : (sala.data || "")}</p>
+      </div>
+      <div class="chat-header-controls">
+        <button class="fechar" onclick="fecharModal()" style="position:static;">×</button>
+      </div>
+    </div>
+    <div id="m-conteudo" style="padding: 1.4rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column;"></div>
+  `;
+  modalEl.style.padding = "0";
+  modalEl.style.display = "flex";
+  modalEl.style.flexDirection = "column";
 
+  const cont = $("m-conteudo");
   modalEl.classList.remove("grande", "modal-evento-ativo", "modal-evento-encerrado");
+
+  if (!salaAbertaEncerrada) {
+    modalEl.classList.add("modal-evento-ativo");
+  } else {
+    modalEl.classList.add("modal-evento-encerrado");
+  }
 
   const ol = document.createElement("ol"); ol.className = "fila-lista"; cont.append(ol);
 
   if (!salaAbertaEncerrada) {
-    modalEl.classList.add("modal-evento-ativo");
-
     const form = document.createElement("form"); form.className = "form-add";
     form.innerHTML = `
-      <input type="url" placeholder="Link da música no YouTube" required>
+      <input type="url" placeholder="Link da música no YouTube" required style="text-align: center;">
       <button type="submit">Entrar na fila</button>
     `;
     form.onsubmit = (e) => {
@@ -2077,9 +2101,6 @@ function abrirSala(sala){
     };
     cont.append(btnDeletar);
   } else {
-    modalEl.classList.add("modal-evento-encerrado");
-    $("m-info").textContent = `${sala.data || ""} · Encerrada`;
-
     const btnDeletar = document.createElement("button");
     btnDeletar.className = "btn-deletar";
     btnDeletar.textContent = "Deletar Sala";
