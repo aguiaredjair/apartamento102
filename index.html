@@ -290,20 +290,21 @@ dialog.modal-evento-encerrado .fila-lista li { border-bottom-color: #ccc; }
 .carousel-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(34,32,29,.2); transition: background 0.2s; }
 .carousel-dots span.active { background: var(--ink); }
 
-/* LAYOUT MOBILE (Empilhado) */
+/* LAYOUT MOBILE (Slider horizontal com botões) */
 @media (max-width: 767px) {
   .carousel-track { 
-    flex-direction: column; 
-    overflow-y: auto; 
-    overflow-x: hidden;
-    gap: 1rem;
+    overflow-x: auto; 
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .carousel-track::-webkit-scrollbar { display: none; }
   .carousel-slide { 
-    flex: 0 0 auto; 
-    width: 100%;
+    flex: 0 0 100%; 
+    width: 100%; 
     padding: 0;
   }
-  .carousel-btn { display: none; } /* Esconde setas no mobile, usa o scroll normal */
+  .carousel-btn { display: grid; } /* Mostra setas no mobile */
 }
 
 /* LAYOUT DESKTOP (Lado a lado igual) */
